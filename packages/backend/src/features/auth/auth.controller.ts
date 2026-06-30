@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service';
+import { AuthenticatedRequest } from '../../shared/types/common.types';
 
 export class AuthController {
   private authService = new AuthService();
@@ -16,7 +17,7 @@ export class AuthController {
     }
   };
 
-  getMe = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getMe = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user?.id;
       if (!userId) {

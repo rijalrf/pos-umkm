@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt.util';
 import { logger } from '../utils/logger.util';
+import { AuthenticatedRequest } from '../types/common.types';
 
-export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
+export const authenticate = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({

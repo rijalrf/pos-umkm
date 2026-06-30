@@ -102,3 +102,29 @@ Files must be named using camelCase or kebab-case combined with the layer type, 
 - **Ask Before Destructive Operations:** Always seek user confirmation before deleting databases, tables, major files, or running heavy system scripts.
 - **Maintain Comments:** Preserve existing comments and docstrings unless they are outdated or explicitly requested to be removed.
 - **Testing:** Ensure mock data or seed scripts are updated whenever DB schema changes.
+
+---
+
+## 6. Automated Testing Guidelines (Local Verification & CI/CD)
+
+To detect errors immediately without manual browser E2E testing, developers and AI agents must write automated tests for all developed features.
+
+### 6.1 Testing Architecture
+1. **Backend Unit Testing:**
+   - Focus on testing Service layers (`*.service.ts`) containing the core business logic.
+   - Mock all external dependencies (e.g., Prisma repository/client database queries, bcrypt/bcryptjs helpers, JWT helpers, Winston logger).
+2. **Backend Integration Testing:**
+   - Test entire route endpoints (`*.routes.ts` via Express App) using `supertest`.
+   - Use a dedicated test database (or transaction rollback) to keep the development database clean.
+3. **Frontend Testing:**
+   - Test Zustand stores (`*.store.ts`) and presenter logic (`*.presenter.ts`) using Jest.
+   - Mock Axios API calls to return mock response data.
+
+### 6.2 Test File Naming & Placement
+- Keep test files next to the files they test inside the feature-driven folder.
+- Name tests using the format: `[feature].[layer].spec.ts` (e.g., `auth.service.spec.ts`, `products.service.spec.ts`).
+
+### 6.3 Rules of Engagement
+- **Test Before Push:** Always execute `npm run test` locally and verify that all test suites pass.
+- **Coverage Target:** Aim for at least 70% line coverage on services and controllers.
+- **Clean Mocking:** Do not perform actual network requests or write dirty state to production/dev databases during unit tests. Always mock database calls using jest mock utilities.
