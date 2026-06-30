@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth.store';
+import { useCustomerStore } from '../stores/customer.store';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
@@ -12,7 +13,11 @@ export const api = axios.create({
 // Request interceptor to add JWT token
 api.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().token;
+    const isCustomerRequest = config.url?.startsWith('/customer');
+    const token = isCustomerRequest
+      ? useCustomerStore.getState().token
+      : useAuthStore.getState().token;
+      
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,8 +33,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear local auth session
+      // Clear local auth sessions
       useAuthStore.getState().clearAuth();
+      useCustomerStore.getState().logout();
     }
     return Promise.reject(error);
   }

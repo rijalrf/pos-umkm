@@ -9,7 +9,8 @@ import {
   UserOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
-  ShoppingCartOutlined
+  ShoppingCartOutlined,
+  LineChartOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '../../stores/auth.store';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
@@ -45,6 +46,11 @@ export const BackofficeLayout: React.FC = () => {
             key: '/backoffice/categories',
             icon: <TagsOutlined />,
             label: 'Categories',
+          },
+          {
+            key: '/backoffice/reports',
+            icon: <LineChartOutlined />,
+            label: 'Laporan Penjualan',
           },
         ]
       : []),

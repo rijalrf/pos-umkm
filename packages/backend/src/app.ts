@@ -6,6 +6,9 @@ import categoriesRoutes from './features/categories/categories.routes';
 import productsRoutes from './features/products/products.routes';
 import settingsRoutes from './features/settings/settings.routes';
 import transactionsRoutes from './features/transactions/transactions.routes';
+import reportsRoutes from './features/reports/reports.routes';
+import customersRoutes from './features/customers/customers.routes';
+import publicRoutes from './features/public/public.routes';
 import { errorHandler } from './shared/middleware/error-handler.middleware';
 import { logger } from './shared/utils/logger.util';
 
@@ -32,6 +35,9 @@ app.use('/api/categories', categoriesRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/transactions', transactionsRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/customer', customersRoutes);
+app.use('/api/public', publicRoutes);
 
 // Base route
 app.get('/api/health', (_req, res) => {
