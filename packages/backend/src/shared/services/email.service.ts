@@ -29,21 +29,21 @@ export class EmailService {
     const verificationUrl = `${frontendUrl}/verify-email?token=${token}`;
 
     const mailOptions = {
-      from: `"MarketNest Support" <${from}>`,
+      from: `"POS UMKM Support" <${from}>`,
       to,
-      subject: 'Verifikasi Akun Pelanggan MarketNest',
+      subject: 'Verifikasi Akun Pelanggan POS UMKM',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #E7E5E4; border-radius: 8px; background-color: #FFFBF5;">
-          <h2 style="color: #C2410C; text-align: center;">Selamat Datang di MarketNest!</h2>
+          <h2 style="color: #C2410C; text-align: center;">Selamat Datang di POS UMKM!</h2>
           <p>Halo <strong>${name}</strong>,</p>
-          <p>Terima kasih telah mendaftar sebagai pelanggan member di MarketNest. Silakan verifikasi akun email Anda dengan mengklik tombol di bawah ini:</p>
+          <p>Terima kasih telah mendaftar sebagai pelanggan member di POS UMKM. Silakan verifikasi akun email Anda dengan mengklik tombol di bawah ini:</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${verificationUrl}" style="background-color: #C2410C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Verifikasi Email Saya</a>
           </div>
           <p style="font-size: 12px; color: #57534E;">Atau salin tautan berikut ke browser Anda:</p>
           <p style="font-size: 12px; word-break: break-all; color: #C2410C;"><a href="${verificationUrl}">${verificationUrl}</a></p>
           <div style="margin-top: 30px; border-top: 1px solid #E7E5E4; padding-top: 20px; font-size: 12px; color: #8C8A87; text-align: center;">
-            &copy; 2026 MarketNest. Semua hak dilindungi.
+            &copy; 2026 POS UMKM. Semua hak dilindungi.
           </div>
         </div>
       `,

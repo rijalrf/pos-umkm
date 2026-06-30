@@ -55,6 +55,8 @@ jest.mock('../../config/database.config', () => ({
     transaction: {
       findUnique: jest.fn(),
       create: jest.fn(),
+      findMany: jest.fn(),
+      count: jest.fn(),
     },
     product: {
       findUnique: jest.fn(),
@@ -118,6 +120,22 @@ describe('TransactionsService', () => {
       (prisma.transaction.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(transactionsService.getTransactionById('invalid')).rejects.toThrow('Transaction not found');
+    });
+  });
+
+  describe('getAllTransactions', () => {
+    it('should return paginated transactions and total count', async () => {
+      (prisma.transaction.findMany as jest.Mock).mockResolvedValue([mockTransaction]);
+      (prisma.transaction.count as jest.Mock).mockResolvedValue(1);
+
+      const result = await transactionsService.getAllTransactions({ page: 1, limit: 10 });
+
+      expect(prisma.transaction.findMany).toHaveBeenCalled();
+      expect(prisma.transaction.count).toHaveBeenCalled();
+      expect(result).toEqual({
+        transactions: [mockTransaction],
+        total: 1,
+      });
     });
   });
 

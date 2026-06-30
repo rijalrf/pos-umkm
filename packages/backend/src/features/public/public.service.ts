@@ -1,10 +1,17 @@
 import { ProductsRepository } from '../products/products.repository';
 import { CategoriesRepository } from '../categories/categories.repository';
 import { GetProductsQuery } from '../products/products.schema';
+import { PublicCheckoutInput } from './public.schema';
+import { CustomersService } from '../customers/customers.service';
+import { TransactionsService } from '../transactions/transactions.service';
+import { prisma } from '../../config/database.config';
+import { BadRequestError } from '../../shared/utils/errors.util';
 
 export class PublicService {
   private productsRepository = new ProductsRepository();
   private categoriesRepository = new CategoriesRepository();
+  private customersService = new CustomersService();
+  private transactionsService = new TransactionsService();
 
   async getProducts(query: GetProductsQuery) {
     return this.productsRepository.findAndCount(query);
@@ -16,5 +23,51 @@ export class PublicService {
 
   async getCategories() {
     return this.categoriesRepository.findAll();
+  }
+
+  async checkout(input: PublicCheckoutInput) {
+    let customerId: string | undefined;
+    let customerName: string | undefined;
+
+    if (input.customerType === 'member_register') {
+      if (!input.memberData) {
+        throw new BadRequestError('Member data is required for registration checkout');
+      }
+      const customer = await this.customersService.register(input.memberData);
+      customerId = customer.id;
+      customerName = customer.name;
+    } else {
+      if (!input.guestName) {
+        throw new BadRequestError('Guest name is required for guest checkout');
+      }
+      customerName = input.guestName;
+    }
+
+    const cashier = await prisma.user.findFirst({
+      where: { isActive: true },
+      orderBy: { role: 'asc' }, // Get any active cashier
+    });
+
+    if (!cashier) {
+      throw new BadRequestError('No active cashier/admin found to process transaction');
+    }
+
+    let totalAmount = 0;
+    for (const item of input.items) {
+      const product = await prisma.product.findUnique({ where: { id: item.productId } });
+      if (!product) {
+        throw new BadRequestError(`Product not found: ${item.productId}`);
+      }
+      totalAmount += Number(product.price) * item.quantity;
+    }
+
+    const tx = await this.transactionsService.createTransaction(cashier.id, {
+      customerId,
+      customerName,
+      items: input.items,
+      cashReceived: totalAmount,
+    });
+
+    return tx;
   }
 }

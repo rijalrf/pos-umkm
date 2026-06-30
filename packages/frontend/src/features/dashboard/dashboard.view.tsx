@@ -140,7 +140,7 @@ export const DashboardView: React.FC = () => {
                 title={<span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}><HistoryOutlined style={{ color: '#365314' }} /> Panduan Cepat</span>}
               >
                 <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#1C1917', lineHeight: '1.6', fontSize: '14px' }}>
-                  Aplikasi POS UMKM MarketNest dirancang untuk memudahkan transaksi kasir secara offline maupun online.
+                  Aplikasi POS UMKM dirancang untuk memudahkan transaksi kasir secara offline maupun online.
                 </Paragraph>
                 <ul style={{ paddingLeft: '20px', fontFamily: "'Inter', sans-serif", color: '#57534E', lineHeight: '1.8', fontSize: '13px' }}>
                   <li><strong>Kelola Produk:</strong> Tambahkan produk baru dan sinkronisasikan gambar ke Google Drive Anda.</li>

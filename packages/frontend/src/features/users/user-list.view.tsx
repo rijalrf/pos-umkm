@@ -136,7 +136,7 @@ export const UserListView: React.FC = () => {
   ];
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '16px' }}>
+    <div style={{ width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
           <Title level={2} style={{ fontFamily: "'Playfair Display', serif", color: '#C2410C', margin: 0 }}>

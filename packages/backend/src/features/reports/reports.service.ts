@@ -212,7 +212,7 @@ export class ReportsService {
       <html>
       <head>
         <meta charset="utf-8">
-        <title>Laporan Penjualan MarketNest</title>
+        <title>Laporan Penjualan POS UMKM</title>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
           body {

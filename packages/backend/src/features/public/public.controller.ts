@@ -51,4 +51,16 @@ export class PublicController {
       next(error);
     }
   };
+
+  checkout = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await this.service.checkout(req.body);
+      res.status(201).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

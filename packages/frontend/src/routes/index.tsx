@@ -5,6 +5,7 @@ import { DashboardView } from '../features/dashboard/dashboard.view';
 import { ProductListView } from '../features/products/product-list.view';
 import { CategoryListView } from '../features/categories/category-list.view';
 import { SalesView } from '../features/sales/sales.view';
+import { TransactionListView } from '../features/sales/transaction-list.view';
 import { SettingsView } from '../features/settings/store-settings.view';
 import { ReportsView } from '../features/reports/reports.view';
 import { UserListView } from '../features/users/user-list.view';
@@ -19,6 +20,7 @@ import { CustomerLoginView } from '../features/customer-frontend/customer-login.
 import { CustomerRegisterView } from '../features/customer-frontend/customer-register.view';
 import { VerifyEmailView } from '../features/customer-frontend/verify-email.view';
 import { TransactionHistoryView } from '../features/customer-frontend/transaction-history.view';
+import { CheckoutView } from '../features/customer-frontend/checkout.view';
 import { CustomerProtectedRoute } from '../components/common/customer-protected-route.component';
 
 export const AppRoutes: React.FC = () => {
@@ -73,6 +75,7 @@ export const AppRoutes: React.FC = () => {
         
         {/* Common backoffice views */}
         <Route path="sales" element={<SalesView />} />
+        <Route path="transactions" element={<TransactionListView />} />
         <Route path="settings" element={<SettingsView />} />
       </Route>
 
@@ -83,6 +86,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="product/:id" element={<ProductDetailView />} />
         <Route path="login" element={<CustomerLoginView />} />
         <Route path="register" element={<CustomerRegisterView />} />
+        <Route path="checkout" element={<CheckoutView />} />
         <Route path="verify-email" element={<VerifyEmailView />} />
         <Route
           path="history"

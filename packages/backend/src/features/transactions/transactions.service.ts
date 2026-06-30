@@ -7,6 +7,16 @@ import { Prisma } from '@prisma/client';
 export class TransactionsService {
   private repository = new TransactionsRepository();
 
+  async getAllTransactions(query: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+  }) {
+    return this.repository.findAll(query);
+  }
+
   async getTransactionById(id: string) {
     const tx = await this.repository.findById(id);
     if (!tx) {
@@ -132,7 +142,7 @@ export class TransactionsService {
   async getReceiptHtml(id: string): Promise<string> {
     const tx = await this.getTransactionById(id);
     const store = await prisma.storeSetting.findFirst() || {
-      storeName: 'MarketNest POS',
+      storeName: 'POS UMKM',
       address: 'Alamat Toko',
       phone: '081234567890',
     };

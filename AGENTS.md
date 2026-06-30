@@ -127,18 +127,37 @@ To detect errors immediately without manual browser E2E testing, developers and 
 - Name tests using the format: `[feature].[layer].spec.ts` (e.g., `auth.service.spec.ts`, `products.service.spec.ts`).
 
 ### 6.3 Rules of Engagement
-- **Test Before Push:** Always execute `npm run test` locally and verify that all test suites pass.
+- > [!CAUTION]
+  > **AI AGENTS MUST NEVER RUN `npm test` OR `npm run test`.**
+  > Running tests on the environment causes the Windows host CPU, memory, and disk to spike to 100%, causing the system and chat to hang. AI agents must verify code correctness statically (e.g. `npx tsc --noEmit` or manual inspection) and never execute test commands.
+- **Test Before Push (Human Developers Only):** Human developers may execute test suites locally before pushing code.
 - **Coverage Target:** Aim for at least 70% line coverage on services and controllers.
 - **Clean Mocking:** Do not perform actual network requests or write dirty state to production/dev databases during unit tests. Always mock database calls using jest mock utilities.
 
+### 6.4 Resource Optimization on Windows (CPU, Memory, & Disk)
+To prevent local test execution (especially on Windows) from draining CPU, memory, and disk resources, human developers must adhere to these guidelines:
+1. **Limit Worker Threads:** By default, Jest runs one worker per CPU core. On Windows, process spawning has high overhead, causing heavy CPU and memory spikes.
+   - Use the `--runInBand` (or `-i`) flag to run tests serially in the same process, or restrict workers (e.g. `--maxWorkers=50%` or `--maxWorkers=2`).
+   - Run tests locally with: `npm run test -- --runInBand` or `npx jest --runInBand`.
+2. **Minimize Disk/File System I/O:**
+   - Mock all repository and database operations. Never write/read from a physical database file (e.g., SQLite, local containers) in unit tests.
+   - Mock Node's `fs` module or use in-memory streams rather than writing temporary files to the physical disk.
+3. **Mute/Restrict Console Logging:**
+   - Set the Winston logger to `error` level or silence it completely during test execution. Printing large amounts of log output to Windows terminals (stdout) causes heavy I/O and blocks thread execution.
+4. **Prevent Memory Leaks:**
+   - Clean up event listeners, timers, and database connections in hooks (`afterEach` / `afterAll`).
+   - Call `jest.clearAllMocks()` or `jest.resetAllMocks()` between tests to prevent accumulated memory overhead.
+5. **Optimize File Watching:**
+   - Ensure Jest configurations explicitly ignore `node_modules`, `.git`, `.next`, `dist`, and coverage directories to prevent the file watcher from overloading disk I/O.
+
 ---
 
-## 7. MarketNest Design System (Artisan & Handmade Goods Style)
+## 7. POS UMKM Design System (Artisan & Handmade Goods Style)
 
 > [!IMPORTANT]
 > The absolute source of truth for the design system is [DESIGN.md](file:///home/rijal/projects/pos-umkm/DESIGN.md) in the project root. Refer to it for color codes, sizing, spacing, typography, and styling components.
 
-MarketNest is a warm, community-driven design system with a handmade, artisan feel. Spacing is generous, typography is editorial, and components use a flat, border-driven aesthetic without drop shadows.
+POS UMKM is a warm, community-driven design system with a handmade, artisan feel. Spacing is generous, typography is editorial, and components use a flat, border-driven aesthetic without drop shadows.
 
 ### 7.1 Visual Philosophy
 - **Authenticity over Polish:** A flat, border-driven visual style that avoids corporate gloss.
@@ -187,7 +206,7 @@ MarketNest is a warm, community-driven design system with a handmade, artisan fe
 - **Full:** 9999px — Avatars, badges, profile circles.
 
 ### 7.6 Elevation & Borders
-- **No Drop Shadows:** MarketNest uses warm background layering and deliberate border usage instead of shadows.
+- **No Drop Shadows:** POS UMKM uses warm background layering and deliberate border usage instead of shadows.
 - **Borders:**
   - Subtle: `1px solid #E7E5E4`
   - Medium: `1px solid #D6D3D1`
@@ -225,7 +244,6 @@ MarketNest is a warm, community-driven design system with a handmade, artisan fe
    - Background `#1C1917`, Text `#FFFFFF`, Open Sans 12px/400, Padding 8px 12px, Border-radius 4px, Max-width 220px, Arrow 6px. Delay 300ms.
 
 ### 7.8 Do's and Don'ts
-- **Do** feature the maker's story; include a seller avatar and short bio on every product card.
 - **Do** use warm, natural photography/graphics; avoid stark white backgrounds.
 - **Do** highlight materials & process (e.g. "hand-thrown stoneware") using tertiary forest green (`#365314`) tags.
 - **Do** use the serif Lora font for headlines to reinforce the handcrafted, editorial look.
@@ -234,5 +252,5 @@ MarketNest is a warm, community-driven design system with a handmade, artisan fe
 - **Don't** apply drop shadows to product cards; use borders instead.
 - **Don't** use the terracotta primary for decorative borders; reserve it for interactive elements.
 - **Don't** crop product images to strict squares if they are naturally tall or wide; respect original aspect ratios.
-- **Don't** hide seller provenance; location and shipping origin must be clear.
+- **Don't** use nested Card components (e.g., Card inside another Card); use clean div wrappers with borders for layout panels instead.
 

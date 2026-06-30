@@ -92,7 +92,7 @@ export const TransactionHistoryView: React.FC = () => {
           Riwayat Belanja
         </Title>
         <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#57534E', fontSize: '15px' }}>
-          Berikut adalah daftar transaksi pembelian kerajinan tangan yang Anda lakukan sebagai member MarketNest.
+          Berikut adalah daftar transaksi belanja yang Anda lakukan sebagai member POS UMKM.
         </Paragraph>
       </div>
 
@@ -103,6 +103,7 @@ export const TransactionHistoryView: React.FC = () => {
               dataSource={transactions}
               columns={columns}
               rowKey="id"
+              scroll={{ x: true }}
               pagination={{ pageSize: 10 }}
               bordered={false}
               expandable={{

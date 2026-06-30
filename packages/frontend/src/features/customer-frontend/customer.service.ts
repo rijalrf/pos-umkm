@@ -63,4 +63,14 @@ export class CustomerService {
     const response = await api.get('/public/categories');
     return response.data;
   }
+
+  static async publicCheckout(payload: {
+    customerType: 'guest' | 'member_register';
+    guestName?: string;
+    memberData?: CustomerRegisterPayload;
+    items: { productId: string; quantity: number }[];
+  }) {
+    const response = await api.post('/public/checkout', payload);
+    return response.data;
+  }
 }

@@ -1,10 +1,10 @@
-# MarketNest
+# POS UMKM
 
 Warm, community-driven, handmade feel.
 
 ## Overview
 
-MarketNest is a design system for handmade goods and artisan marketplaces where every product tells a story. The spacious layout gives makers room to showcase their craft through rich imagery and narrative descriptions. Warm terracotta, earthy sand, and forest green evoke natural materials and handcrafted authenticity. A flat, border-driven visual style avoids the corporate polish of mainstream e-commerce, instead embracing the warmth and imperfection that buyers of artisan goods cherish.
+POS UMKM is a design system for general stores and local micro-business marketplaces where every product is presented cleanly. The spacious layout gives users room to showcase their catalogue through rich imagery and descriptions. Warm terracotta, earthy sand, and forest green evoke natural materials and handcrafted authenticity. A flat, border-driven visual style avoids the corporate polish of mainstream e-commerce, instead embracing the warmth and imperfection that buyers of artisan goods cherish.
 
 ## Colors
 
@@ -53,7 +53,7 @@ MarketNest is a design system for handmade goods and artisan marketplaces where 
 
 ## Elevation
 
-MarketNest follows a flat design philosophy with no shadows. Depth is achieved through warm background layering and deliberate border usage.
+POS UMKM follows a flat design philosophy with no shadows. Depth is achieved through warm background layering and deliberate border usage.
 - **Subtle:** none — Use `border: 1px #E7E5E4` instead
 - **Medium:** none — Use `border: 1px #D6D3D1` with `bg: #FFFBF5` layering
 - **Large:** none — Use `border: 2px #D6D3D1` for elevated importance

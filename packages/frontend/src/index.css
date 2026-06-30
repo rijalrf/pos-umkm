@@ -1,4 +1,4 @@
-/* MarketNest Design System Global Styles */
+/* POS UMKM Design System Global Styles */
 
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap');
 
@@ -222,4 +222,167 @@ h4.ant-typography.font-lora {
 }
 .btn-ghost-custom:hover {
   background-color: #FDF6EC !important;
+}
+
+/* ==================== CUSTOMER MOBILE-FIRST RESPONSIVE LAYOUTS ==================== */
+/* Mobile-first base styles (default for mobile) */
+.customer-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border-bottom: 1px solid #E7E5E4;
+  padding: 12px 16px !important;
+  height: auto !important;
+  min-height: 64px;
+  flex-wrap: wrap;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.customer-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.customer-header-actions {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.customer-content-wrapper {
+  padding: 16px 12px !important;
+  background: #FFFBF5;
+  transition: all 0.3s ease;
+}
+
+.catalog-filters-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.catalog-filters {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  flex-direction: column;
+}
+
+/* Force select & input to full width on mobile */
+.catalog-filters > .ant-select,
+.catalog-filters > .ant-input-affix-wrapper {
+  width: 100% !important;
+}
+
+/* Media query for larger screen sizes (Desktop overrides) */
+@media (min-width: 480px) {
+  .catalog-filters {
+    flex-direction: row;
+    max-width: 600px;
+  }
+  .catalog-filters > .ant-select {
+    width: 180px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .customer-header {
+    padding: 0 24px !important;
+    height: 64px !important;
+    flex-wrap: nowrap;
+    gap: 0;
+  }
+  
+  .customer-header-nav {
+    gap: 32px;
+    width: auto;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    flex: 1;
+  }
+  
+  .customer-header-actions {
+    width: auto;
+    justify-content: flex-start;
+    margin-top: 0;
+  }
+  
+  .customer-content-wrapper {
+    padding: 24px 50px !important;
+  }
+}
+
+/* Catalog Card Responsive styles */
+.catalog-card-cover {
+  height: 130px;
+  background: #FFFBF5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid #E7E5E4;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.catalog-card-body {
+  padding: 10px !important;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.catalog-card-title {
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  margin-bottom: 4px !important;
+}
+
+@media (min-width: 576px) {
+  .catalog-card-cover {
+    height: 200px;
+  }
+  .catalog-card-body {
+    padding: 16px !important;
+  }
+  .catalog-card-title {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+}
+
+.catalog-card-price {
+  font-size: 14px !important;
+  font-weight: bold;
+  color: #C2410C;
+  font-family: 'Inter', sans-serif;
+}
+
+@media (min-width: 576px) {
+  .catalog-card-price {
+    font-size: 18px !important;
+  }
+}
+
+.product-catalog-card {
+  transition: border-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+.product-catalog-card:hover {
+  border-color: #A8A29E !important;
+  transform: translateY(-2px);
 }

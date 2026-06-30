@@ -22,4 +22,15 @@ export const getTransactionByIdSchema = z.object({
   }),
 });
 
+export const getTransactionsSchema = z.object({
+  query: z.object({
+    page: z.string().optional().transform(val => val ? parseInt(val, 10) : 1),
+    limit: z.string().optional().transform(val => val ? parseInt(val, 10) : 10),
+    search: z.string().optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+  }),
+});
+
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>['body'];
+export type GetTransactionsQuery = z.infer<typeof getTransactionsSchema>['query'];

@@ -7,7 +7,7 @@ import { CategoriesService } from '../categories/categories.service';
 import { SalesService } from './sales.service';
 import { ProductItem } from '../products/products.presenter';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 export const SalesView: React.FC = () => {
   const cart = useCartStore();
@@ -152,13 +152,33 @@ export const SalesView: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '16px', height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column' }}>
-      <Row gutter={24} style={{ flex: 1, minHeight: 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 190px)', width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+        <div>
+          <Title level={2} style={{ margin: 0, fontFamily: "'Playfair Display', serif", color: '#C2410C' }}>
+            Kasir / Sales
+          </Title>
+          <Paragraph style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#57534E' }}>
+            Process sales transactions, manage active cart, and print receipts.
+          </Paragraph>
+        </div>
+      </div>
+
+      <Row gutter={16} style={{ flex: 1, minHeight: 0 }}>
         {/* Left Side: Product Catalog */}
         <Col span={14} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Card
-            style={{ display: 'flex', flexDirection: 'column', flex: 1, border: '1px solid #E7E5E4', borderRadius: '8px', minHeight: 0 }}
-            bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '16px', minHeight: 0 }}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              flex: 1,
+              border: '1px solid #E7E5E4',
+              borderRadius: '8px',
+              backgroundColor: '#FFFFFF',
+              padding: '16px',
+              minHeight: 0,
+              overflow: 'hidden'
+            }}
           >
             <div style={{ marginBottom: '16px' }}>
               <Input
@@ -267,14 +287,23 @@ export const SalesView: React.FC = () => {
                 </div>
               )}
             </div>
-          </Card>
+          </div>
         </Col>
 
         {/* Right Side: Cart and Checkout */}
         <Col span={10} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Card
-            style={{ display: 'flex', flexDirection: 'column', flex: 1, border: '1px solid #E7E5E4', borderRadius: '8px', minHeight: 0 }}
-            bodyStyle={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '16px', minHeight: 0 }}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              flex: 1,
+              border: '1px solid #E7E5E4',
+              borderRadius: '8px',
+              backgroundColor: '#FFFFFF',
+              padding: '16px',
+              minHeight: 0,
+              overflow: 'hidden'
+            }}
           >
             <Title level={4} style={{ fontFamily: "'Playfair Display', serif", margin: '0 0 12px 0', display: 'flex', justifyContent: 'space-between' }}>
               <span><ShoppingCartOutlined /> Active Cart</span>
@@ -434,7 +463,7 @@ export const SalesView: React.FC = () => {
                 Process Transaction
               </Button>
             </div>
-          </Card>
+          </div>
         </Col>
       </Row>
 

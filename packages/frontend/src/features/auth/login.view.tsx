@@ -89,7 +89,7 @@ export const LoginView: React.FC = () => {
             <Title level={2} style={{ color: '#C2410C', fontFamily: "'Playfair Display', serif", fontWeight: 700, margin: 0 }}>
               Selamat Datang
             </Title>
-            <Text style={{ color: '#57534E', fontFamily: "'Inter', sans-serif" }}>Masuk ke akun Backoffice MarketNest</Text>
+            <Text style={{ color: '#57534E', fontFamily: "'Inter', sans-serif" }}>Masuk ke akun Backoffice POS UMKM</Text>
           </div>
 
           <Form

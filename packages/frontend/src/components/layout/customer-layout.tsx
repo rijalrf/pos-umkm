@@ -1,161 +1,134 @@
 import React from 'react';
-import { Layout, Menu, Button, Space, Typography, Dropdown, Avatar } from 'antd';
-import { ShoppingOutlined, HistoryOutlined, UserOutlined, LogoutOutlined, LoginOutlined } from '@ant-design/icons';
-import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { useCustomerStore } from '../../stores/customer.store';
+import { Layout, Typography, Button, message } from 'antd';
+import { useLocation, useNavigate, Outlet } from 'react-router-dom';
+import { useCustomerCartStore } from '../../stores/customer-cart.store';
 
 const { Header, Content, Footer } = Layout;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export const CustomerLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { customer, isAuthenticated, logout } = useCustomerStore();
+  const cart = useCustomerCartStore();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/customer/login');
+  const cartCount = cart.items.reduce((sum, item) => sum + item.quantity, 0);
+  const formatter = new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  });
+
+  const handleAddToCart = (product: any) => {
+    try {
+      cart.addItem(product);
+      message.success(`${product.name} dimasukkan ke keranjang`);
+    } catch (err: any) {
+      message.error(err.message || 'Gagal menambahkan ke keranjang');
+    }
   };
 
-  const navItems = [
-    {
-      key: '/customer/catalog',
-      icon: <ShoppingOutlined />,
-      label: 'Katalog Produk',
-    },
-    ...(isAuthenticated
-      ? [
-          {
-            key: '/customer/history',
-            icon: <HistoryOutlined />,
-            label: 'Riwayat Belanja',
-          },
-        ]
-      : []),
-  ];
-
-  const handleMenuClick = (e: any) => {
-    navigate(e.key);
-  };
-
-  const userMenu = {
-    items: [
-      {
-        key: 'logout',
-        label: 'Keluar',
-        icon: <LogoutOutlined />,
-        onClick: handleLogout,
-      },
-    ],
+  const getPageTitle = () => {
+    if (location.pathname.includes('/customer/product')) {
+      return 'Detail Produk';
+    }
+    if (location.pathname.includes('/customer/checkout')) {
+      return 'Keranjang & Checkout';
+    }
+    return 'Katalog Produk';
   };
 
   return (
     <Layout style={{ minHeight: '100vh', background: '#FFFBF5' }}>
-      <Header
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 1,
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          background: '#ffffff',
-          borderBottom: '1px solid #E7E5E4',
-          padding: '0 24px',
-          height: '64px',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '32px', flex: 1 }}>
-          <Title
-            level={3}
-            onClick={() => navigate('/customer/catalog')}
+      <Header className="customer-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* Left: Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Center: Page Title */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+          <Text
             style={{
-              color: '#C2410C',
-              margin: 0,
               fontFamily: "'Playfair Display', serif",
+              fontSize: '18px',
               fontWeight: 700,
-              cursor: 'pointer',
+              color: '#1C1917',
+              textAlign: 'center',
             }}
           >
-            MarketNest
-          </Title>
-          <Menu
-            mode="horizontal"
-            selectedKeys={[location.pathname]}
-            items={navItems}
-            onClick={handleMenuClick}
-            style={{
-              borderBottom: 0,
-              background: 'transparent',
-              flex: 1,
-              minWidth: 0,
-            }}
-          />
+            {getPageTitle()}
+          </Text>
         </div>
 
-        <div>
-          {isAuthenticated && customer ? (
-            <Space size="middle">
-              <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
-                <Text strong style={{ fontSize: '0.85rem', color: '#1C1917' }}>
-                  {customer.name}
-                </Text>
-                <Text type="secondary" style={{ fontSize: '0.75rem', color: '#365314', fontWeight: 600 }}>
-                  Member
-                </Text>
-              </div>
-              <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
-                <Avatar style={{ backgroundColor: '#D4A373', cursor: 'pointer' }} icon={<UserOutlined />} />
-              </Dropdown>
-            </Space>
-          ) : (
-            <Space>
-              <Button
-                type="text"
-                onClick={() => navigate('/customer/login')}
-                icon={<LoginOutlined />}
-                style={{ color: '#57534E', fontWeight: 600 }}
-              >
-                Masuk
-              </Button>
-              <Button
-                type="primary"
-                onClick={() => navigate('/customer/register')}
-                style={{ backgroundColor: '#C2410C', borderColor: '#C2410C', fontWeight: 600 }}
-              >
-                Daftar Member
-              </Button>
-            </Space>
-          )}
-        </div>
+        {/* Right: Spacer */}
+        <div style={{ flex: 1 }} />
       </Header>
 
-      <Content style={{ padding: '24px 50px', background: '#FFFBF5' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', minHeight: 'calc(100vh - 188px)' }}>
-          <Outlet />
+      <Content className="customer-content-wrapper">
+        <div style={{ maxWidth: '1200px', margin: '0 auto', minHeight: 'calc(100vh - 180px)', paddingBottom: cartCount > 0 && location.pathname !== '/customer/checkout' ? '80px' : '24px' }}>
+          {/* Inject handleAddToCart to subviews via Outlet Context */}
+          <Outlet context={{ onAddToCart: handleAddToCart }} />
         </div>
       </Content>
+
+      {/* Floating Bottom Cart Bar */}
+      {cartCount > 0 && location.pathname !== '/customer/checkout' && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '16px',
+            left: '16px',
+            right: '16px',
+            maxWidth: '840px',
+            margin: '0 auto',
+            backgroundColor: '#C2410C',
+            borderRadius: '8px',
+            padding: '12px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            zIndex: 999,
+            boxShadow: '0 8px 24px rgba(28, 25, 23, 0.15)',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Text style={{ fontSize: '12px', color: '#FFFBF5', opacity: 0.9 }}>
+              {cartCount} Produk di Keranjang
+            </Text>
+            <Text style={{ fontSize: '18px', fontWeight: 'bold', color: '#FFFFFF' }}>
+              {formatter.format(cart.getTotalAmount())}
+            </Text>
+          </div>
+          <Button
+            type="default"
+            onClick={() => navigate('/customer/checkout')}
+            style={{
+              backgroundColor: '#FFFFFF',
+              color: '#C2410C',
+              borderColor: '#FFFFFF',
+              fontWeight: 'bold',
+              borderRadius: '4px',
+              height: '38px',
+            }}
+          >
+            Checkout
+          </Button>
+        </div>
+      )}
 
       <Footer
         style={{
           textAlign: 'center',
           background: '#ffffff',
           borderTop: '1px solid #E7E5E4',
-          color: '#57534E',
-          padding: '24px 50px',
+          color: '#A8A29E',
+          padding: '16px 0',
+          fontSize: '12px',
+          fontFamily: "'Inter', sans-serif",
         }}
       >
-        <Title level={5} style={{ fontFamily: "'Playfair Display', serif", margin: '0 0 8px 0', color: '#C2410C' }}>
-          MarketNest
-        </Title>
-        <Text style={{ fontSize: '14px', fontFamily: "'Inter', sans-serif" }}>
-          Platform POS & Katalog Produk Kerajinan Tangan dan Karya Seni Lokal Nusantara.
-        </Text>
-        <div style={{ fontSize: '12px', color: '#A8A29E', marginTop: '8px' }}>
-          &copy; 2026 MarketNest. Dibuat dengan cinta untuk UMKM Indonesia.
-        </div>
+        &copy; 2026 POS UMKM. Dibuat dengan cinta untuk UMKM Indonesia.
       </Footer>
     </Layout>
   );
 };
+
+export default CustomerLayout;

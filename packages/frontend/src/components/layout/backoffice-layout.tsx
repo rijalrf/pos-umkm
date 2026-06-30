@@ -10,7 +10,8 @@ import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   ShoppingCartOutlined,
-  LineChartOutlined
+  LineChartOutlined,
+  HistoryOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '../../stores/auth.store';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
@@ -63,6 +64,11 @@ export const BackofficeLayout: React.FC = () => {
       key: '/backoffice/sales',
       icon: <ShoppingCartOutlined />,
       label: 'Kasir / Sales',
+    },
+    {
+      key: '/backoffice/transactions',
+      icon: <HistoryOutlined />,
+      label: 'Riwayat Transaksi',
     },
     {
       key: '/backoffice/settings',
@@ -121,7 +127,7 @@ export const BackofficeLayout: React.FC = () => {
             fontWeight: 700,
             letterSpacing: '-0.01em',
           }}>
-            {collapsed ? 'MN' : 'MarketNest'}
+            {collapsed ? 'POS' : 'POS UMKM'}
           </Title>
         </div>
         <Menu

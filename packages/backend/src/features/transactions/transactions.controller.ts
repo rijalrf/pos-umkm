@@ -26,6 +26,25 @@ export class TransactionsController {
     }
   };
 
+  getAll = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const page = req.query.page as any;
+      const limit = req.query.limit as any;
+      const search = req.query.search as string | undefined;
+      const startDate = req.query.startDate as string | undefined;
+      const endDate = req.query.endDate as string | undefined;
+
+      const data = await this.service.getAllTransactions({ page, limit, search, startDate, endDate });
+      
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const data = await this.service.getTransactionById(req.params.id);

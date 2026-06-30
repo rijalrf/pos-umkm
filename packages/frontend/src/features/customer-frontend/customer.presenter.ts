@@ -130,6 +130,29 @@ export function useCustomerPresenter() {
     }
   };
 
+  const checkout = async (payload: {
+    customerType: 'guest' | 'member_register';
+    guestName?: string;
+    memberData?: CustomerRegisterPayload;
+    items: { productId: string; quantity: number }[];
+  }) => {
+    setLoading(true);
+    try {
+      const res = await CustomerService.publicCheckout(payload);
+      if (res.success) {
+        message.success('Transaksi berhasil diproses!');
+        return res.data;
+      }
+      return null;
+    } catch (err: any) {
+      console.error(err);
+      message.error(err?.response?.data?.message || 'Gagal memproses transaksi');
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     error,
@@ -145,5 +168,6 @@ export function useCustomerPresenter() {
     loginCustomer,
     registerCustomer,
     verifyEmailToken,
+    checkout,
   };
 }
