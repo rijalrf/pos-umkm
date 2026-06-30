@@ -9,13 +9,13 @@ export const LoginView: React.FC = () => {
   const { loading, handleLogin } = useLoginPresenter();
 
   return (
-    <Layout style={{ minHeight: '100vh', flexDirection: 'row', background: '#0f172a' }}>
+    <Layout style={{ minHeight: '100vh', flexDirection: 'row', background: '#FFFBF5' }}>
       {/* Visual Left Banner (Desktop only) */}
       <div
         className="login-banner"
         style={{
           flex: 1,
-          background: 'linear-gradient(135deg, #1e1b4b 0%, #311042 50%, #030712 100%)',
+          background: 'linear-gradient(135deg, #7c2d12 0%, #C2410C 60%, #D4A373 100%)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -32,7 +32,7 @@ export const LoginView: React.FC = () => {
           width: '300px',
           height: '300px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(99,102,241,0) 70%)',
+          background: 'radial-gradient(circle, rgba(255,251,245,0.15) 0%, rgba(255,251,245,0) 70%)',
           top: '-50px',
           left: '-50px',
         }} />
@@ -41,21 +41,21 @@ export const LoginView: React.FC = () => {
           width: '400px',
           height: '400px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(236,72,153,0.1) 0%, rgba(236,72,153,0) 70%)',
+          background: 'radial-gradient(circle, rgba(212,163,115,0.1) 0%, rgba(212,163,115,0) 70%)',
           bottom: '-100px',
           right: '-50px',
         }} />
 
         <div style={{ zIndex: 2, maxWidth: '480px', textAlign: 'center' }}>
-          <Title level={1} style={{ color: '#ffffff', fontSize: '3rem', fontWeight: 800, margin: 0, letterSpacing: '-0.05em' }}>
-            POS<span style={{ color: '#6366f1' }}>UMKM</span>
+          <Title level={1} style={{ color: '#ffffff', fontFamily: "'Playfair Display', serif", fontSize: '3rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
+            Market<span style={{ color: '#FFFBF5', fontWeight: 300 }}>Nest</span>
           </Title>
-          <Title level={4} style={{ color: '#94a3b8', fontWeight: 400, marginTop: '12px', marginBottom: '32px' }}>
-            Kelola transaksi kasir dan produk usaha mikro Anda dengan cepat, efisien, dan modern.
+          <Title level={4} style={{ color: '#FFFBF5', opacity: 0.9, fontFamily: "'Playfair Display', serif", fontWeight: 400, marginTop: '12px', marginBottom: '32px', fontSize: '1.25rem' }}>
+            Setiap produk menceritakan kisah pembuatnya. Kelola penjualan dan inventaris kerajinan Anda dengan hangat.
           </Title>
-          <div style={{ background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', padding: '24px', backdropFilter: 'blur(8px)' }}>
-            <Text style={{ color: '#e2e8f0', display: 'block', fontSize: '0.95rem' }}>
-              "Aplikasi POS ini dirancang khusus untuk mempermudah operasional kasir harian dan inventory tracking bagi UMKM Indonesia."
+          <div style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '12px', padding: '24px', backdropFilter: 'blur(8px)' }}>
+            <Text style={{ color: '#FFFBF5', display: 'block', fontSize: '0.95rem', fontFamily: "'Inter', sans-serif" }}>
+              "Mendukung keunikan produk handmade dan artisan Indonesia melalui sistem manajemen toko yang sederhana dan manusiawi."
             </Text>
           </div>
         </div>
@@ -70,22 +70,26 @@ export const LoginView: React.FC = () => {
           flexDirection: 'column',
           justifyContent: 'center',
           padding: '40px',
-          background: '#0f172a',
+          background: '#FFFBF5',
+          borderLeft: '1px solid #E7E5E4',
         }}
       >
         <Card
-          bordered={false}
+          bordered={true}
           style={{
-            background: 'transparent',
+            background: '#FFFFFF',
+            borderColor: '#E7E5E4',
+            borderRadius: '8px',
+            padding: '24px',
             boxShadow: 'none',
           }}
           bodyStyle={{ padding: 0 }}
         >
           <div style={{ marginBottom: '40px' }}>
-            <Title level={2} style={{ color: '#ffffff', fontWeight: 700, margin: 0 }}>
+            <Title level={2} style={{ color: '#C2410C', fontFamily: "'Playfair Display', serif", fontWeight: 700, margin: 0 }}>
               Selamat Datang
             </Title>
-            <Text style={{ color: '#64748b' }}>Silakan masuk ke akun Backoffice Anda</Text>
+            <Text style={{ color: '#57534E', fontFamily: "'Inter', sans-serif" }}>Masuk ke akun Backoffice MarketNest</Text>
           </div>
 
           <Form
@@ -98,17 +102,18 @@ export const LoginView: React.FC = () => {
             <Form.Item
               name="username"
               rules={[{ required: true, message: 'Username tidak boleh kosong!' }]}
+              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Username</span>}
             >
               <Input
-                prefix={<UserOutlined style={{ color: '#64748b' }} />}
-                placeholder="Username"
+                prefix={<UserOutlined style={{ color: '#A8A29E' }} />}
+                placeholder="Masukkan username"
                 size="large"
                 style={{
-                  background: '#1e293b',
-                  border: '1px solid #334155',
-                  color: '#ffffff',
-                  borderRadius: '8px',
-                  height: '48px',
+                  background: '#FFFFFF',
+                  border: '1.5px solid #D6D3D1',
+                  color: '#1C1917',
+                  borderRadius: '4px',
+                  height: '42px',
                 }}
                 className="custom-input"
               />
@@ -117,17 +122,18 @@ export const LoginView: React.FC = () => {
             <Form.Item
               name="password"
               rules={[{ required: true, message: 'Password tidak boleh kosong!' }]}
+              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Password</span>}
             >
               <Input.Password
-                prefix={<LockOutlined style={{ color: '#64748b' }} />}
-                placeholder="Password"
+                prefix={<LockOutlined style={{ color: '#A8A29E' }} />}
+                placeholder="Masukkan password"
                 size="large"
                 style={{
-                  background: '#1e293b',
-                  border: '1px solid #334155',
-                  color: '#ffffff',
-                  borderRadius: '8px',
-                  height: '48px',
+                  background: '#FFFFFF',
+                  border: '1.5px solid #D6D3D1',
+                  color: '#1C1917',
+                  borderRadius: '4px',
+                  height: '42px',
                 }}
               />
             </Form.Item>
@@ -140,13 +146,12 @@ export const LoginView: React.FC = () => {
                 loading={loading}
                 block
                 style={{
-                  height: '48px',
-                  borderRadius: '8px',
-                  background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
+                  height: '42px',
+                  borderRadius: '4px',
+                  background: '#C2410C',
                   border: 'none',
                   fontWeight: 600,
-                  fontSize: '1rem',
-                  boxShadow: '0 4px 14px 0 rgba(99, 102, 241, 0.4)',
+                  fontSize: '15px',
                 }}
               >
                 Masuk
@@ -155,11 +160,11 @@ export const LoginView: React.FC = () => {
           </Form>
 
           {/* Quick Demo Info */}
-          <div style={{ marginTop: '40px', padding: '16px', background: 'rgba(30, 41, 59, 0.5)', borderRadius: '8px', border: '1px solid #334155' }}>
-            <Text style={{ color: '#64748b', fontSize: '0.8rem', display: 'block', marginBottom: '4px' }}>Demo Credentials:</Text>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Text style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Admin: <strong>admin</strong> / admin123</Text>
-              <Text style={{ color: '#94a3b8', fontSize: '0.8rem' }}>Kasir: <strong>kasir</strong> / kasir123</Text>
+          <div style={{ marginTop: '40px', padding: '16px', background: '#FFFBF5', borderRadius: '8px', border: '1px solid #E7E5E4' }}>
+            <Text style={{ color: '#57534E', fontSize: '0.8rem', display: 'block', marginBottom: '4px', fontWeight: 600 }}>Demo Credentials:</Text>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <Text style={{ color: '#57534E', fontSize: '0.8rem' }}>Admin: <strong style={{ color: '#C2410C' }}>admin</strong> / admin123</Text>
+              <Text style={{ color: '#57534E', fontSize: '0.8rem' }}>Kasir: <strong style={{ color: '#C2410C' }}>kasir</strong> / kasir123</Text>
             </div>
           </div>
         </Card>
@@ -167,16 +172,17 @@ export const LoginView: React.FC = () => {
 
       <style>{`
         .custom-input::placeholder {
-          color: #64748b !important;
+          color: #A8A29E !important;
         }
         .ant-input-password-icon {
-          color: #64748b !important;
+          color: #A8A29E !important;
         }
         .ant-input-affix-wrapper:hover, .ant-input-affix-wrapper-focused {
-          border-color: #6366f1 !important;
+          border-color: #C2410C !important;
+          box-shadow: 3px solid rgba(194, 65, 12, 0.15) !important;
         }
         .ant-input-affix-wrapper input {
-          color: #ffffff !important;
+          color: #1C1917 !important;
           background: transparent !important;
         }
         @media (max-width: 768px) {
@@ -188,3 +194,4 @@ export const LoginView: React.FC = () => {
     </Layout>
   );
 };
+

@@ -42,6 +42,12 @@ export const deleteProductSchema = z.object({
   }),
 });
 
+export const uploadProductImageSchema = z.object({
+  params: z.object({
+    id: z.string().uuid(),
+  }),
+});
+
 export type CreateProductInput = z.infer<typeof createProductSchema>['body'];
 export type UpdateProductInput = z.infer<typeof updateProductSchema>['body'];
 export type GetProductsQuery = z.infer<typeof getProductsSchema>['query'];

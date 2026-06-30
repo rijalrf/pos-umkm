@@ -42,4 +42,15 @@ export class ProductsService {
     const response = await api.delete(`/products/${id}`);
     return response.data;
   }
+
+  static async uploadImage(id: string, file: File) {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await api.post(`/products/${id}/upload-image`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
 }

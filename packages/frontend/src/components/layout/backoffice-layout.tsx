@@ -84,32 +84,44 @@ export const BackofficeLayout: React.FC = () => {
   };
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh', background: '#FFFBF5' }}>
       <Sider
         trigger={null}
         collapsible
         collapsed={collapsed}
-        theme="dark"
         style={{
-          background: '#0f172a',
-          boxShadow: '2px 0 8px 0 rgba(29, 35, 41, 0.05)',
+          background: '#FFFBF5',
+          borderRight: '1px solid #E7E5E4',
         }}
       >
-        <div style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: '#1e293b' }}>
-          <Title level={4} style={{ color: '#ffffff', margin: 0, fontWeight: 700, letterSpacing: '-0.03em' }}>
-            {collapsed ? 'POS' : 'POS UMKM'}
+        <div style={{
+          height: '64px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px',
+          background: '#FFFBF5',
+          borderBottom: '1px solid #E7E5E4',
+        }}>
+          <Title level={4} style={{
+            color: '#C2410C',
+            margin: 0,
+            fontFamily: "'Playfair Display', serif",
+            fontWeight: 700,
+            letterSpacing: '-0.01em',
+          }}>
+            {collapsed ? 'MN' : 'MarketNest'}
           </Title>
         </div>
         <Menu
-          theme="dark"
           mode="inline"
           selectedKeys={[location.pathname]}
           items={menuItems}
           onClick={handleMenuClick}
-          style={{ background: 'transparent', padding: '16px 0' }}
+          style={{ background: 'transparent', padding: '16px 0', borderRight: 0 }}
         />
       </Sider>
-      <Layout>
+      <Layout style={{ background: '#FFFBF5' }}>
         <Header
           style={{
             padding: '0 24px',
@@ -117,27 +129,27 @@ export const BackofficeLayout: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid #f1f5f9',
+            borderBottom: '1px solid #E7E5E4',
           }}
         >
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={() => setCollapsed(!collapsed)}
-            style={{ fontSize: '16px', width: 64, height: 64 }}
+            style={{ fontSize: '16px', width: 64, height: 64, color: '#C2410C' }}
           />
 
           <Space size="middle">
             <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <Text strong style={{ display: 'block', fontSize: '0.9rem', color: '#1e293b' }}>
+              <Text strong style={{ display: 'block', fontSize: '0.9rem', color: '#1C1917' }}>
                 {user?.fullName}
               </Text>
-              <Text type="secondary" style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>
+              <Text type="secondary" style={{ fontSize: '0.75rem', textTransform: 'capitalize', color: '#57534E' }}>
                 {user?.role.toLowerCase()}
               </Text>
             </div>
             <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
-              <Avatar style={{ backgroundColor: '#6366f1', cursor: 'pointer' }} icon={<UserOutlined />} />
+              <Avatar style={{ backgroundColor: '#C2410C', cursor: 'pointer' }} icon={<UserOutlined />} />
             </Dropdown>
           </Space>
         </Header>
@@ -146,14 +158,15 @@ export const BackofficeLayout: React.FC = () => {
             margin: '24px',
             padding: '24px',
             background: '#ffffff',
-            borderRadius: '12px',
+            borderRadius: '8px',
+            border: '1px solid #E7E5E4',
             minHeight: 280,
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
           }}
         >
           <Outlet />
         </Content>
       </Layout>
     </Layout>
+
   );
 };

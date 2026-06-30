@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import authRoutes from './features/auth/auth.routes';
 import categoriesRoutes from './features/categories/categories.routes';
 import productsRoutes from './features/products/products.routes';
+import settingsRoutes from './features/settings/settings.routes';
+import transactionsRoutes from './features/transactions/transactions.routes';
 import { errorHandler } from './shared/middleware/error-handler.middleware';
 import { logger } from './shared/utils/logger.util';
 
@@ -28,6 +30,8 @@ app.use((req, _res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/products', productsRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/transactions', transactionsRoutes);
 
 // Base route
 app.get('/api/health', (_req, res) => {

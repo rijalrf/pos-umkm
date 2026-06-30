@@ -85,14 +85,16 @@ Files must be named using camelCase or kebab-case combined with the layer type, 
 
 ## 4. UI/UX and Styling (Frontend)
 
-1. **Aesthetic Excellence:**
+1. **Design System Source of Truth:**
+   - **CRITICAL:** Always read and refer to `DESIGN.md` in the project root as the absolute source of truth for all design decisions, colors, typography, spacing, borders, elevation, component specs, and styling rules. All UI elements must strictly align with `DESIGN.md`.
+2. **Aesthetic Excellence:**
    - Leverage **Ant Design (antd)** components as the foundational UI kit.
    - Use high-quality CSS for transitions, card styling, gradients, and custom components.
    - Ensure layouts are fully responsive (handling Desktop & Mobile gracefully).
-2. **State & Logic Separation:**
+3. **State & Logic Separation:**
    - Keep views (`*.view.tsx`) focused on layout, Ant Design composition, and styling.
    - Move state management, API interaction logic, and events into `*.presenter.ts` files or Zustand stores.
-3. **No Placeholders:**
+4. **No Placeholders:**
    - Do not use placeholders for final elements. If visual assets are needed, generate or implement clean SVG/CSS graphics.
 
 ---
@@ -128,3 +130,109 @@ To detect errors immediately without manual browser E2E testing, developers and 
 - **Test Before Push:** Always execute `npm run test` locally and verify that all test suites pass.
 - **Coverage Target:** Aim for at least 70% line coverage on services and controllers.
 - **Clean Mocking:** Do not perform actual network requests or write dirty state to production/dev databases during unit tests. Always mock database calls using jest mock utilities.
+
+---
+
+## 7. MarketNest Design System (Artisan & Handmade Goods Style)
+
+> [!IMPORTANT]
+> The absolute source of truth for the design system is [DESIGN.md](file:///home/rijal/projects/pos-umkm/DESIGN.md) in the project root. Refer to it for color codes, sizing, spacing, typography, and styling components.
+
+MarketNest is a warm, community-driven design system with a handmade, artisan feel. Spacing is generous, typography is editorial, and components use a flat, border-driven aesthetic without drop shadows.
+
+### 7.1 Visual Philosophy
+- **Authenticity over Polish:** A flat, border-driven visual style that avoids corporate gloss.
+- **Storytelling focus:** Highlight makers, locations, craft, materials, and processes.
+- **Earthy and natural:** Use warm terracotta, sand, and forest green.
+
+### 7.2 Colors
+- **Primary:** `#C2410C` (Terracotta) - Primary CTAs, active states, key interactive highlights.
+- **Secondary:** `#D4A373` (Sand/Oat) - Featured accents, badges, decorative borders.
+- **Tertiary:** `#365314` (Forest Green) - Eco-friendly badges, category tags, artisan labels.
+- **Background:** `#FFFBF5` (Warm Cream) - Main app background.
+- **Surface:** `#FFFFFF` (White) - Cards, lists, modals, menus, inputs.
+- **Success:** `#22C55E`
+- **Warning:** `#F59E0B`
+- **Error:** `#DC2626`
+- **Info:** `#3B82F6`
+
+### 7.3 Typography
+- **Headline Font:** Playfair Display (Serif) - reinforce the handcrafted, editorial, storytelling feel.
+- **Body Font:** Inter (Sans-Serif) - default clean body text.
+- **Mono Font:** Source Code Pro - order numbers, tracking codes, technical data.
+
+- **Display:** Playfair Display 48px bold, 1.15 line height, 0.01em tracking (Hero headers).
+- **Headline:** Playfair Display 36px semibold, 1.25 line height, 0.005em tracking (Categories, collection titles).
+- **Subhead:** Playfair Display 26px semibold, 1.3 line height (Sections, seller names).
+- **Body Large:** Inter 18px regular, 1.6 line height (Product story intro).
+- **Body:** Inter 16px regular, 1.6 line height (Default body).
+- **Body Small:** Inter 14px regular, 1.5 line height (Reviews, specs, materials).
+- **Caption:** Inter 12px medium, 1.4 line height, 0.02em tracking (Shipping info, stocks).
+- **Overline:** Inter 11px bold, 1.2 line height, 0.09em tracking (Handmade badges, category tags, UPPERCASE).
+- **Code:** Source Code Pro 14px regular, 1.5 line height.
+
+
+### 7.4 Spacing & Padding
+- **Base Unit:** 8px
+- **Scale:** 4, 8, 12, 16, 24, 32, 48, 64, 96, 128
+- **Component Padding:** Small = 8px, Medium = 16px, Large = 24px
+- **Section Spacing:** Mobile = 56px, Tablet = 80px, Desktop = 112px
+
+### 7.5 Border Radius & Borders
+- **None:** 0px — Full-bleed hero images, dividers.
+- **Small:** 4px — Badges, tags, chips.
+- **Medium:** 8px — Cards, product images, modals.
+- **Large:** 12px — Seller cards, banners.
+- **XL:** 20px — Hero blocks, callouts.
+- **Full:** 9999px — Avatars, badges, profile circles.
+
+### 7.6 Elevation & Borders
+- **No Drop Shadows:** MarketNest uses warm background layering and deliberate border usage instead of shadows.
+- **Borders:**
+  - Subtle: `1px solid #E7E5E4`
+  - Medium: `1px solid #D6D3D1`
+  - Large (Elevated): `2px solid #D6D3D1`
+- **Exceptions:** Modals and Popovers can use a subtle overlay shadow: `8px offset, 24px blur, #1C1917 at 10%`.
+- **Focus Ring:** `3px solid rgba(194, 65, 12, 0.2)` (Terracotta-tinted).
+
+### 7.7 Components
+1. **Buttons:**
+   - **Primary:** Background `#C2410C`, Text `#FFFFFF`, Open Sans 15px Semibold, Border-radius 4px. Hover: `#9A3412`, Active: `#7C2D12`.
+   - **Secondary:** Background Transparent, Text `#C2410C`, Border `1.5px solid #C2410C`, Border-radius 4px. Hover: Background `#FDF6EC`.
+   - **Ghost:** Background Transparent, Text `#57534E`. Hover: Background `#FDF6EC`.
+   - **Destructive:** Background `#DC2626`, Text `#FFFFFF`, Border-radius 4px. Hover: `#B91C1C`.
+   - **Sizes:** Small: Height 34px (padding 10px 16px); Medium: Height 42px (padding 12px 24px); Large: Height 50px (padding 14px 32px).
+2. **Cards:**
+   - **Default:** Background `#FFFFFF`, Border `1px solid #E7E5E4`, Border-radius 8px. Hover: Border `#D6D3D1`.
+   - **Elevated:** Border `2px solid #D6D3D1`, Background `#FFFBF5`. Hover: Border `#A8A29E`.
+3. **Inputs:**
+   - **Text Input:** Background `#FFFFFF`, Border `1.5px solid #D6D3D1`, Text `#1C1917`, Placeholder `#A8A29E`, Border-radius 4px, Height 42px, Open Sans 16px/400. Focus: Border `#C2410C`, Ring `3px solid rgba(194, 65, 12, 0.15)`. Error: Border `#DC2626`, Ring `3px solid rgba(220, 38, 38, 0.15)`. Disabled: Background `#F5F5F4`, opacity 50%.
+   - **Labels:** Top aligned, Open Sans 13px Semibold (600), `#1C1917`.
+   - **Helper Text:** 12px, `#57534E`.
+4. **Chips:**
+   - **Filter Chip:** Height 32px, padding 0 14px, Border-radius 4px, Border `1px solid #D6D3D1`. Selected: Background `#C2410C`, Text `#FFFFFF`, Border `#C2410C`. Hover: Background `#FDF6EC`.
+   - **Status Chip:**
+     - Success: Background `#DCFCE7`, Text `#166534`.
+     - Warning: Background `#FEF3C7`, Text `#92400E`.
+     - Error: Background `#FEE2E2`, Text `#991B1B`.
+5. **Lists:**
+   - **Default List Item:** Height 48px, padding 0 16px, Open Sans 16px/400, Divider `1px solid #E7E5E4`, Hover: Background `#FFFBF5`. Selected: Background `#FDF6EC`, Text `#C2410C`. Icon Variant: 20px icon, 12px gap.
+6. **Checkboxes & Radios:**
+   - **Checkbox:** 18px size, Border `1.5px solid #D6D3D1`, Border-radius 3px. Checked: Background `#C2410C`, Border `#C2410C`, white checkmark.
+   - **Radio Button:** 18px size, Border `1.5px solid #D6D3D1`. Selected: Border `#C2410C` with 6px inner dot `#C2410C`.
+   - **Label:** Open Sans 14px/400 with 10px gap. Disabled: 40% opacity.
+7. **Tooltips:**
+   - Background `#1C1917`, Text `#FFFFFF`, Open Sans 12px/400, Padding 8px 12px, Border-radius 4px, Max-width 220px, Arrow 6px. Delay 300ms.
+
+### 7.8 Do's and Don'ts
+- **Do** feature the maker's story; include a seller avatar and short bio on every product card.
+- **Do** use warm, natural photography/graphics; avoid stark white backgrounds.
+- **Do** highlight materials & process (e.g. "hand-thrown stoneware") using tertiary forest green (`#365314`) tags.
+- **Do** use the serif Lora font for headlines to reinforce the handcrafted, editorial look.
+- **Do** show real customer photos in reviews to build community trust.
+- **Don't** use aggressive urgency tactics (e.g. countdown timers, pressure-selling text like "only 1 left!").
+- **Don't** apply drop shadows to product cards; use borders instead.
+- **Don't** use the terracotta primary for decorative borders; reserve it for interactive elements.
+- **Don't** crop product images to strict squares if they are naturally tall or wide; respect original aspect ratios.
+- **Don't** hide seller provenance; location and shipping origin must be clear.
+

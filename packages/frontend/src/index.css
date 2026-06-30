@@ -1,0 +1,225 @@
+/* MarketNest Design System Global Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap');
+
+:root {
+  /* Colors */
+  --color-primary: #C2410C;
+  --color-primary-hover: #9A3412;
+  --color-primary-active: #7C2D12;
+  --color-secondary: #D4A373;
+  --color-tertiary: #365314;
+  --color-background: #FFFBF5;
+  --color-surface: #FFFFFF;
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #DC2626;
+  --color-info: #3B82F6;
+
+  /* Typography Fonts */
+  --font-headline: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'Source Code Pro', monospace;
+
+
+  /* Borders & Shadows */
+  --border-subtle: 1px solid #E7E5E4;
+  --border-medium: 1px solid #D6D3D1;
+  --border-large: 2px solid #D6D3D1;
+  --focus-ring: 3px solid rgba(194, 65, 12, 0.20);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-background);
+  color: #1C1917;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typography Classes */
+.font-playfair,
+.font-lora {
+  font-family: var(--font-headline) !important;
+}
+
+.font-inter,
+.font-open-sans {
+  font-family: var(--font-body) !important;
+}
+
+.font-mono {
+  font-family: var(--font-mono) !important;
+}
+
+
+/* Specific Typography Scales */
+.display-text {
+  font-family: var(--font-headline);
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+}
+
+.headline-text {
+  font-family: var(--font-headline);
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.005em;
+}
+
+.subhead-text {
+  font-family: var(--font-headline);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.body-large {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.body-text {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.body-small {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.caption-text {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.overline-text {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.code-text {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* Ant Design overrides for Playfair Display Headers */
+h1.ant-typography.font-playfair,
+h1.ant-typography.font-lora,
+h2.ant-typography.font-playfair,
+h2.ant-typography.font-lora,
+h3.ant-typography.font-playfair,
+h3.ant-typography.font-lora,
+h4.ant-typography.font-playfair,
+h4.ant-typography.font-lora {
+  font-family: var(--font-headline) !important;
+}
+
+.ant-typography h1, .ant-typography h2, .ant-typography h3, .ant-typography h4 {
+  font-family: var(--font-headline) !important;
+}
+
+/* Flat, Bordered style updates */
+.ant-card {
+  box-shadow: none !important;
+  border: var(--border-subtle) !important;
+  border-radius: 8px !important;
+  background-color: var(--color-surface) !important;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.ant-card:hover {
+  border-color: #D6D3D1 !important;
+}
+
+.ant-card-elevated {
+  border: var(--border-large) !important;
+  background-color: var(--color-background) !important;
+}
+
+.ant-card-elevated:hover {
+  border-color: #A8A29E !important;
+}
+
+/* Focus effects */
+.ant-input:focus, .ant-input-focused,
+.ant-input-number:focus, .ant-input-number-focused,
+.ant-select-focused .ant-select-selector {
+  border-color: var(--color-primary) !important;
+  box-shadow: var(--focus-ring) !important;
+}
+
+/* Table flat design */
+.ant-table-wrapper .ant-table {
+  background: var(--color-surface) !important;
+}
+.ant-table-container {
+  border: var(--border-subtle) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+.ant-table-thead > tr > th {
+  background-color: #FDF6EC !important;
+  border-bottom: var(--border-subtle) !important;
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+.ant-table-tbody > tr > td {
+  border-bottom: var(--border-subtle) !important;
+}
+
+/* Custom classes for primary and secondary elements */
+.badge-handmade {
+  background-color: var(--color-tertiary);
+  color: #FFFFFF;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+/* Secondary CTA (Outline) */
+.btn-secondary-outline {
+  background-color: transparent !important;
+  color: var(--color-primary) !important;
+  border: 1.5px solid var(--color-primary) !important;
+  border-radius: 4px !important;
+}
+.btn-secondary-outline:hover {
+  background-color: #FDF6EC !important;
+  border-color: var(--color-primary-hover) !important;
+  color: var(--color-primary-hover) !important;
+}
+
+/* Ghost Button */
+.btn-ghost-custom {
+  background-color: transparent !important;
+  color: #57534E !important;
+  border: none !important;
+}
+.btn-ghost-custom:hover {
+  background-color: #FDF6EC !important;
+}

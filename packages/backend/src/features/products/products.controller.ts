@@ -63,4 +63,24 @@ export class ProductsController {
       next(error);
     }
   };
+
+  uploadImage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const file = req.file;
+      if (!file) {
+        res.status(400).json({
+          success: false,
+          message: 'No image file uploaded',
+        });
+        return;
+      }
+      const imageUrl = await this.service.uploadImage(req.params.id, file);
+      res.status(200).json({
+        success: true,
+        data: { imageUrl },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

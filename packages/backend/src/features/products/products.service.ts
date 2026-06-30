@@ -73,4 +73,10 @@ export class ProductsService {
     await this.getProductById(id); // Throws 404 if not found
     return this.repository.delete(id);
   }
+
+  async uploadImage(id: string, file: Express.Multer.File): Promise<string> {
+    await this.getProductById(id); // Throws 404 if not found
+    const { uploadProductImage } = await import('../../shared/services/upload.service');
+    return uploadProductImage(id, file);
+  }
 }

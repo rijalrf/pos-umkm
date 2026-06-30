@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Button, Input, Select, Space, Card, Typography, Tag, Popconfirm } from 'antd';
+import { Table, Button, Input, Select, Space, Card, Typography, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, WarningOutlined } from '@ant-design/icons';
 import { useProductsPresenter, ProductItem } from './products.presenter';
 import { ProductFormModal } from './product-form.view';
@@ -52,25 +52,52 @@ export const ProductListView: React.FC = () => {
       title: 'SKU / Barcode',
       dataIndex: 'sku',
       key: 'sku',
-      render: (sku: string) => <Tag color="blue">{sku}</Tag>,
+      render: (sku: string) => (
+        <span style={{
+          fontFamily: "'Source Code Pro', monospace",
+          fontSize: '13px',
+          background: '#FFFBF5',
+          border: '1.5px solid #D6D3D1',
+          borderRadius: '4px',
+          padding: '2px 8px',
+          color: '#57534E',
+        }}>
+          {sku}
+        </span>
+      ),
     },
     {
       title: 'Product Name',
       dataIndex: 'name',
       key: 'name',
-      render: (name: string) => <span style={{ fontWeight: 600 }}>{name}</span>,
+      render: (name: string) => <span style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>{name}</span>,
     },
     {
       title: 'Category',
       dataIndex: ['category', 'name'],
       key: 'categoryName',
-      render: (catName: string) => <Tag color="purple">{catName || 'N/A'}</Tag>,
+      render: (catName: string) => (
+        <span style={{
+          background: '#F0FDF4',
+          color: '#365314',
+          border: '1px solid #DCFCE7',
+          borderRadius: '4px',
+          padding: '2px 8px',
+          fontSize: '12px',
+          fontWeight: 600,
+          fontFamily: "'Inter', sans-serif",
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+        }}>
+          {catName || 'N/A'}
+        </span>
+      ),
     },
     {
       title: 'Price',
       dataIndex: 'price',
       key: 'price',
-      render: (price: string) => formatCurrency(price),
+      render: (price: string) => <span style={{ fontFamily: "'Source Code Pro', monospace" }}>{formatCurrency(price)}</span>,
     },
     {
       title: 'Stock',
@@ -79,11 +106,15 @@ export const ProductListView: React.FC = () => {
         const isLowStock = record.stock <= record.stockAlertThreshold;
         return (
           <Space>
-            <span style={{ color: isLowStock ? '#ff4d4f' : 'inherit', fontWeight: isLowStock ? 700 : 'normal' }}>
+            <span style={{
+              color: isLowStock ? '#DC2626' : 'inherit',
+              fontWeight: isLowStock ? 700 : 'normal',
+              fontFamily: "'Source Code Pro', monospace"
+            }}>
               {record.stock}
             </span>
             {isLowStock && (
-              <WarningOutlined style={{ color: '#faad14' }} title="Low stock warning!" />
+              <WarningOutlined style={{ color: '#F59E0B' }} title="Low stock warning!" />
             )}
           </Space>
         );
@@ -97,7 +128,7 @@ export const ProductListView: React.FC = () => {
         <Space size="middle">
           <Button
             type="text"
-            icon={<EditOutlined style={{ color: '#1677ff' }} />}
+            icon={<EditOutlined style={{ color: '#C2410C' }} />}
             onClick={() => handleOpenEdit(record)}
           />
           <Popconfirm
@@ -111,7 +142,7 @@ export const ProductListView: React.FC = () => {
             <Button
               type="text"
               danger
-              icon={<DeleteOutlined />}
+              icon={<DeleteOutlined style={{ color: '#DC2626' }} />}
             />
           </Popconfirm>
         </Space>
@@ -119,12 +150,13 @@ export const ProductListView: React.FC = () => {
     },
   ];
 
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <Title level={2} style={{ margin: 0 }}>Products</Title>
-          <Paragraph type="secondary" style={{ margin: 0 }}>
+          <Title level={2} style={{ margin: 0, fontFamily: "'Playfair Display', serif", color: '#C2410C' }}>Products</Title>
+          <Paragraph style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#57534E' }}>
             Create, update, and manage product inventory listings.
           </Paragraph>
         </div>
@@ -133,18 +165,19 @@ export const ProductListView: React.FC = () => {
           icon={<PlusOutlined />}
           onClick={handleOpenAdd}
           style={{
-            background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
+            height: '42px',
+            borderRadius: '4px',
+            background: '#C2410C',
             border: 'none',
-            height: '40px',
-            borderRadius: '6px',
-            boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 600,
           }}
         >
           Add Product
         </Button>
       </div>
 
-      <Card bordered={false} style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '16px' }}>
+      <Card bordered={true} style={{ marginBottom: '16px', borderColor: '#E7E5E4' }}>
         <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
           <Input.Search
             placeholder="Search by SKU or name..."
@@ -170,7 +203,7 @@ export const ProductListView: React.FC = () => {
         </Space>
       </Card>
 
-      <Card bordered={false} style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+      <Card bordered={true} style={{ borderColor: '#E7E5E4' }}>
         <Table
           columns={columns}
           dataSource={products}
@@ -196,3 +229,4 @@ export const ProductListView: React.FC = () => {
     </div>
   );
 };
+

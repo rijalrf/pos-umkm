@@ -103,13 +103,13 @@ export const CategoryListView: React.FC = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
-      render: (text: string) => <span style={{ fontWeight: 600 }}>{text}</span>,
+      render: (text: string) => <span style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>{text}</span>,
     },
     {
       title: 'Description',
       dataIndex: 'description',
       key: 'description',
-      render: (text: string | null) => text || <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>No description</span>,
+      render: (text: string | null) => text || <span style={{ color: '#A8A29E', fontStyle: 'italic', fontFamily: "'Inter', sans-serif" }}>No description</span>,
     },
     {
       title: 'Actions',
@@ -119,7 +119,7 @@ export const CategoryListView: React.FC = () => {
         <Space size="middle">
           <Button
             type="text"
-            icon={<EditOutlined style={{ color: '#1677ff' }} />}
+            icon={<EditOutlined style={{ color: '#C2410C' }} />}
             onClick={() => handleOpenEditModal(record)}
           />
           <Popconfirm
@@ -133,7 +133,7 @@ export const CategoryListView: React.FC = () => {
             <Button
               type="text"
               danger
-              icon={<DeleteOutlined />}
+              icon={<DeleteOutlined style={{ color: '#DC2626' }} />}
             />
           </Popconfirm>
         </Space>
@@ -145,8 +145,8 @@ export const CategoryListView: React.FC = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <Title level={2} style={{ margin: 0 }}>Categories</Title>
-          <Paragraph type="secondary" style={{ margin: 0 }}>
+          <Title level={2} style={{ margin: 0, fontFamily: "'Playfair Display', serif", color: '#C2410C' }}>Categories</Title>
+          <Paragraph style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#57534E' }}>
             Manage category tags for product classification.
           </Paragraph>
         </div>
@@ -155,18 +155,19 @@ export const CategoryListView: React.FC = () => {
           icon={<PlusOutlined />}
           onClick={handleOpenAddModal}
           style={{
-            background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
+            height: '42px',
+            borderRadius: '4px',
+            background: '#C2410C',
             border: 'none',
-            height: '40px',
-            borderRadius: '6px',
-            boxShadow: '0 4px 10px rgba(99, 102, 241, 0.2)',
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 600,
           }}
         >
           Add Category
         </Button>
       </div>
 
-      <Card bordered={false} style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+      <Card bordered={true} style={{ borderColor: '#E7E5E4' }}>
         <Table
           columns={columns}
           dataSource={categories}
@@ -177,7 +178,7 @@ export const CategoryListView: React.FC = () => {
       </Card>
 
       <Modal
-        title={editingId ? 'Edit Category' : 'Create Category'}
+        title={<span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#C2410C' }}>{editingId ? 'Edit Category' : 'Create Category'}</span>}
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         footer={null}
@@ -191,7 +192,7 @@ export const CategoryListView: React.FC = () => {
         >
           <Form.Item
             name="name"
-            label="Category Name"
+            label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Category Name</span>}
             rules={[{ required: true, message: 'Please input the category name!' }]}
           >
             <Input placeholder="e.g. Makanan, Minuman, Snacking" />
@@ -199,7 +200,7 @@ export const CategoryListView: React.FC = () => {
 
           <Form.Item
             name="description"
-            label="Description"
+            label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Description</span>}
           >
             <Input.TextArea placeholder="Describe this category" rows={4} />
           </Form.Item>
@@ -207,7 +208,7 @@ export const CategoryListView: React.FC = () => {
           <Form.Item style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 0 }}>
             <Space>
               <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>
-              <Button type="primary" htmlType="submit" loading={submitLoading}>
+              <Button type="primary" htmlType="submit" loading={submitLoading} style={{ background: '#C2410C' }}>
                 {editingId ? 'Save Changes' : 'Create'}
               </Button>
             </Space>
@@ -217,3 +218,4 @@ export const CategoryListView: React.FC = () => {
     </div>
   );
 };
+
