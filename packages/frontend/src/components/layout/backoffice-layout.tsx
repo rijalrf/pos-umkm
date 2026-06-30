@@ -48,6 +48,11 @@ export const BackofficeLayout: React.FC = () => {
             label: 'Categories',
           },
           {
+            key: '/backoffice/users',
+            icon: <UserOutlined />,
+            label: 'Users',
+          },
+          {
             key: '/backoffice/reports',
             icon: <LineChartOutlined />,
             label: 'Laporan Penjualan',

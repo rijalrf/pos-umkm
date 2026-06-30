@@ -7,6 +7,7 @@ import { CategoryListView } from '../features/categories/category-list.view';
 import { SalesView } from '../features/sales/sales.view';
 import { SettingsView } from '../features/settings/store-settings.view';
 import { ReportsView } from '../features/reports/reports.view';
+import { UserListView } from '../features/users/user-list.view';
 import { BackofficeLayout } from '../components/layout/backoffice-layout';
 import { ProtectedRoute } from '../components/common/protected-route.component';
 
@@ -58,6 +59,14 @@ export const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <ReportsView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="users"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <UserListView />
             </ProtectedRoute>
           }
         />

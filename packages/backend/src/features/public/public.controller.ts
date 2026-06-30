@@ -7,8 +7,8 @@ export class PublicController {
 
   getProducts = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const page = req.query.page ? parseInt(req.query.page as string, 10) : undefined;
-      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+      const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
       const search = req.query.search as string | undefined;
       const categoryId = req.query.categoryId as string | undefined;
 
@@ -40,7 +40,7 @@ export class PublicController {
     }
   };
 
-  getCategories = async (req: Request, res: Response, next: NextFunction) => {
+  getCategories = async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const categories = await this.service.getCategories();
       res.status(200).json({

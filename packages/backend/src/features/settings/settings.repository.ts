@@ -1,5 +1,5 @@
 import { prisma } from '../../config/database.config';
-import { GDriveConfig } from '@prisma/client';
+import { GDriveConfig, StoreSetting } from '@prisma/client';
 
 export class SettingsRepository {
   async getGDriveConfig(): Promise<GDriveConfig | null> {
@@ -18,6 +18,31 @@ export class SettingsRepository {
         isConnected: data.isConnected,
       },
       create: data,
+    });
+  }
+
+  async getStoreSetting(): Promise<StoreSetting> {
+    const setting = await prisma.storeSetting.findFirst();
+    if (setting) {
+      return setting;
+    }
+    // Create default setting if none exists
+    return prisma.storeSetting.create({
+      data: {
+        id: 'default',
+        storeName: 'Toko Demo',
+        address: 'Jl. Contoh No. 123, Jakarta',
+        phone: '081234567890',
+        email: 'toko@example.com',
+      },
+    });
+  }
+
+  async updateStoreSetting(data: Partial<Omit<StoreSetting, 'id' | 'updatedAt'>>): Promise<StoreSetting> {
+    const current = await this.getStoreSetting();
+    return prisma.storeSetting.update({
+      where: { id: current.id },
+      data,
     });
   }
 }

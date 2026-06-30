@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import { TransactionsService } from './transactions.service';
 import { logger } from '../../shared/utils/logger.util';
+import { AuthenticatedRequest } from '../../shared/types/common.types';
 
 export class TransactionsController {
   private service = new TransactionsService();
 
-  create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  create = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       const cashierId = req.user!.id;
       const transaction = await this.service.createTransaction(cashierId, req.body);

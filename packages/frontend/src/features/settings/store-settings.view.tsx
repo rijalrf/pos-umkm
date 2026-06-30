@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Tabs, Form, Input, Button, Space, Typography, Badge, message } from 'antd';
-import { SettingOutlined, GoogleOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Card, Tabs, Form, Input, Button, Space, Typography, Badge, message, Upload, Spin } from 'antd';
+import { SettingOutlined, GoogleOutlined, CheckCircleOutlined, CloseCircleOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useSearchParams } from 'react-router-dom';
 import { SettingsPresenter } from './settings.presenter';
 
@@ -14,6 +14,12 @@ export const SettingsView: React.FC = () => {
   const [loadingStatus, setLoadingStatus] = useState<boolean>(true);
   const [authLoading, setAuthLoading] = useState<boolean>(false);
   const [testLoading, setTestLoading] = useState<boolean>(false);
+
+  // Store Settings state
+  const [storeLoading, setStoreLoading] = useState<boolean>(true);
+  const [savingStore, setSavingStore] = useState<boolean>(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState<boolean>(false);
 
   const [formGDrive] = Form.useForm();
   const [formStore] = Form.useForm();
@@ -30,8 +36,31 @@ export const SettingsView: React.FC = () => {
     }
   };
 
+  // Load store settings
+  const loadStoreSettings = async () => {
+    setStoreLoading(true);
+    try {
+      const data = await presenter.getStoreSetting();
+      formStore.setFieldsValue({
+        storeName: data.storeName,
+        phone: data.phone,
+        email: data.email,
+        address: data.address,
+        currency: data.currency,
+        timezone: data.timezone,
+        dateFormat: data.dateFormat,
+      });
+      setLogoUrl(data.logoUrl);
+    } catch (error: any) {
+      message.error(error.message || 'Failed to load store settings');
+    } finally {
+      setStoreLoading(false);
+    }
+  };
+
   useEffect(() => {
     checkStatus();
+    loadStoreSettings();
 
     // Check URL parameters for OAuth status
     const status = searchParams.get('gdrive');
@@ -84,8 +113,45 @@ export const SettingsView: React.FC = () => {
     }
   };
 
-  const handleUpdateStore = () => {
-    message.success('Store settings updated successfully (Local Demo Mode)');
+  const handleUpdateStore = async (values: any) => {
+    setSavingStore(true);
+    try {
+      await presenter.updateStoreSetting(values);
+      message.success('Store settings updated successfully');
+    } catch (error: any) {
+      message.error(error.message || 'Failed to update store settings');
+    } finally {
+      setSavingStore(false);
+    }
+  };
+
+  const handleBeforeLogoUpload = (file: File) => {
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    if (!isJpgOrPng) {
+      message.error('You can only upload JPG/PNG files!');
+      return false;
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error('Image must be smaller than 2MB!');
+      return false;
+    }
+    return true;
+  };
+
+  const handleLogoUpload = async (file: File) => {
+    setUploadingLogo(true);
+    const key = 'logo-upload';
+    message.loading({ content: 'Uploading logo to Google Drive...', key });
+    try {
+      const url = await presenter.uploadStoreLogo(file);
+      setLogoUrl(url);
+      message.success({ content: 'Logo uploaded successfully!', key });
+    } catch (error: any) {
+      message.error({ content: error.message || 'Failed to upload logo', key });
+    } finally {
+      setUploadingLogo(false);
+    }
   };
 
   return (
@@ -241,77 +307,134 @@ export const SettingsView: React.FC = () => {
                 </span>
               ),
               children: (
-                <div style={{ marginTop: '16px' }}>
-                  <Form
-                    form={formStore}
-                    layout="vertical"
-                    onFinish={handleUpdateStore}
-                    requiredMark={false}
-                    initialValues={{
-                      storeName: 'Toko Demo',
-                      address: 'Jl. Contoh No. 123, Jakarta',
-                      phone: '081234567890',
-                      email: 'toko@example.com',
-                      currency: 'IDR',
-                      timezone: 'Asia/Jakarta',
-                    }}
-                  >
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                      <Form.Item
-                        name="storeName"
-                        label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Store Name</span>}
-                        rules={[{ required: true, message: 'Please enter store name' }]}
+                <Spin spinning={storeLoading} tip="Loading store settings...">
+                  <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '32px', marginTop: '16px' }}>
+                    
+                    {/* Left side: Logo Uploader */}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <Text strong style={{ display: 'block', marginBottom: '12px', fontSize: '13px', color: '#1C1917' }}>
+                        Store Logo
+                      </Text>
+                      <Upload
+                        name="logo"
+                        listType="picture-card"
+                        className="avatar-uploader"
+                        showUploadList={false}
+                        beforeUpload={handleBeforeLogoUpload}
+                        customRequest={({ file }) => handleLogoUpload(file as File)}
+                        disabled={uploadingLogo}
+                        style={{ width: '150px', height: '150px' }}
                       >
-                        <Input />
-                      </Form.Item>
-
-                      <Form.Item
-                        name="phone"
-                        label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Phone Number</span>}
-                        rules={[{ required: true, message: 'Please enter phone number' }]}
-                      >
-                        <Input />
-                      </Form.Item>
-
-                      <Form.Item
-                        name="email"
-                        label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Email Address</span>}
-                      >
-                        <Input type="email" />
-                      </Form.Item>
-
-                      <Form.Item
-                        name="timezone"
-                        label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Timezone</span>}
-                      >
-                        <Input disabled />
-                      </Form.Item>
+                        {logoUrl ? (
+                          <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <img 
+                              src={logoUrl} 
+                              alt="Store Logo" 
+                              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '4px' }} 
+                            />
+                            {uploadingLogo && (
+                              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <LoadingOutlined style={{ fontSize: 24, color: '#C2410C' }} />
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div style={{ padding: '8px', textAlign: 'center' }}>
+                            {uploadingLogo ? <LoadingOutlined style={{ color: '#C2410C' }} /> : <PlusOutlined style={{ color: '#C2410C' }} />}
+                            <div style={{ marginTop: 8, fontSize: '13px', color: '#57534E' }}>Upload Logo</div>
+                          </div>
+                        )}
+                      </Upload>
+                      <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '12px', textAlign: 'center', color: '#78716C' }}>
+                        Supports JPG/PNG.<br />Max file size 2MB.
+                      </Text>
                     </div>
 
-                    <Form.Item
-                      name="address"
-                      label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Store Address</span>}
-                      rules={[{ required: true, message: 'Please enter address' }]}
-                    >
-                      <Input.TextArea rows={3} />
-                    </Form.Item>
-
-                    <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        style={{
-                          backgroundColor: '#C2410C',
-                          borderColor: '#C2410C',
-                          height: '42px',
-                          borderRadius: '4px',
-                        }}
+                    {/* Right side: Form settings */}
+                    <div>
+                      <Form
+                        form={formStore}
+                        layout="vertical"
+                        onFinish={handleUpdateStore}
+                        requiredMark={false}
                       >
-                        Save Settings
-                      </Button>
-                    </Form.Item>
-                  </Form>
-                </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                          <Form.Item
+                            name="storeName"
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Store Name</span>}
+                            rules={[{ required: true, message: 'Please enter store name' }]}
+                          >
+                            <Input />
+                          </Form.Item>
+
+                          <Form.Item
+                            name="phone"
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Phone Number</span>}
+                            rules={[{ required: true, message: 'Please enter phone number' }]}
+                          >
+                            <Input />
+                          </Form.Item>
+
+                          <Form.Item
+                            name="email"
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Email Address</span>}
+                          >
+                            <Input type="email" />
+                          </Form.Item>
+
+                          <Form.Item
+                            name="currency"
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Currency Symbol</span>}
+                            rules={[{ required: true, message: 'Please enter currency' }]}
+                          >
+                            <Input placeholder="e.g. IDR, $, Rp" />
+                          </Form.Item>
+
+                          <Form.Item
+                            name="dateFormat"
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Date Format</span>}
+                            rules={[{ required: true, message: 'Please enter date format' }]}
+                          >
+                            <Input placeholder="e.g. DD/MM/YYYY" />
+                          </Form.Item>
+
+                          <Form.Item
+                            name="timezone"
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Timezone</span>}
+                            rules={[{ required: true, message: 'Please enter timezone' }]}
+                          >
+                            <Input placeholder="e.g. Asia/Jakarta" />
+                          </Form.Item>
+                        </div>
+
+                        <Form.Item
+                          name="address"
+                          label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Store Address</span>}
+                          rules={[{ required: true, message: 'Please enter address' }]}
+                        >
+                          <Input.TextArea rows={3} />
+                        </Form.Item>
+
+                        <Form.Item style={{ textAlign: 'right', marginBottom: 0 }}>
+                          <Button
+                            type="primary"
+                            htmlType="submit"
+                            loading={savingStore}
+                            style={{
+                              backgroundColor: '#C2410C',
+                              borderColor: '#C2410C',
+                              height: '42px',
+                              borderRadius: '4px',
+                            }}
+                          >
+                            Save Settings
+                          </Button>
+                        </Form.Item>
+                      </Form>
+                    </div>
+
+                  </div>
+                </Spin>
               ),
             },
           ]}

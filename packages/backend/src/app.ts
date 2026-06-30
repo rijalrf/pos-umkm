@@ -9,6 +9,7 @@ import transactionsRoutes from './features/transactions/transactions.routes';
 import reportsRoutes from './features/reports/reports.routes';
 import customersRoutes from './features/customers/customers.routes';
 import publicRoutes from './features/public/public.routes';
+import usersRoutes from './features/users/users.routes';
 import { errorHandler } from './shared/middleware/error-handler.middleware';
 import { logger } from './shared/utils/logger.util';
 
@@ -33,6 +34,7 @@ app.use((req, _res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/products', productsRoutes);
+app.use('/api/users', usersRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/transactions', transactionsRoutes);
 app.use('/api/reports', reportsRoutes);

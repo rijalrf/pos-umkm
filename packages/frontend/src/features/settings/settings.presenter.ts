@@ -1,4 +1,4 @@
-import { SettingsService, GDriveConfigPayload } from './settings.service';
+import { SettingsService, GDriveConfigPayload, StoreSettingsPayload } from './settings.service';
 
 export class SettingsPresenter {
   async getGDriveStatus() {
@@ -25,6 +25,33 @@ export class SettingsPresenter {
       return response.data; // { isConnected: boolean }
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Google Drive connection test failed');
+    }
+  }
+
+  async getStoreSetting() {
+    try {
+      const response = await SettingsService.getStoreSetting();
+      return response.data; // StoreSetting model
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to fetch store settings');
+    }
+  }
+
+  async updateStoreSetting(payload: StoreSettingsPayload) {
+    try {
+      const response = await SettingsService.updateStoreSetting(payload);
+      return response.data; // StoreSetting model
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to update store settings');
+    }
+  }
+
+  async uploadStoreLogo(file: File) {
+    try {
+      const response = await SettingsService.uploadStoreLogo(file);
+      return response.data; // { logoUrl: string }
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to upload store logo');
     }
   }
 }

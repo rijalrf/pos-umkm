@@ -5,7 +5,7 @@ import { logger } from '../../shared/utils/logger.util';
 export class SettingsController {
   private settingsService = new SettingsService();
 
-  getStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  getStatus = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const status = await this.settingsService.getGDriveStatus();
       res.json({
@@ -30,7 +30,7 @@ export class SettingsController {
     }
   };
 
-  callback = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  callback = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
     try {
       const code = req.query.code as string;
       if (!code) {
@@ -49,12 +49,56 @@ export class SettingsController {
     }
   };
 
-  test = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  test = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const isConnected = await this.settingsService.testGDriveConnection();
       res.json({
         success: true,
         data: { isConnected },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getStoreSetting = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const data = await this.settingsService.getStoreSetting();
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateStoreSetting = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const data = await this.settingsService.updateStoreSetting(req.body);
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  uploadLogo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const file = req.file;
+      if (!file) {
+        res.status(400).json({
+          success: false,
+          message: 'No logo file uploaded',
+        });
+        return;
+      }
+      const logoUrl = await this.settingsService.uploadLogo(file);
+      res.status(200).json({
+        success: true,
+        data: { logoUrl },
       });
     } catch (error) {
       next(error);
