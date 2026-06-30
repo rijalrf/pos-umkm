@@ -3,7 +3,7 @@ import { Layout, Typography, Button, message } from 'antd';
 import { useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
 
-const { Header, Content, Footer } = Layout;
+const { Content, Footer } = Layout;
 const { Text } = Typography;
 
 export const CustomerLayout: React.FC = () => {
@@ -21,49 +21,15 @@ export const CustomerLayout: React.FC = () => {
   const handleAddToCart = (product: any) => {
     try {
       cart.addItem(product);
-      message.success(`${product.name} dimasukkan ke keranjang`);
     } catch (err: any) {
       message.error(err.message || 'Gagal menambahkan ke keranjang');
     }
   };
 
-  const getPageTitle = () => {
-    if (location.pathname.includes('/customer/product')) {
-      return 'Detail Produk';
-    }
-    if (location.pathname.includes('/customer/checkout')) {
-      return 'Keranjang & Checkout';
-    }
-    return 'Katalog Produk';
-  };
-
   return (
     <Layout style={{ minHeight: '100vh', background: '#FFFBF5' }}>
-      <Header className="customer-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        {/* Left: Spacer */}
-        <div style={{ flex: 1 }} />
-
-        {/* Center: Page Title */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-          <Text
-            style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: '18px',
-              fontWeight: 700,
-              color: '#1C1917',
-              textAlign: 'center',
-            }}
-          >
-            {getPageTitle()}
-          </Text>
-        </div>
-
-        {/* Right: Spacer */}
-        <div style={{ flex: 1 }} />
-      </Header>
-
       <Content className="customer-content-wrapper">
-        <div style={{ maxWidth: '1200px', margin: '0 auto', minHeight: 'calc(100vh - 180px)', paddingBottom: cartCount > 0 && location.pathname !== '/customer/checkout' ? '80px' : '24px' }}>
+        <div style={{ minHeight: 'calc(100vh - 180px)', paddingBottom: cartCount > 0 && location.pathname !== '/customer/checkout' ? '80px' : '24px' }}>
           {/* Inject handleAddToCart to subviews via Outlet Context */}
           <Outlet context={{ onAddToCart: handleAddToCart }} />
         </div>
@@ -109,7 +75,7 @@ export const CustomerLayout: React.FC = () => {
               height: '38px',
             }}
           >
-            Checkout
+            Lanjut
           </Button>
         </div>
       )}

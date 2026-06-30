@@ -17,7 +17,7 @@
   --color-info: #3B82F6;
 
   /* Typography Fonts */
-  --font-headline: 'Playfair Display', serif;
+  --font-headline: 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
   --font-mono: 'Source Code Pro', monospace;
 
@@ -262,7 +262,7 @@ h4.ant-typography.font-lora {
 }
 
 .customer-content-wrapper {
-  padding: 16px 12px !important;
+  padding: 16px 0 !important;
   background: #FFFBF5;
   transition: all 0.3s ease;
 }
@@ -323,7 +323,7 @@ h4.ant-typography.font-lora {
   }
   
   .customer-content-wrapper {
-    padding: 24px 50px !important;
+    padding: 24px 0 !important;
   }
 }
 

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { Card, Col, Row, Button, Spin, Typography, Breadcrumb } from 'antd';
-import { ShoppingOutlined, MinusOutlined, PlusOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Button, Spin, Typography } from 'antd';
+import { ShoppingOutlined, MinusOutlined, PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { useCustomerPresenter } from './customer.presenter';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
@@ -41,7 +41,7 @@ export const ProductDetailView: React.FC = () => {
   if (!product) {
     return (
       <Card style={{ textAlign: 'center', padding: '40px', borderColor: '#E7E5E4' }}>
-        <Title level={3} style={{ fontFamily: "'Playfair Display', serif" }}>Produk Tidak Ditemukan</Title>
+        <Title level={3} style={{ fontFamily: 'var(--font-headline)' }}>Produk Tidak Ditemukan</Title>
         <Button type="primary" onClick={() => navigate('/customer/catalog')} style={{ backgroundColor: '#C2410C', borderColor: '#C2410C', marginTop: '16px' }}>
           Kembali ke Katalog
         </Button>
@@ -53,15 +53,24 @@ export const ProductDetailView: React.FC = () => {
   const quantityInCart = cartItem ? cartItem.quantity : 0;
 
   return (
-    <div>
-      {/* Breadcrumbs */}
-      <Breadcrumb style={{ marginBottom: '20px', fontFamily: "'Inter', sans-serif" }}>
-        <Breadcrumb.Item>
-          <a onClick={() => navigate('/customer/catalog')}>Katalog</a>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>{product.category.name}</Breadcrumb.Item>
-        <Breadcrumb.Item>{product.name}</Breadcrumb.Item>
-      </Breadcrumb>
+    <div style={{ padding: '0 16px' }}>
+      <Button
+        type="text"
+        icon={<ArrowLeftOutlined style={{ fontSize: '18px', color: '#1C1917' }} />}
+        onClick={() => navigate('/customer/catalog')}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '36px',
+          height: '36px',
+          borderRadius: '50%',
+          border: '1px solid #D6D3D1',
+          backgroundColor: '#FFFFFF',
+          marginBottom: '20px',
+          boxShadow: 'none',
+        }}
+      />
 
       <Card
         style={{
@@ -71,7 +80,7 @@ export const ProductDetailView: React.FC = () => {
           borderRadius: '12px',
           background: '#FFFFFF',
         }}
-        bodyStyle={{ padding: window.innerWidth > 576 ? '32px' : '20px' }}
+        styles={{ body: { padding: '24px' } }}
       >
         <Row gutter={[32, 24]} align="middle">
           {/* Left Column: Product Image */}
@@ -125,7 +134,7 @@ export const ProductDetailView: React.FC = () => {
 
               {/* Product Name */}
               <Title level={2} style={{
-                fontFamily: "'Playfair Display', serif",
+                fontFamily: 'var(--font-headline)',
                 color: '#1C1917',
                 fontSize: '26px',
                 margin: '0',
@@ -162,7 +171,7 @@ export const ProductDetailView: React.FC = () => {
               }}>
                 <Text style={{
                   color: '#C2410C',
-                  fontFamily: "'Inter', sans-serif",
+                  fontFamily: 'var(--font-body)',
                   fontWeight: 'bold',
                   fontSize: '22px',
                   display: 'block',
@@ -174,7 +183,7 @@ export const ProductDetailView: React.FC = () => {
               {/* Description */}
               <div>
                 <Paragraph style={{
-                  fontFamily: "'Inter', sans-serif",
+                  fontFamily: 'var(--font-body)',
                   color: '#57534E',
                   fontSize: '14px',
                   lineHeight: '1.6',

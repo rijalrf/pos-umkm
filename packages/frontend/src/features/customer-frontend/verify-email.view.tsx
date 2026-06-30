@@ -36,7 +36,7 @@ export const VerifyEmailView: React.FC = () => {
           background: '#FFFFFF',
           textAlign: 'center',
         }}
-        bodyStyle={{ padding: '40px' }}
+        styles={{ body: { padding: '40px' } }}
       >
         {loading ? (
           <div style={{ padding: '40px 0' }}>

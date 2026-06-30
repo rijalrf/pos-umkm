@@ -1,9 +1,23 @@
-import React, { useState } from 'react';
-import { Card, Col, Row, Button, Typography, Radio, Form, Input, List } from 'antd';
-import { ShoppingCartOutlined, DeleteOutlined, PlusOutlined, MinusOutlined, CheckCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Card, Button, Typography, List, Form, Input, Alert } from 'antd';
+import {
+  ShoppingCartOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  MinusOutlined,
+  CheckCircleOutlined,
+  ArrowLeftOutlined,
+  UserOutlined,
+  MailOutlined,
+  LockOutlined,
+  PhoneOutlined,
+  GiftOutlined
+} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
 import { useCustomerPresenter } from './customer.presenter';
+import { useCustomerStore } from '../../stores/customer.store';
+import { CustomerService } from './customer.service';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -12,9 +26,57 @@ export const CheckoutView: React.FC = () => {
   const cart = useCustomerCartStore();
   const presenter = useCustomerPresenter();
 
-  const [checkoutStep, setCheckoutStep] = useState<'checkout' | 'success'>('checkout');
-  const [customerType, setCustomerType] = useState<'guest' | 'member_register'>('guest');
+  const [checkoutStep, setCheckoutStep] = useState<'checkout' | 'register' | 'login' | 'guest_name' | 'review' | 'success'>('checkout');
   const [createdTx, setCreatedTx] = useState<any>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const [buyerName, setBuyerName] = useState<string>('');
+  const [customerType, setCustomerType] = useState<'guest' | 'member_register'>('guest');
+  const [memberRegisterData, setMemberRegisterData] = useState<any>(null);
+  const [checkoutSourceStep, setCheckoutSourceStep] = useState<'register' | 'login' | 'guest_name'>('guest_name');
+
+  const hasInvalidStock = cart.items.some(
+    (item) => item.product.stock === 0 || item.quantity > item.product.stock
+  );
+
+  const refreshCartStock = async () => {
+    if (cart.items.length === 0) return;
+    try {
+      const updatedItems = await Promise.all(
+        cart.items.map(async (item) => {
+          try {
+            const res = await CustomerService.getPublicProductById(item.product.id);
+            if (res.success && res.data) {
+              return {
+                ...item,
+                product: {
+                  ...item.product,
+                  stock: res.data.stock,
+                },
+              };
+            }
+          } catch (e) {
+            console.error('Error fetching product stock:', e);
+          }
+          return item;
+        })
+      );
+      useCustomerCartStore.setState({ items: updatedItems });
+    } catch (err) {
+      console.error('Error refreshing cart stock:', err);
+    }
+  };
+
+  useEffect(() => {
+    refreshCartStock();
+  }, []);
+
+  useEffect(() => {
+    setErrorMessage(null);
+    if (checkoutStep === 'checkout') {
+      refreshCartStock();
+    }
+  }, [checkoutStep]);
 
   const formatter = new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -26,11 +88,12 @@ export const CheckoutView: React.FC = () => {
     try {
       cart.updateQuantity(productId, quantity);
     } catch (err: any) {
-      // Handled silently or custom warning
+      // Handled silently
     }
   };
 
-  const onFinishCheckout = async (values: any) => {
+  const handleProcessCheckout = async (buyerName: string, customerType: 'guest' | 'member_register', memberData?: any) => {
+    setErrorMessage(null);
     const payload: any = {
       customerType,
       items: cart.items.map((item) => ({
@@ -40,134 +103,115 @@ export const CheckoutView: React.FC = () => {
     };
 
     if (customerType === 'guest') {
-      payload.guestName = values.guestName;
+      payload.guestName = buyerName;
     } else {
-      payload.memberData = {
-        name: values.memberName,
-        email: values.memberEmail,
-        password: values.memberPassword,
-        phone: values.memberPhone,
-        address: values.memberAddress,
-      };
+      payload.memberData = memberData;
     }
 
-    const tx = await presenter.checkout(payload);
-    if (tx) {
-      setCreatedTx(tx.transaction);
-      cart.clearCart();
-      setCheckoutStep('success');
+    try {
+      const tx = await presenter.checkout(payload);
+      if (tx) {
+        setCreatedTx(tx);
+        cart.clearCart();
+        setCheckoutStep('success');
+      }
+    } catch (err: any) {
+      const rawMsg = err?.response?.data?.message || err?.message || '';
+      let msg = 'Gagal memproses transaksi. Silakan coba beberapa saat lagi.';
+      if (rawMsg.toLowerCase().includes('stock') || rawMsg.toLowerCase().includes('stok') || rawMsg.toLowerCase().includes('insufficient')) {
+        msg = 'Ups! Maaf, pesanan kamu ada yang sudah kehabisan stok. Cek lagi yuk!';
+      } else if (rawMsg) {
+        msg = rawMsg;
+      }
+      setErrorMessage(msg);
+      refreshCartStock();
     }
   };
 
-  if (checkoutStep === 'success' && createdTx) {
-    return (
-      <div style={{ maxWidth: '600px', margin: '40px auto', padding: '0 16px' }}>
-        <Card
-          style={{
-            textAlign: 'center',
-            borderColor: '#E7E5E4',
-            borderRadius: '12px',
-            background: '#FFFFFF',
-            padding: '24px',
-          }}
-        >
-          <CheckCircleOutlined style={{ fontSize: '64px', color: '#365314', marginBottom: '16px' }} />
-          <Title level={2} style={{ fontFamily: "'Playfair Display', serif", color: '#1C1917', margin: '0 0 8px 0' }}>
-            Pesanan Berhasil
-          </Title>
-          <Text style={{ display: 'block', color: '#57534E', marginBottom: '24px' }}>
-            Terima kasih telah berbelanja dan mendukung produk lokal UMKM!
-          </Text>
-
-          <div
-            style={{
-              background: '#FFFBF5',
-              border: '1.5px solid #D6D3D1',
-              borderRadius: '8px',
-              padding: '16px',
-              textAlign: 'left',
-              marginBottom: '32px',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <Text style={{ color: '#57534E' }}>Kode Transaksi:</Text>
-              <code style={{ fontFamily: "'Source Code Pro', monospace", fontWeight: 'bold', color: '#1C1917' }}>
-                {createdTx.code}
-              </code>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <Text style={{ color: '#57534E' }}>Pembeli:</Text>
-              <Text strong style={{ color: '#1C1917' }}>
-                {createdTx.customerName || 'Tamu'}
-              </Text>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E7E5E4', paddingTop: '8px', marginTop: '8px' }}>
-              <Text strong style={{ color: '#1C1917' }}>Total Pembayaran:</Text>
-              <Text strong style={{ color: '#C2410C' }}>
-                {formatter.format(Number(createdTx.totalAmount))}
-              </Text>
-            </div>
-          </div>
-
-          <Button
-            type="primary"
-            size="large"
-            onClick={() => navigate('/customer/catalog')}
-            style={{
-              backgroundColor: '#C2410C',
-              borderColor: '#C2410C',
-              fontWeight: 'bold',
-              height: '46px',
-              borderRadius: '4px',
-              width: '100%',
-            }}
-          >
-            Kembali ke Katalog
-          </Button>
-        </Card>
-      </div>
-    );
-  }
+  const onFinishCheckout = () => {
+    setCheckoutStep('register');
+  };
 
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 16px' }}>
+    <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 16px 96px 16px' }}>
       <Button
-        type="link"
-        icon={<ArrowLeftOutlined />}
-        onClick={() => navigate('/customer/catalog')}
-        style={{ color: '#57534E', padding: 0, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}
-      >
-        Kembali Belanja
-      </Button>
+        type="text"
+        icon={<ArrowLeftOutlined style={{ fontSize: '18px', color: '#1C1917' }} />}
+        onClick={() => {
+          if (checkoutStep === 'checkout' || checkoutStep === 'success') {
+            navigate('/customer/catalog');
+          } else if (checkoutStep === 'register') {
+            setCheckoutStep('checkout');
+          } else if (checkoutStep === 'login') {
+            setCheckoutStep('register');
+          } else if (checkoutStep === 'guest_name') {
+            setCheckoutStep('register');
+          } else if (checkoutStep === 'review') {
+            setCheckoutStep(checkoutSourceStep);
+          }
+        }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '36px',
+          height: '36px',
+          borderRadius: '50%',
+          border: '1px solid #D6D3D1',
+          backgroundColor: '#FFFFFF',
+          marginBottom: '20px',
+          boxShadow: 'none',
+        }}
+      />
 
-      <Title level={2} style={{ fontFamily: "'Playfair Display', serif", color: '#1C1917', marginBottom: '24px' }}>
-        Keranjang & Checkout
-      </Title>
+      {errorMessage && (
+        <Alert
+          message={errorMessage}
+          type="error"
+          showIcon
+          closable
+          onClose={() => setErrorMessage(null)}
+          style={{
+            maxWidth: checkoutStep === 'checkout' ? '600px' : '420px',
+            margin: '0 auto 20px auto',
+            borderRadius: '4px',
+          }}
+        />
+      )}
 
-      {cart.items.length === 0 ? (
-        <Card style={{ textAlign: 'center', padding: '48px', borderColor: '#E7E5E4', borderRadius: '12px' }}>
-          <ShoppingCartOutlined style={{ fontSize: '64px', color: '#D4A373', marginBottom: '16px' }} />
-          <Title level={4} style={{ fontFamily: "'Playfair Display', serif", color: '#1C1917', margin: '0 0 8px 0' }}>
-            Keranjang Anda Kosong
-          </Title>
-          <Paragraph style={{ color: '#8C8A87', marginBottom: '24px' }}>
-            Silakan pilih kerajinan tangan berkualitas dari katalog kami terlebih dahulu.
-          </Paragraph>
-          <Button
-            type="primary"
-            onClick={() => navigate('/customer/catalog')}
-            style={{ backgroundColor: '#C2410C', borderColor: '#C2410C', borderRadius: '4px', height: '42px' }}
-          >
-            Lihat Produk
-          </Button>
-        </Card>
-      ) : (
-        <Row gutter={[32, 32]}>
-          {/* Left Column: Cart Items */}
-          <Col xs={24} md={12}>
+      {checkoutStep !== 'success' && (
+        <Title level={2} style={{ fontFamily: 'var(--font-headline)', color: '#1C1917', marginBottom: '24px' }}>
+          {checkoutStep === 'checkout'
+            ? 'Daftar Keranjang'
+            : checkoutStep === 'review'
+            ? 'Review Pesanan'
+            : 'Masuk'}
+        </Title>
+      )}
+
+      {checkoutStep === 'checkout' && (
+        cart.items.length === 0 ? (
+          <Card style={{ textAlign: 'center', padding: '48px', borderColor: '#E7E5E4', borderRadius: '12px' }} styles={{ body: { padding: '48px' } }}>
+            <ShoppingCartOutlined style={{ fontSize: '64px', color: '#D4A373', marginBottom: '16px' }} />
+            <Title level={4} style={{ fontFamily: 'var(--font-headline)', color: '#1C1917', margin: '0 0 8px 0' }}>
+              Keranjang Anda Kosong
+            </Title>
+            <Paragraph style={{ color: '#8C8A87', marginBottom: '24px' }}>
+              Silakan pilih kerajinan tangan berkualitas dari katalog kami terlebih dahulu.
+            </Paragraph>
+            <Button
+              type="primary"
+              onClick={() => navigate('/customer/catalog')}
+              style={{ backgroundColor: '#C2410C', borderColor: '#C2410C', borderRadius: '4px', height: '42px' }}
+            >
+              Lihat Produk
+            </Button>
+          </Card>
+        ) : (
+          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
             <Card
-              title={<span style={{ fontFamily: "'Playfair Display', serif", color: '#1C1917', fontWeight: 700 }}>Daftar Keranjang</span>}
               style={{ borderColor: '#E7E5E4', borderRadius: '12px' }}
+              styles={{ body: { padding: '24px' } }}
             >
               <List
                 dataSource={cart.items}
@@ -185,25 +229,46 @@ export const CheckoutView: React.FC = () => {
                         <Text strong style={{ fontSize: '14px', color: '#1C1917', display: 'block' }} ellipsis>
                           {item.product.name}
                         </Text>
-                        <Text style={{ fontSize: '13px', color: '#C2410C', fontWeight: 'bold' }}>
-                          {formatter.format(Number(item.product.price))}
-                        </Text>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <Text style={{ fontSize: '13px', color: '#C2410C', fontWeight: 'bold' }}>
+                            {formatter.format(Number(item.product.price))}
+                          </Text>
+                          {item.product.stock === 0 ? (
+                            <span style={{ color: '#DC2626', fontSize: '11px', fontWeight: 600 }}>
+                              Stok Habis
+                            </span>
+                          ) : item.quantity > item.product.stock ? (
+                            <span style={{ color: '#DC2626', fontSize: '11px', fontWeight: 600 }}>
+                              Stok tidak mencukupi (Tersedia: {item.product.stock} pcs)
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Button
-                          size="small"
-                          shape="circle"
-                          icon={<MinusOutlined />}
-                          onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
-                        />
-                        <Text strong style={{ minWidth: '14px', textAlign: 'center' }}>{item.quantity}</Text>
-                        <Button
-                          size="small"
-                          shape="circle"
-                          icon={<PlusOutlined />}
-                          disabled={item.quantity >= item.product.stock}
-                          onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
-                        />
+                        {item.product.stock === 0 ? (
+                          <span style={{ color: '#DC2626', fontWeight: 600, fontSize: '12px', marginRight: '8px' }}>
+                            Habis
+                          </span>
+                        ) : (
+                          <>
+                            <Button
+                              size="small"
+                              shape="circle"
+                              icon={<MinusOutlined />}
+                              onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
+                            />
+                            <Text strong style={{ minWidth: '14px', textAlign: 'center', color: item.quantity > item.product.stock ? '#DC2626' : '#1C1917' }}>
+                              {item.quantity}
+                            </Text>
+                            <Button
+                              size="small"
+                              shape="circle"
+                              icon={<PlusOutlined />}
+                              disabled={item.quantity >= item.product.stock}
+                              onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
+                            />
+                          </>
+                        )}
                         <Button
                           type="text"
                           danger
@@ -217,100 +282,589 @@ export const CheckoutView: React.FC = () => {
                 )}
               />
 
-              <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={{ fontSize: '15px', color: '#57534E' }}>Subtotal:</Text>
-                <Text strong style={{ fontSize: '20px', color: '#C2410C' }}>
+              {/* Payment Method Info Section */}
+              <div style={{ marginTop: '24px', borderTop: '1px solid #E7E5E4', paddingTop: '16px' }}>
+                <Text strong style={{ display: 'block', marginBottom: '12px', color: '#1C1917', fontSize: '14px' }}>
+                  Metode Pembayaran
+                </Text>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {/* Pay at Cashier Option (Enabled & Active) */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px',
+                      borderRadius: '6px',
+                      border: '1.5px solid #C2410C',
+                      background: '#FFFBF5',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        border: '1.5px solid #C2410C',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C2410C' }} />
+                    </div>
+                    <div>
+                      <Text strong style={{ display: 'block', fontSize: '14px', color: '#1C1917' }}>
+                        Bayar di Kasir
+                      </Text>
+                    </div>
+                  </div>
+
+                  {/* QR Code / QRIS Option (Disabled) */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '12px',
+                      borderRadius: '6px',
+                      border: '1.5px solid #E7E5E4',
+                      background: '#F5F5F4',
+                      opacity: 0.5,
+                      cursor: 'not-allowed',
+                  }}
+                  >
+                    <div
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        border: '1.5px solid #D6D3D1',
+                      }}
+                    />
+                    <div>
+                      <Text strong style={{ display: 'block', fontSize: '14px', color: '#A8A29E' }}>
+                        QRIS / QR Code (Segera Hadir)
+                      </Text>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )
+      )}
+
+      {checkoutStep === 'register' && (
+        <div style={{ maxWidth: '420px', margin: '0 auto' }}>
+          <Card
+            style={{ borderColor: '#E7E5E4', borderRadius: '12px' }}
+            styles={{ body: { padding: '24px' } }}
+          >
+            <Form
+              layout="vertical"
+              requiredMark={false}
+              onFinish={(values) => {
+                const memberData = {
+                  name: values.name,
+                  email: values.email,
+                  password: values.password,
+                };
+                setBuyerName(values.name);
+                setCustomerType('member_register');
+                setMemberRegisterData(memberData);
+                setCheckoutSourceStep('register');
+                setCheckoutStep('review');
+              }}
+            >
+              <Form.Item
+                label="Nama Lengkap"
+                name="name"
+                rules={[{ required: true, message: 'Masukkan nama lengkap Anda!' }]}
+              >
+                <Input prefix={<UserOutlined style={{ color: '#A8A29E' }} />} placeholder="Nama Lengkap" style={{ borderRadius: '4px' }} />
+              </Form.Item>
+
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: 'Masukkan email Anda!' },
+                  { type: 'email', message: 'Format email tidak valid!' }
+                ]}
+              >
+                <Input prefix={<MailOutlined style={{ color: '#A8A29E' }} />} placeholder="nama@email.com" style={{ borderRadius: '4px' }} />
+              </Form.Item>
+
+              <Form.Item
+                label="Password"
+                name="password"
+                rules={[
+                  { required: true, message: 'Masukkan password Anda!' },
+                  { min: 6, message: 'Password minimal 6 karakter!' }
+                ]}
+              >
+                <Input.Password prefix={<LockOutlined style={{ color: '#A8A29E' }} />} placeholder="Password member" style={{ borderRadius: '4px' }} />
+              </Form.Item>
+
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={presenter.loading}
+                block
+                style={{
+                  backgroundColor: '#C2410C',
+                  borderColor: '#C2410C',
+                  fontWeight: 'bold',
+                  height: '42px',
+                  borderRadius: '4px',
+                  marginTop: '12px',
+                }}
+              >
+                Daftar & Pesan
+              </Button>
+            </Form>
+
+            <div style={{ textAlign: 'center', marginTop: '16px' }}>
+              <Button
+                type="link"
+                onClick={() => setCheckoutStep('login')}
+                style={{ color: '#C2410C', fontWeight: 600, padding: 0 }}
+              >
+                Sudah punya akun? Masuk di sini
+              </Button>
+            </div>
+
+          </Card>
+          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+            <Button
+              type="link"
+              onClick={() => setCheckoutStep('guest_name')}
+              style={{ color: '#57534E', fontWeight: 600, fontSize: '13px' }}
+            >
+              Lanjut sebagai Tamu
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {checkoutStep === 'login' && (
+        <div style={{ maxWidth: '420px', margin: '0 auto' }}>
+          <Card
+            title={<span style={{ fontFamily: 'var(--font-headline)', color: '#1C1917', fontWeight: 700 }}>Masuk Akun Member</span>}
+            style={{ borderColor: '#E7E5E4', borderRadius: '12px' }}
+            styles={{ body: { padding: '24px' } }}
+          >
+            <Form
+              layout="vertical"
+              requiredMark={false}
+              onFinish={async (values) => {
+                const success = await presenter.loginCustomer({
+                  email: values.email,
+                  password: values.password,
+                });
+                if (success) {
+                  const customerName = useCustomerStore.getState().customer?.name || 'Pelanggan';
+                  setBuyerName(customerName);
+                  setCustomerType('guest');
+                  setMemberRegisterData(null);
+                  setCheckoutSourceStep('login');
+                  setCheckoutStep('review');
+                }
+              }}
+            >
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: 'Masukkan email Anda!' },
+                  { type: 'email', message: 'Format email tidak valid!' }
+                ]}
+              >
+                <Input prefix={<MailOutlined style={{ color: '#A8A29E' }} />} placeholder="nama@email.com" style={{ borderRadius: '4px' }} />
+              </Form.Item>
+
+              <Form.Item
+                label="Password"
+                name="password"
+                rules={[{ required: true, message: 'Masukkan password Anda!' }]}
+              >
+                <Input.Password prefix={<LockOutlined style={{ color: '#A8A29E' }} />} placeholder="Password member" style={{ borderRadius: '4px' }} />
+              </Form.Item>
+
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={presenter.loading}
+                block
+                style={{
+                  backgroundColor: '#C2410C',
+                  borderColor: '#C2410C',
+                  fontWeight: 'bold',
+                  height: '42px',
+                  borderRadius: '4px',
+                  marginTop: '12px',
+                }}
+              >
+                Masuk & Pesan
+              </Button>
+            </Form>
+
+            <div style={{ textAlign: 'center', marginTop: '16px' }}>
+              <Button
+                type="link"
+                onClick={() => setCheckoutStep('register')}
+                style={{ color: '#C2410C', fontWeight: 600, padding: 0 }}
+              >
+                Belum punya akun? Daftar Baru
+              </Button>
+            </div>
+
+          </Card>
+          <div style={{ textAlign: 'center', marginTop: '16px' }}>
+            <Button
+              type="link"
+              onClick={() => setCheckoutStep('guest_name')}
+              style={{ color: '#57534E', fontWeight: 600, fontSize: '13px' }}
+            >
+              Lanjut sebagai Tamu
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {checkoutStep === 'guest_name' && (
+        <div style={{ maxWidth: '420px', margin: '0 auto', paddingBottom: '80px' }}>
+          <Card
+            style={{ borderColor: '#E7E5E4', borderRadius: '12px' }}
+            styles={{ body: { padding: '24px' } }}
+          >
+            <Form
+              layout="vertical"
+              requiredMark={false}
+              onFinish={(values) => {
+                setBuyerName(values.guestName);
+                setCustomerType('guest');
+                setMemberRegisterData(null);
+                setCheckoutSourceStep('guest_name');
+                setCheckoutStep('review');
+              }}
+            >
+              <Form.Item
+                label="Nama Pembeli"
+                name="guestName"
+                rules={[{ required: true, message: 'Masukkan nama Anda!' }]}
+              >
+                <Input prefix={<UserOutlined style={{ color: '#A8A29E' }} />} placeholder="Nama lengkap Anda" style={{ borderRadius: '4px' }} />
+              </Form.Item>
+
+              <Form.Item
+                label={
+                  <span>
+                    No. Telepon
+                    <span style={{ color: '#A8A29E', fontWeight: 400, marginLeft: '4px', fontSize: '12px' }}>(Opsional)</span>
+                  </span>
+                }
+                name="phone"
+              >
+                <Input
+                  prefix={<PhoneOutlined style={{ color: '#A8A29E' }} />}
+                  placeholder="08xxxxxxxxxx"
+                  style={{ borderRadius: '4px' }}
+                />
+              </Form.Item>
+
+              {/* Info promo */}
+              <div style={{
+                display: 'flex',
+                gap: '10px',
+                background: '#FFFBF5',
+                border: '1px solid #D4A373',
+                borderRadius: '8px',
+                padding: '12px 14px',
+                marginBottom: '4px',
+              }}>
+                <GiftOutlined style={{ color: '#D4A373', fontSize: '16px', marginTop: '2px', flexShrink: 0 }} />
+                <Text style={{ fontSize: '12px', color: '#57534E', lineHeight: '1.6' }}>
+                  Daftarkan nomor telepon kamu untuk mendapatkan info promo spesial, diskon member, dan notifikasi pesanan langsung ke WhatsApp kamu!
+                </Text>
+              </div>
+
+              {/* Floating button - same pill style as cart page */}
+              <div style={{
+                position: 'fixed',
+                bottom: '16px',
+                left: '16px',
+                right: '16px',
+                maxWidth: '388px',
+                margin: '0 auto',
+                backgroundColor: '#C2410C',
+                borderRadius: '8px',
+                padding: '12px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                zIndex: 999,
+                boxShadow: '0 8px 24px rgba(28, 25, 23, 0.15)',
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <Text style={{ fontSize: '12px', color: '#FFFBF5', opacity: 0.9 }}>
+                    Total Pembayaran
+                  </Text>
+                  <Text style={{ fontSize: '18px', fontWeight: 'bold', color: '#FFFFFF' }}>
+                    {formatter.format(cart.getTotalAmount())}
+                  </Text>
+                </div>
+                <Button
+                  type="default"
+                  htmlType="submit"
+                  loading={presenter.loading}
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#C2410C',
+                    borderColor: '#FFFFFF',
+                    fontWeight: 'bold',
+                    borderRadius: '4px',
+                    height: '38px',
+                  }}
+                >
+                  Lanjut →
+                </Button>
+              </div>
+            </Form>
+          </Card>
+        </div>
+      )}
+
+      {checkoutStep === 'review' && (
+        <div style={{ maxWidth: '420px', margin: '0 auto', paddingBottom: '80px' }}>
+          <Card
+            style={{ borderColor: '#E7E5E4', borderRadius: '12px' }}
+            styles={{ body: { padding: '24px' } }}
+          >
+
+            {/* Rincian Produk */}
+            <div style={{ marginBottom: '20px' }}>
+              <Text strong style={{ display: 'block', marginBottom: '8px', color: '#1C1917', fontSize: '14px', borderBottom: '1px solid #E7E5E4', paddingBottom: '4px' }}>
+                Info Toko
+              </Text>
+              <div style={{ maxHeight: '180px', overflowY: 'auto', paddingRight: '4px' }}>
+                {cart.items.map((item) => (
+                  <div key={item.product.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: '13px' }}>
+                    <div style={{ minWidth: 0, flex: 1, paddingRight: '8px' }}>
+                      <Text style={{ color: '#1C1917' }} ellipsis>{item.product.name}</Text>
+                      <Text type="secondary" style={{ marginLeft: '8px' }}>x{item.quantity}</Text>
+                    </div>
+                    <Text strong style={{ color: '#1C1917', flexShrink: 0 }}>
+                      {formatter.format(Number(item.product.price) * item.quantity)}
+                    </Text>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Info Pelanggan & Pembayaran */}
+            <div style={{ borderTop: '1px solid #E7E5E4', paddingTop: '12px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
+                <Text style={{ color: '#57534E' }}>Pembeli:</Text>
+                <Text strong style={{ color: '#1C1917' }}>{buyerName}</Text>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
+                <Text style={{ color: '#57534E' }}>Tipe:</Text>
+                <Text strong style={{ color: '#1C1917' }}>
+                  {customerType === 'member_register' ? 'Member Baru' : 'Tamu'}
+                </Text>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
+                <Text style={{ color: '#57534E' }}>Pembayaran:</Text>
+                <span style={{ background: '#DCFCE7', color: '#166534', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 600 }}>
+                  Bayar di Kasir
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E7E5E4', paddingTop: '10px', marginTop: '10px' }}>
+                <Text strong style={{ color: '#1C1917', fontSize: '14px' }}>Total Pembayaran:</Text>
+                <Text strong style={{ color: '#C2410C', fontSize: '16px' }}>
                   {formatter.format(cart.getTotalAmount())}
                 </Text>
               </div>
-            </Card>
-          </Col>
+            </div>
 
-          {/* Right Column: Checkout Form */}
-          <Col xs={24} md={12}>
-            <Card
-              title={<span style={{ fontFamily: "'Playfair Display', serif", color: '#1C1917', fontWeight: 700 }}>Informasi Pembeli</span>}
-              style={{ borderColor: '#E7E5E4', borderRadius: '12px' }}
+          </Card>
+
+          {/* Floating Bottom Bar - sama persis dengan halaman keranjang */}
+          <div style={{
+            position: 'fixed',
+            bottom: '16px',
+            left: '16px',
+            right: '16px',
+            maxWidth: '388px',
+            margin: '0 auto',
+            backgroundColor: '#C2410C',
+            borderRadius: '8px',
+            padding: '12px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            zIndex: 999,
+            boxShadow: '0 8px 24px rgba(28, 25, 23, 0.15)',
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <Text style={{ fontSize: '12px', color: '#FFFBF5', opacity: 0.9 }}>
+                Total Pembayaran
+              </Text>
+              <Text style={{ fontSize: '18px', fontWeight: 'bold', color: '#FFFFFF' }}>
+                {formatter.format(cart.getTotalAmount())}
+              </Text>
+            </div>
+            <Button
+              type="default"
+              loading={presenter.loading}
+              onClick={() => handleProcessCheckout(buyerName, customerType, memberRegisterData)}
+              style={{
+                backgroundColor: '#FFFFFF',
+                color: '#C2410C',
+                borderColor: '#FFFFFF',
+                fontWeight: 'bold',
+                borderRadius: '4px',
+                height: '38px',
+              }}
             >
-              <div style={{ marginBottom: '20px' }}>
-                <Text strong style={{ display: 'block', marginBottom: '8px', color: '#1C1917' }}>Tipe Pembelian</Text>
-                <Radio.Group
-                  value={customerType}
-                  onChange={(e) => setCustomerType(e.target.value)}
-                  optionType="button"
-                  buttonStyle="solid"
-                  style={{ width: '100%', display: 'flex' }}
-                >
-                  <Radio.Button value="guest" style={{ flex: 1, textAlign: 'center' }}>Tamu (Guest)</Radio.Button>
-                  <Radio.Button value="member_register" style={{ flex: 1, textAlign: 'center' }}>Daftar Member</Radio.Button>
-                </Radio.Group>
+              Pesan Sekarang
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {checkoutStep === 'success' && createdTx && (
+        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+          <Card
+            style={{
+              borderColor: '#E7E5E4',
+              borderRadius: '12px',
+              background: '#FFFFFF',
+            }}
+            styles={{ body: { padding: '32px' } }}
+          >
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <CheckCircleOutlined style={{ fontSize: '56px', color: '#365314', marginBottom: '12px' }} />
+              <Title level={2} style={{ fontFamily: 'var(--font-headline)', color: '#1C1917', margin: '0 0 4px 0' }}>
+                Pesanan Berhasil
+              </Title>
+              <Text type="secondary">Kode Transaksi: {createdTx.transactionCode || createdTx.code}</Text>
+            </div>
+
+            {/* Rincian Produk */}
+            <div style={{ marginBottom: '24px' }}>
+              <Text strong style={{ display: 'block', marginBottom: '12px', color: '#1C1917', fontSize: '15px', borderBottom: '1px solid #E7E5E4', paddingBottom: '6px' }}>
+                Rincian Produk
+              </Text>
+              <List
+                dataSource={createdTx.items || []}
+                renderItem={(item: any) => {
+                  const name = item.product?.name || item.name || 'Produk';
+                  const quantity = item.quantity || 1;
+                  const price = Number(item.priceAtPurchase || item.product?.price || 0);
+
+                  return (
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px' }}>
+                      <div>
+                        <Text style={{ color: '#1C1917' }}>{name}</Text>
+                        <Text type="secondary" style={{ marginLeft: '8px' }}>x{quantity}</Text>
+                      </div>
+                      <Text strong style={{ color: '#1C1917' }}>
+                        {formatter.format(price * quantity)}
+                      </Text>
+                    </div>
+                  );
+                }}
+              />
+            </div>
+
+            {/* Info Pembayaran & Total */}
+            <div
+              style={{
+                borderTop: '1px solid #E7E5E4',
+                paddingTop: '16px',
+                marginBottom: '24px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+                <Text style={{ color: '#57534E' }}>Pembeli:</Text>
+                <Text strong style={{ color: '#1C1917' }}>
+                  {createdTx.customerName || 'Tamu'}
+                </Text>
               </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+                <Text style={{ color: '#57534E' }}>Metode Pembayaran:</Text>
+                <span style={{ background: '#DCFCE7', color: '#166534', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
+                  Bayar di Kasir
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E7E5E4', paddingTop: '12px', marginTop: '12px' }}>
+                <Text strong style={{ color: '#1C1917', fontSize: '15px' }}>Total Pembayaran:</Text>
+                <Text strong style={{ color: '#C2410C', fontSize: '18px' }}>
+                  {formatter.format(Number(createdTx.totalAmount))}
+                </Text>
+              </div>
+            </div>
 
-              <Form layout="vertical" onFinish={onFinishCheckout} size="large" requiredMark={false}>
-                {customerType === 'guest' ? (
-                  <Form.Item
-                    label="Nama Tamu"
-                    name="guestName"
-                    rules={[{ required: true, message: 'Masukkan nama Anda!' }]}
-                  >
-                    <Input placeholder="Nama lengkap Anda" style={{ borderRadius: '4px' }} />
-                  </Form.Item>
-                ) : (
-                  <>
-                    <Form.Item
-                      label="Nama Lengkap"
-                      name="memberName"
-                      rules={[{ required: true, message: 'Nama lengkap wajib diisi!' }]}
-                    >
-                      <Input placeholder="Nama lengkap Anda" style={{ borderRadius: '4px' }} />
-                    </Form.Item>
-                    <Form.Item
-                      label="Alamat Email"
-                      name="memberEmail"
-                      rules={[
-                        { required: true, message: 'Email wajib diisi!' },
-                        { type: 'email', message: 'Format email tidak valid!' },
-                      ]}
-                    >
-                      <Input placeholder="nama@email.com" style={{ borderRadius: '4px' }} />
-                    </Form.Item>
-                    <Form.Item
-                      label="Password Akun"
-                      name="memberPassword"
-                      rules={[{ required: true, message: 'Password wajib diisi!' }]}
-                    >
-                      <Input.Password placeholder="Password untuk login member" style={{ borderRadius: '4px' }} />
-                    </Form.Item>
-                    <Form.Item label="Nomor Telepon (Opsional)" name="memberPhone">
-                      <Input placeholder="08xxxxxxxx" style={{ borderRadius: '4px' }} />
-                    </Form.Item>
-                    <Form.Item label="Alamat Lengkap (Opsional)" name="memberAddress">
-                      <Input.TextArea placeholder="Alamat pengiriman / tempat tinggal" rows={3} style={{ borderRadius: '4px' }} />
-                    </Form.Item>
-                  </>
-                )}
+            {/* Ucapan Terimakasih */}
+            <div style={{ textAlign: 'center' }}>
+              <Paragraph style={{ fontFamily: 'var(--font-headline)', fontStyle: 'italic', fontSize: '16px', color: '#365314', margin: 0 }}>
+                "Terima kasih telah berbelanja dan mendukung produk lokal UMKM!"
+              </Paragraph>
+            </div>
+          </Card>
+        </div>
+      )}
 
-                <div style={{ marginTop: '24px', borderTop: '1px solid #E7E5E4', paddingTop: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-                    <Text strong style={{ fontSize: '16px' }}>Total Pembayaran</Text>
-                    <Text strong style={{ fontSize: '20px', color: '#C2410C' }}>
-                      {formatter.format(cart.getTotalAmount())}
-                    </Text>
-                  </div>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    loading={presenter.loading}
-                    block
-                    style={{ backgroundColor: '#C2410C', borderColor: '#C2410C', fontWeight: 'bold', height: '48px', borderRadius: '4px' }}
-                  >
-                    Beli Sekarang
-                  </Button>
-                </div>
-              </Form>
-            </Card>
-          </Col>
-        </Row>
+      {/* Floating Bottom Checkout Bar */}
+      {cart.items.length > 0 && checkoutStep === 'checkout' && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '16px',
+            left: '16px',
+            right: '16px',
+            maxWidth: '568px',
+            margin: '0 auto',
+            backgroundColor: '#C2410C',
+            borderRadius: '8px',
+            padding: '12px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            zIndex: 999,
+            boxShadow: '0 8px 24px rgba(28, 25, 23, 0.15)',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Text style={{ fontSize: '12px', color: '#FFFBF5', opacity: 0.9 }}>
+              Total Pembayaran
+            </Text>
+            <Text style={{ fontSize: '18px', fontWeight: 'bold', color: '#FFFFFF' }}>
+              {formatter.format(cart.getTotalAmount())}
+            </Text>
+          </div>
+          <Button
+            type="default"
+            loading={presenter.loading}
+            disabled={hasInvalidStock}
+            onClick={onFinishCheckout}
+            style={{
+              backgroundColor: hasInvalidStock ? '#E7E5E4' : '#FFFFFF',
+              color: hasInvalidStock ? '#A8A29E' : '#C2410C',
+              borderColor: hasInvalidStock ? '#E7E5E4' : '#FFFFFF',
+              fontWeight: 'bold',
+              borderRadius: '4px',
+              height: '38px',
+              cursor: hasInvalidStock ? 'not-allowed' : 'pointer',
+            }}
+          >
+            Lanjut
+          </Button>
+        </div>
       )}
     </div>
   );

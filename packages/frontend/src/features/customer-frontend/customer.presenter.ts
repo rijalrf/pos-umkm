@@ -140,14 +140,12 @@ export function useCustomerPresenter() {
     try {
       const res = await CustomerService.publicCheckout(payload);
       if (res.success) {
-        message.success('Transaksi berhasil diproses!');
         return res.data;
       }
       return null;
     } catch (err: any) {
       console.error(err);
-      message.error(err?.response?.data?.message || 'Gagal memproses transaksi');
-      return null;
+      throw err;
     } finally {
       setLoading(false);
     }

@@ -152,22 +152,22 @@ To prevent local test execution (especially on Windows) from draining CPU, memor
 
 ---
 
-## 7. POS UMKM Design System (Artisan & Handmade Goods Style)
+## 7. POS UMKM Design System (Modern & General Wirausaha Style)
 
 > [!IMPORTANT]
 > The absolute source of truth for the design system is [DESIGN.md](file:///home/rijal/projects/pos-umkm/DESIGN.md) in the project root. Refer to it for color codes, sizing, spacing, typography, and styling components.
 
-POS UMKM is a warm, community-driven design system with a handmade, artisan feel. Spacing is generous, typography is editorial, and components use a flat, border-driven aesthetic without drop shadows.
+POS UMKM is a clean, modern, and versatile design system suitable for restaurants, cafes, warungs, fashion stores, and other retail businesses. Spacing is generous, typography is legible, and components use a flat, border-driven aesthetic without drop shadows.
 
 ### 7.1 Visual Philosophy
 - **Authenticity over Polish:** A flat, border-driven visual style that avoids corporate gloss.
-- **Storytelling focus:** Highlight makers, locations, craft, materials, and processes.
-- **Earthy and natural:** Use warm terracotta, sand, and forest green.
+- **Merchant focus:** Highlight product images, clean pricing, clear checkout actions, and categories.
+- **Warm & friendly:** Use terracotta, sand, and forest green for organic food, drink, and retail accents.
 
 ### 7.2 Colors
 - **Primary:** `#C2410C` (Terracotta) - Primary CTAs, active states, key interactive highlights.
 - **Secondary:** `#D4A373` (Sand/Oat) - Featured accents, badges, decorative borders.
-- **Tertiary:** `#365314` (Forest Green) - Eco-friendly badges, category tags, artisan labels.
+- **Tertiary:** `#365314` (Forest Green) - Eco-friendly badges, category tags, product labels.
 - **Background:** `#FFFBF5` (Warm Cream) - Main app background.
 - **Surface:** `#FFFFFF` (White) - Cards, lists, modals, menus, inputs.
 - **Success:** `#22C55E`
@@ -176,18 +176,18 @@ POS UMKM is a warm, community-driven design system with a handmade, artisan feel
 - **Info:** `#3B82F6`
 
 ### 7.3 Typography
-- **Headline Font:** Playfair Display (Serif) - reinforce the handcrafted, editorial, storytelling feel.
+- **Headline Font:** Inter (Sans-Serif) - reinforce a premium, modern wirausaha layout.
 - **Body Font:** Inter (Sans-Serif) - default clean body text.
 - **Mono Font:** Source Code Pro - order numbers, tracking codes, technical data.
 
-- **Display:** Playfair Display 48px bold, 1.15 line height, 0.01em tracking (Hero headers).
-- **Headline:** Playfair Display 36px semibold, 1.25 line height, 0.005em tracking (Categories, collection titles).
-- **Subhead:** Playfair Display 26px semibold, 1.3 line height (Sections, seller names).
-- **Body Large:** Inter 18px regular, 1.6 line height (Product story intro).
+- **Display:** Inter 48px bold, 1.15 line height, 0.01em tracking (Hero headers).
+- **Headline:** Inter 36px semibold, 1.25 line height, 0.005em tracking (Categories, collection titles).
+- **Subhead:** Inter 26px semibold, 1.3 line height (Sections, seller names).
+- **Body Large:** Inter 18px regular, 1.6 line height (Product details intro).
 - **Body:** Inter 16px regular, 1.6 line height (Default body).
-- **Body Small:** Inter 14px regular, 1.5 line height (Reviews, specs, materials).
+- **Body Small:** Inter 14px regular, 1.5 line height (Reviews, specs, ingredients).
 - **Caption:** Inter 12px medium, 1.4 line height, 0.02em tracking (Shipping info, stocks).
-- **Overline:** Inter 11px bold, 1.2 line height, 0.09em tracking (Handmade badges, category tags, UPPERCASE).
+- **Overline:** Inter 11px bold, 1.2 line height, 0.09em tracking (Category tags, UPPERCASE).
 - **Code:** Source Code Pro 14px regular, 1.5 line height.
 
 
@@ -245,8 +245,8 @@ POS UMKM is a warm, community-driven design system with a handmade, artisan feel
 
 ### 7.8 Do's and Don'ts
 - **Do** use warm, natural photography/graphics; avoid stark white backgrounds.
-- **Do** highlight materials & process (e.g. "hand-thrown stoneware") using tertiary forest green (`#365314`) tags.
-- **Do** use the serif Lora font for headlines to reinforce the handcrafted, editorial look.
+- **Do** highlight product categories and states (e.g. food ingredients or size tags) using tertiary forest green (`#365314`) tags.
+- **Do** use clean sans-serif/serif headers to reinforce a modern wirausaha layout.
 - **Do** show real customer photos in reviews to build community trust.
 - **Don't** use aggressive urgency tactics (e.g. countdown timers, pressure-selling text like "only 1 left!").
 - **Don't** apply drop shadows to product cards; use borders instead.

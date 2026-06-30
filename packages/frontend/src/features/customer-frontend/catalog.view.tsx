@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Col, Row, Input, Select, Button, Spin, Empty, Typography } from 'antd';
+import { Col, Row, Input, Button, Spin, Empty, Typography } from 'antd';
 import { SearchOutlined, ShoppingOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useCustomerPresenter } from './customer.presenter';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
 
-const { Title, Text } = Typography;
-const { Option } = Select;
+const { Text } = Typography;
 
 export const CatalogView: React.FC = () => {
   const navigate = useNavigate();
@@ -47,44 +46,150 @@ export const CatalogView: React.FC = () => {
 
   return (
     <div style={{ padding: '0 16px' }}>
-      {/* Search & Filter bar */}
-      <div style={{
-        background: '#FFFFFF',
-        border: '1px solid #E7E5E4',
-        borderRadius: '8px',
-        padding: '16px',
-        marginBottom: '24px',
-      }}>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <Input
-            placeholder="Cari produk..."
-            prefix={<SearchOutlined style={{ color: '#A8A29E' }} />}
-            value={search}
-            onChange={(e) => handleSearch(e.target.value)}
+      {/* Store Brand Banner (Compact) */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '16px 0',
+          marginBottom: '16px',
+          borderBottom: '1px solid #E7E5E4',
+        }}
+      >
+        {/* Store Logo */}
+        <div
+          style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            background: '#FFFBF5',
+            border: '1.5px solid #D4A373',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ fontSize: '18px', color: '#C2410C' }}>🏪</span>
+        </div>
+        
+        {/* Store Info */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <h1
             style={{
-              flex: 2,
-              minWidth: '200px',
-              height: '42px',
-              borderRadius: '4px',
-              borderColor: '#D6D3D1',
-            }}
-          />
-          <Select
-            placeholder="Pilih Kategori"
-            defaultValue="ALL"
-            onChange={handleCategoryChange}
-            style={{
-              flex: 1,
-              minWidth: '150px',
-              height: '42px',
+              fontFamily: 'var(--font-headline)',
+              fontSize: '20px',
+              fontWeight: 700,
+              color: '#1C1917',
+              margin: 0,
+              lineHeight: 1.2,
             }}
           >
-            <Option value="ALL">Semua Kategori</Option>
-            {categories.map((c) => (
-              <Option key={c.id} value={c.id}>{c.name}</Option>
-            ))}
-          </Select>
+            POS UMKM
+          </h1>
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '11px',
+              color: '#57534E',
+              margin: 0,
+              letterSpacing: '0.02em',
+              textTransform: 'uppercase',
+              fontWeight: 600,
+            }}
+          >
+            Sistem Kasir & Wirausaha Modern
+          </p>
         </div>
+      </div>
+
+      {/* Search Input bar */}
+      <div style={{ marginBottom: '16px' }}>
+        <Input
+          placeholder="Cari produk..."
+          prefix={<SearchOutlined style={{ color: '#A8A29E' }} />}
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          style={{
+            width: '100%',
+            height: '42px',
+            borderRadius: '4px',
+            borderColor: '#D6D3D1',
+          }}
+        />
+      </div>
+
+      {/* Category Horizontal Filter Tags */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '8px',
+          overflowX: 'auto',
+          paddingBottom: '12px',
+          marginBottom: '20px',
+          scrollbarWidth: 'none', // For Firefox
+          msOverflowStyle: 'none', // For IE/Edge
+        }}
+        className="category-scroll-container"
+      >
+        <style dangerouslySetInnerHTML={{__html: `
+          .category-scroll-container::-webkit-scrollbar {
+            display: none; /* For Chrome, Safari, and Opera */
+          }
+        `}} />
+        
+        {/* "Semua Kategori" Tag */}
+        <div
+          onClick={() => handleCategoryChange('ALL')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            height: '32px',
+            padding: '0 14px',
+            borderRadius: '4px',
+            border: selectedCategory === undefined ? '1px solid #C2410C' : '1px solid #D6D3D1',
+            backgroundColor: selectedCategory === undefined ? '#C2410C' : '#FFFFFF',
+            color: selectedCategory === undefined ? '#FFFFFF' : '#1C1917',
+            cursor: 'pointer',
+            fontWeight: 600,
+            fontSize: '13px',
+            userSelect: 'none',
+            flexShrink: 0,
+            transition: 'all 0.2s ease',
+          }}
+        >
+          Semua Kategori
+        </div>
+
+        {/* Dynamic Category Tags */}
+        {categories.map((c) => {
+          const isSelected = selectedCategory === c.id;
+          return (
+            <div
+              key={c.id}
+              onClick={() => handleCategoryChange(c.id)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                height: '32px',
+                padding: '0 14px',
+                borderRadius: '4px',
+                border: isSelected ? '1px solid #C2410C' : '1px solid #D6D3D1',
+                backgroundColor: isSelected ? '#C2410C' : '#FFFFFF',
+                color: isSelected ? '#FFFFFF' : '#1C1917',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '13px',
+                userSelect: 'none',
+                flexShrink: 0,
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {c.name}
+            </div>
+          );
+        })}
       </div>
 
       {/* Product List Grid */}
@@ -105,14 +210,15 @@ export const CatalogView: React.FC = () => {
                       }
                     }}
                     style={{
-                      background: '#FFFFFF',
+                      background: isOutOfStock ? '#F5F5F4' : '#FFFFFF',
                       border: '1px solid #E7E5E4',
                       borderRadius: '8px',
                       height: '100%',
                       display: 'flex',
                       flexDirection: 'column',
                       overflow: 'hidden',
-                      opacity: isOutOfStock ? 0.6 : 1,
+                      filter: isOutOfStock ? 'grayscale(100%)' : 'none',
+                      opacity: isOutOfStock ? 0.5 : 1,
                       cursor: isOutOfStock ? 'not-allowed' : 'pointer',
                     }}
                     className="product-catalog-card"
@@ -125,8 +231,8 @@ export const CatalogView: React.FC = () => {
                           style={{
                             width: '100%',
                             height: '100%',
-                            objectFit: 'contain',
-                            padding: '12px',
+                            objectFit: 'cover',
+                            padding: 0,
                           }}
                         />
                       ) : (
@@ -135,35 +241,23 @@ export const CatalogView: React.FC = () => {
                     </div>
                     <div className="catalog-card-body">
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {/* Category tag */}
-                        <div>
-                          <span style={{
-                            background: '#FFFBF5',
-                            border: '1px solid #D6D3D1',
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            fontSize: '11px',
-                            color: '#365314',
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                          }}>
-                            {p.category.name}
-                          </span>
-                        </div>
 
                         {/* Product Name */}
-                        <Title level={4} className="catalog-card-title" style={{
-                          margin: 0,
-                          fontFamily: "'Playfair Display', serif",
-                          color: '#1C1917'
-                        }}>
+                        <div
+                          className="catalog-card-title"
+                          style={{
+                            margin: 0,
+                            fontFamily: 'var(--font-body)',
+                            fontWeight: 600,
+                            color: '#1C1917',
+                          }}
+                        >
                           {p.name}
-                        </Title>
+                        </div>
 
                         {/* Price & Cart Actions */}
                         <div style={{ marginTop: 'auto', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Text className="catalog-card-price">
+                          <Text className="catalog-card-price" style={{ margin: 0 }}>
                             {formatter.format(Number(p.price))}
                           </Text>
 
