@@ -1,0 +1,147 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  CASHIER
+}
+
+// ==================== USERS (Admin & Kasir) ====================
+model User {
+  id           String        @id @default(uuid())
+  username     String        @unique
+  passwordHash String        @map("password_hash")
+  fullName     String        @map("full_name")
+  role         Role
+  isActive     Boolean       @default(true) @map("is_active")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  
+  transactions Transaction[]
+  
+  @@map("users")
+}
+
+// ==================== CUSTOMERS (Member) ====================
+model Customer {
+  id                String        @id @default(uuid())
+  email             String        @unique
+  passwordHash      String        @map("password_hash")
+  name              String
+  phone             String?
+  address           String?
+  isEmailVerified   Boolean       @default(false) @map("is_email_verified")
+  emailVerifyToken  String?       @unique @map("email_verify_token")
+  emailVerifyExpiry DateTime?     @map("email_verify_expiry")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  
+  transactions      Transaction[]
+  
+  @@map("customers")
+}
+
+// ==================== CATEGORIES ====================
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  products    Product[]
+  
+  @@map("categories")
+}
+
+// ==================== PRODUCTS ====================
+model Product {
+  id                   String              @id @default(uuid())
+  name                 String
+  sku                  String              @unique
+  categoryId           String              @map("category_id")
+  price                Decimal             @db.Decimal(15, 2)
+  stock                Int
+  description          String?
+  imageUrl             String?             @map("image_url")
+  stockAlertThreshold  Int                 @default(10) @map("stock_alert_threshold")
+  createdAt            DateTime            @default(now()) @map("created_at")
+  updatedAt            DateTime            @updatedAt @map("updated_at")
+  
+  category             Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  transactionItems     TransactionItem[]
+  
+  @@map("products")
+}
+
+// ==================== TRANSACTIONS ====================
+model Transaction {
+  id               String            @id @default(uuid())
+  transactionCode  String            @unique @map("transaction_code")
+  customerId       String?           @map("customer_id")
+  customerName     String?           @map("customer_name")
+  cashierId        String            @map("cashier_id")
+  totalAmount      Decimal           @db.Decimal(15, 2) @map("total_amount")
+  cashReceived     Decimal           @db.Decimal(15, 2) @map("cash_received")
+  cashReturn       Decimal           @db.Decimal(15, 2) @map("cash_return")
+  transactionDate  DateTime          @default(now()) @map("transaction_date")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  
+  customer         Customer?         @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  cashier          User              @relation(fields: [cashierId], references: [id])
+  items            TransactionItem[]
+  
+  @@map("transactions")
+}
+
+// ==================== TRANSACTION ITEMS ====================
+model TransactionItem {
+  id               String      @id @default(uuid())
+  transactionId    String      @map("transaction_id")
+  productId        String      @map("product_id")
+  quantity         Int
+  priceAtPurchase  Decimal     @db.Decimal(15, 2) @map("price_at_purchase")
+  subtotal         Decimal     @db.Decimal(15, 2)
+  
+  transaction      Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  product          Product     @relation(fields: [productId], references: [id])
+  
+  @@map("transaction_items")
+}
+
+// ==================== STORE SETTINGS ====================
+model StoreSetting {
+  id         String   @id @default(uuid())
+  storeName  String   @map("store_name")
+  address    String
+  phone      String
+  email      String?
+  logoUrl    String?  @map("logo_url")
+  currency   String   @default("IDR")
+  timezone   String   @default("Asia/Jakarta")
+  dateFormat String   @default("DD/MM/YYYY") @map("date_format")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  
+  @@map("store_settings")
+}
+
+// ==================== GOOGLE DRIVE CONFIG ====================
+model GDriveConfig {
+  id           String    @id @default(uuid())
+  clientId     String    @map("client_id")
+  clientSecret String    @map("client_secret")
+  refreshToken String    @map("refresh_token")
+  accessToken  String    @map("access_token")
+  tokenExpiry  DateTime? @map("token_expiry")
+  isConnected  Boolean   @default(false) @map("is_connected")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  
+  @@map("gdrive_config")
+}
