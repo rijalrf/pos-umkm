@@ -20,13 +20,13 @@ POS UMKM is a design system for general stores and local micro-business marketpl
 
 ## Typography
 
-- **Headline Font**: Playfair Display
+- **Headline Font**: Inter
 - **Body Font**: Inter
 - **Mono Font**: Source Code Pro
 
-- **Display**: Playfair Display 48px bold, 1.15 line height, 0.01em tracking. Marketplace hero headlines.
-- **Headline**: Playfair Display 36px semibold, 1.25 line height, 0.005em tracking. Category pages, collection titles.
-- **Subhead**: Playfair Display 26px semibold, 1.3 line height. Section headings, seller names.
+- **Display**: Inter 48px bold, 1.15 line height, 0.01em tracking. Marketplace hero headlines.
+- **Headline**: Inter 36px semibold, 1.25 line height, 0.005em tracking. Category pages, collection titles.
+- **Subhead**: Inter 26px semibold, 1.3 line height. Section headings, seller names.
 - **Body Large**: Inter 18px regular, 1.6 line height. Product story introductions.
 - **Body**: Inter 16px regular, 1.6 line height. Default body text.
 - **Body Small**: Inter 14px regular, 1.5 line height. Reviews, material details, specs.

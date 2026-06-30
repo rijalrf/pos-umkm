@@ -30,7 +30,7 @@ export const CustomerLoginView: React.FC = () => {
           borderRadius: '8px',
           background: '#FFFFFF',
         }}
-        bodyStyle={{ padding: '32px' }}
+        styles={{ body: { padding: '32px' } }}
       >
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <Button
