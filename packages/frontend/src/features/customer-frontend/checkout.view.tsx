@@ -34,6 +34,9 @@ export const CheckoutView: React.FC = () => {
   const [customerType, setCustomerType] = useState<'guest' | 'member_register'>('guest');
   const [memberRegisterData, setMemberRegisterData] = useState<any>(null);
   const [checkoutSourceStep, setCheckoutSourceStep] = useState<'register' | 'login' | 'guest_name'>('guest_name');
+  const [storeName, setStoreName] = useState<string>('Toko');
+  const [storeAddress, setStoreAddress] = useState<string>('');
+  const [storeLogo, setStoreLogo] = useState<string | null>(null);
 
   const hasInvalidStock = cart.items.some(
     (item) => item.product.stock === 0 || item.quantity > item.product.stock
@@ -69,6 +72,13 @@ export const CheckoutView: React.FC = () => {
 
   useEffect(() => {
     refreshCartStock();
+    CustomerService.getPublicStoreInfo()
+      .then((res) => {
+        if (res?.data?.storeName) setStoreName(res.data.storeName);
+        if (res?.data?.address) setStoreAddress(res.data.address);
+        if (res?.data?.logoUrl) setStoreLogo(res.data.logoUrl);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -646,17 +656,33 @@ export const CheckoutView: React.FC = () => {
 
             {/* Rincian Produk */}
             <div style={{ marginBottom: '20px' }}>
-              <Text strong style={{ display: 'block', marginBottom: '8px', color: '#1C1917', fontSize: '14px', borderBottom: '1px solid #E7E5E4', paddingBottom: '4px' }}>
-                Info Toko
-              </Text>
-              <div style={{ maxHeight: '180px', overflowY: 'auto', paddingRight: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', borderBottom: '1px solid #E7E5E4', paddingBottom: '8px' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#FFFBF5', border: '1.5px solid #D4A373', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                  {storeLogo ? (
+                    <img src={storeLogo} alt={storeName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ fontSize: '16px' }}>🏪</span>
+                  )}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <Text strong style={{ display: 'block', color: '#1C1917', fontSize: '14px' }}>
+                    {storeName}
+                  </Text>
+                  {storeAddress && (
+                    <Text style={{ fontSize: '12px', color: '#57534E' }}>{storeAddress}</Text>
+                  )}
+                </div>
+              </div>
+              <div>
                 {cart.items.map((item) => (
-                  <div key={item.product.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: '13px' }}>
+                  <div key={item.product.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: '13px', borderBottom: '1px solid #F5F5F4' }}>
                     <div style={{ minWidth: 0, flex: 1, paddingRight: '8px' }}>
-                      <Text style={{ color: '#1C1917' }} ellipsis>{item.product.name}</Text>
-                      <Text type="secondary" style={{ marginLeft: '8px' }}>x{item.quantity}</Text>
+                      <Text style={{ color: '#1C1917', display: 'block' }} ellipsis>{item.product.name}</Text>
+                      <Text type="secondary" style={{ fontSize: '12px' }}>
+                        {formatter.format(Number(item.product.price))} × {item.quantity}
+                      </Text>
                     </div>
-                    <Text strong style={{ color: '#1C1917', flexShrink: 0 }}>
+                    <Text strong style={{ color: '#1C1917', flexShrink: 0, alignSelf: 'center' }}>
                       {formatter.format(Number(item.product.price) * item.quantity)}
                     </Text>
                   </div>

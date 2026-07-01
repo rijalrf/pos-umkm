@@ -52,6 +52,18 @@ export class PublicController {
     }
   };
 
+  getStoreInfo = async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const data = await this.service.getStoreInfo();
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   checkout = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = await this.service.checkout(req.body);

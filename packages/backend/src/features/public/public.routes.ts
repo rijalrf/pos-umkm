@@ -10,6 +10,7 @@ const controller = new PublicController();
 router.get('/products', controller.getProducts);
 router.get('/products/:id', controller.getProductById);
 router.get('/categories', controller.getCategories);
+router.get('/store-info', controller.getStoreInfo);
 router.post('/checkout', validate(publicCheckoutSchema), controller.checkout);
 
 export default router;
