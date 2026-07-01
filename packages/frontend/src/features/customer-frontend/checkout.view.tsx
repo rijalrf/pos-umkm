@@ -8,7 +8,8 @@ import {
   CheckCircleOutlined,
   ArrowLeftOutlined,
   UserOutlined,
-  PhoneOutlined
+  PhoneOutlined,
+  GiftOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
@@ -316,6 +317,22 @@ export const CheckoutView: React.FC = () => {
                     style={{ borderRadius: '4px' }}
                   />
                 </Form.Item>
+
+                {/* Info promo */}
+                <div style={{
+                  display: 'flex',
+                  gap: '10px',
+                  background: '#FFFBF5',
+                  border: '1px solid #D4A373',
+                  borderRadius: '8px',
+                  padding: '12px 14px',
+                  marginBottom: '16px',
+                }}>
+                  <GiftOutlined style={{ color: '#D4A373', fontSize: '16px', marginTop: '2px', flexShrink: 0 }} />
+                  <Text style={{ fontSize: '12px', color: '#57534E', lineHeight: '1.6' }}>
+                    Daftarkan nomor telepon kamu untuk mendapatkan info promo spesial, diskon member, dan notifikasi pesanan langsung ke WhatsApp kamu!
+                  </Text>
+                </div>
               </div>
 
               {/* Payment Method Info Section */}
