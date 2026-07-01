@@ -12,9 +12,11 @@ import {
   ShoppingCartOutlined,
   LineChartOutlined,
   HistoryOutlined,
-  TeamOutlined
+  TeamOutlined,
+  BellOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '../../stores/auth.store';
+import { message } from 'antd';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Breadcrumbs } from '../common/breadcrumb.component';
 import { api } from '../../libs/api.lib';
@@ -235,6 +237,7 @@ export const BackofficeLayout: React.FC = () => {
         key: 'profile',
         label: 'Profil Saya',
         icon: <UserOutlined />,
+        onClick: () => navigate('/backoffice/profile'),
       },
       {
         type: 'divider' as const,
@@ -258,26 +261,61 @@ export const BackofficeLayout: React.FC = () => {
           style={{
             background: '#FFFBF5',
             borderRight: '1px solid #E7E5E4',
+            height: '100vh',
+            position: 'sticky',
+            top: 0,
+            left: 0,
           }}
         >
-          <div style={{
-            height: '64px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px',
-            background: '#FFFBF5',
-            borderBottom: '1px solid #E7E5E4',
-          }}>
-            {renderSidebarLogo()}
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <div style={{
+                height: '64px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '16px',
+                background: '#FFFBF5',
+                borderBottom: '1px solid #E7E5E4',
+              }}>
+                {renderSidebarLogo()}
+              </div>
+              <Menu
+                mode="inline"
+                selectedKeys={[location.pathname]}
+                items={getMenuItems(collapsed)}
+                onClick={handleMenuClick}
+                style={{ background: 'transparent', padding: '16px 0', borderRight: 0 }}
+              />
+            </div>
+
+            {/* User profile section at the bottom of the sidebar */}
+            <div style={{
+              padding: '16px',
+              borderTop: '1px solid #E7E5E4',
+              backgroundColor: '#FFFBF5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: collapsed ? 'center' : 'space-between',
+              gap: '8px'
+            }}>
+              <Dropdown menu={userMenu} placement="topRight" trigger={['click']}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', overflow: 'hidden', width: '100%' }}>
+                  <Avatar style={{ backgroundColor: '#C2410C', flexShrink: 0 }} icon={<UserOutlined />} />
+                  {!collapsed && (
+                    <div style={{ textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <Text strong style={{ display: 'block', fontSize: '0.85rem', color: '#1C1917', lineHeight: 1.2 }}>
+                        {user?.fullName}
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: '0.75rem', textTransform: 'capitalize', color: '#57534E' }}>
+                        {user?.role.toLowerCase()}
+                      </Text>
+                    </div>
+                  )}
+                </div>
+              </Dropdown>
+            </div>
           </div>
-          <Menu
-            mode="inline"
-            selectedKeys={[location.pathname]}
-            items={getMenuItems(collapsed)}
-            onClick={handleMenuClick}
-            style={{ background: 'transparent', padding: '16px 0', borderRight: 0 }}
-          />
         </Sider>
       )}
 
@@ -289,21 +327,46 @@ export const BackofficeLayout: React.FC = () => {
           onClose={() => setCollapsed(true)}
           open={!collapsed}
           styles={{
-            body: { padding: 0, background: '#FFFBF5' },
+            body: { padding: 0, background: '#FFFBF5', display: 'flex', flexDirection: 'column', height: '100%' },
             header: { background: '#FFFBF5', borderBottom: '1px solid #E7E5E4' }
           }}
           width={240}
         >
-          <Menu
-            mode="inline"
-            selectedKeys={[location.pathname]}
-            items={getMenuItems(false)}
-            onClick={(e) => {
-              handleMenuClick(e);
-              setCollapsed(true);
-            }}
-            style={{ background: 'transparent', padding: '16px 0', borderRight: 0 }}
-          />
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            <Menu
+              mode="inline"
+              selectedKeys={[location.pathname]}
+              items={getMenuItems(false)}
+              onClick={(e) => {
+                handleMenuClick(e);
+                setCollapsed(true);
+              }}
+              style={{ background: 'transparent', padding: '16px 0', borderRight: 0 }}
+            />
+          </div>
+          <div style={{
+            padding: '16px',
+            borderTop: '1px solid #E7E5E4',
+            backgroundColor: '#FFFBF5',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px'
+          }}>
+            <Dropdown menu={userMenu} placement="topRight" trigger={['click']}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', overflow: 'hidden', width: '100%' }}>
+                <Avatar style={{ backgroundColor: '#C2410C', flexShrink: 0 }} icon={<UserOutlined />} />
+                <div style={{ textAlign: 'left', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <Text strong style={{ display: 'block', fontSize: '0.85rem', color: '#1C1917', lineHeight: 1.2 }}>
+                    {user?.fullName}
+                  </Text>
+                  <Text type="secondary" style={{ fontSize: '0.75rem', textTransform: 'capitalize', color: '#57534E' }}>
+                    {user?.role.toLowerCase()}
+                  </Text>
+                </div>
+              </div>
+            </Dropdown>
+          </div>
         </Drawer>
       )}
 
@@ -328,7 +391,7 @@ export const BackofficeLayout: React.FC = () => {
             <span style={{ 
               fontSize: isMobile ? '16px' : '18px', 
               fontWeight: 700, 
-              color: '#1C1917',
+              color: '#C2410C',
               fontFamily: "'Inter', sans-serif",
               whiteSpace: 'nowrap',
               overflow: 'hidden',
@@ -340,17 +403,12 @@ export const BackofficeLayout: React.FC = () => {
           </div>
 
           <Space size="middle">
-            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <Text strong style={{ display: 'block', fontSize: '0.9rem', color: '#1C1917' }}>
-                {user?.fullName}
-              </Text>
-              <Text type="secondary" style={{ fontSize: '0.75rem', textTransform: 'capitalize', color: '#57534E' }}>
-                {user?.role.toLowerCase()}
-              </Text>
-            </div>
-            <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
-              <Avatar style={{ backgroundColor: '#C2410C', cursor: 'pointer' }} icon={<UserOutlined />} />
-            </Dropdown>
+            <Button
+              type="text"
+              icon={<BellOutlined style={{ fontSize: '20px', color: '#57534E' }} />}
+              onClick={() => message.info('Tidak ada notifikasi baru.')}
+              style={{ width: 40, height: 40, padding: 0, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            />
           </Space>
         </Header>
         <Content

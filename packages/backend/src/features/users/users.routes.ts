@@ -10,6 +10,7 @@ const controller = new UsersController();
 
 // Change password endpoint is accessible by any authenticated user (ADMIN or CASHIER)
 router.post('/change-password', authenticate, validate(changePasswordSchema), controller.changePassword);
+router.put('/profile', authenticate, controller.updateProfile);
 
 // All other CRUD routes are restricted to ADMIN only
 router.get('/', authenticate, authorize(['ADMIN']), controller.getAll);

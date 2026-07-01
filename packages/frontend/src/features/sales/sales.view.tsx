@@ -40,7 +40,8 @@ export const SalesView: React.FC = () => {
 
   // Receipt Modal
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
-  const [createdTransactionId, setCreatedTransactionId] = useState<string | null>(null);
+  const [checkoutResult, setCheckoutResult] = useState<any | null>(null);
+  const [storeSetting, setStoreSetting] = useState<any | null>(null);
 
   const handleSearchMember = async () => {
     if (!phoneSearch.trim()) {
@@ -73,7 +74,7 @@ export const SalesView: React.FC = () => {
     }
   };
 
-  // Fetch products and categories
+  // Fetch products, categories, and store settings
   const loadInitialData = async () => {
     setLoading(true);
     try {
@@ -88,8 +89,19 @@ export const SalesView: React.FC = () => {
       if (catRes.success) {
         setCategories(catRes.data);
       }
+
+      // Load settings
+      try {
+        const { SettingsService } = await import('../settings/settings.service');
+        const settingsRes = await SettingsService.getStoreSetting();
+        if (settingsRes.success) {
+          setStoreSetting(settingsRes.data);
+        }
+      } catch (err) {
+        console.error('Failed to load store settings', err);
+      }
     } catch (error) {
-      message.error('Failed to load catalog data');
+      message.error('Gagal memuat katalog data');
     } finally {
       setLoading(false);
     }
@@ -142,7 +154,7 @@ export const SalesView: React.FC = () => {
 
     const total = cart.getTotalAmount();
     if (cashReceived < total) {
-      message.error('Insufficient cash received');
+      message.error('Uang diterima kurang dari total tagihan!');
       return;
     }
 
@@ -160,15 +172,15 @@ export const SalesView: React.FC = () => {
 
       const response = await SalesService.createTransaction(payload);
       if (response.success && response.data) {
-        const txId = response.data.transaction.id;
-        setCreatedTransactionId(txId);
+        const tx = response.data.transaction;
+        setCheckoutResult(tx);
         setReceiptModalOpen(true);
-        message.success('Transaction processed successfully!');
+        message.success('Transaksi berhasil diproses!');
         
         // Reload products to refresh stock counts
         loadInitialData();
       } else {
-        message.error(response.message || 'Failed to process transaction');
+        message.error(response.message || 'Gagal memproses transaksi');
       }
     } catch (error: any) {
       message.error(error.response?.data?.message || 'Error processing transaction');
@@ -195,7 +207,7 @@ export const SalesView: React.FC = () => {
     setCustomerType('guest');
     setPhoneSearch('');
     setSearchedMemberResult(null);
-    setCreatedTransactionId(null);
+    setCheckoutResult(null);
     setReceiptModalOpen(false);
   };
 
@@ -214,6 +226,100 @@ export const SalesView: React.FC = () => {
       setSearchedMemberResult(null);
       setTimeout(() => phoneInputRef.current?.focus(), 50);
     }
+  };
+
+  const printReceipt = (tx: any) => {
+    if (!tx) return;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      message.error('Gagal membuka jendela cetak. Pastikan pop-up tidak diblokir oleh browser!');
+      return;
+    }
+    
+    const dateStr = new Date(tx.transactionDate).toLocaleString('id-ID', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    });
+
+    const itemsHtml = tx.items.map((item: any) => `
+      <tr>
+        <td style="padding: 4px 0; font-family: monospace; font-size: 13px;">
+          ${item.product?.name || 'Produk'}<br/>
+          <span style="font-size: 11px; color: #555;">${item.quantity} x ${formatter.format(Number(item.priceAtPurchase || item.price))}</span>
+        </td>
+        <td style="text-align: right; padding: 4px 0; font-family: monospace; font-size: 13px; vertical-align: bottom;">
+          ${formatter.format(Number(item.quantity) * Number(item.priceAtPurchase || item.price))}
+        </td>
+      </tr>
+    `).join('');
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Struk POS - ${tx.transactionCode}</title>
+          <style>
+            @page { size: 80mm auto; margin: 0; }
+            body {
+              font-family: 'Courier New', Courier, monospace;
+              width: 72mm;
+              margin: 0 auto;
+              padding: 10px;
+              color: #000;
+            }
+            .text-center { text-align: center; }
+            .divider { border-top: 1px dashed #000; margin: 8px 0; }
+            table { width: 100%; border-collapse: collapse; }
+          </style>
+        </head>
+        <body>
+          <div class="text-center">
+            <h3 style="margin: 0; font-size: 16px;">${storeSetting?.storeName || 'Kantin Nusantara'}</h3>
+            <p style="margin: 4px 0; font-size: 11px;">${storeSetting?.address || ''}</p>
+            <p style="margin: 4px 0; font-size: 11px;">Telp: ${storeSetting?.phone || ''}</p>
+          </div>
+          <div class="divider"></div>
+          <div style="font-size: 11px; line-height: 1.4;">
+            <strong>No:</strong> ${tx.transactionCode}<br/>
+            <strong>Tgl:</strong> ${dateStr}<br/>
+            <strong>Kasir:</strong> ${tx.cashier?.fullName || 'System'}<br/>
+            <strong>Pelanggan:</strong> ${tx.customerName || 'Tamu'}<br/>
+          </div>
+          <div class="divider"></div>
+          <table>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+          <div class="divider"></div>
+          <table style="font-size: 12px; font-weight: bold; line-height: 1.4;">
+            <tr>
+              <td>Total Tagihan</td>
+              <td style="text-align: right;">${formatter.format(Number(tx.totalAmount))}</td>
+            </tr>
+            <tr>
+              <td>Uang Diterima</td>
+              <td style="text-align: right;">${formatter.format(Number(tx.cashReceived))}</td>
+            </tr>
+            <tr>
+              <td>Kembalian</td>
+              <td style="text-align: right;">${formatter.format(Number(tx.cashReturn || tx.cashReceived - tx.totalAmount))}</td>
+            </tr>
+          </table>
+          <div class="divider"></div>
+          <div class="text-center" style="font-size: 11px; margin-top: 15px;">
+            Terima Kasih atas Kunjungan Anda!<br/>
+            POS UMKM Premium
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              window.close();
+            }
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   return (
@@ -559,7 +665,7 @@ export const SalesView: React.FC = () => {
 
       {/* Printable Receipt Modal */}
       <Modal
-        title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>Struk Transaksi</span>}
+        title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>Preview Struk</span>}
         open={receiptModalOpen}
         onCancel={resetSalesView}
         footer={[
@@ -570,35 +676,79 @@ export const SalesView: React.FC = () => {
             key="print"
             type="primary"
             icon={<PrinterOutlined />}
-            onClick={() => {
-              const iframe = document.getElementById('receipt-iframe') as HTMLIFrameElement;
-              if (iframe) {
-                iframe.contentWindow?.print();
-              }
-            }}
+            onClick={() => printReceipt(checkoutResult)}
             style={{ backgroundColor: '#C2410C', borderColor: '#C2410C' }}
+            disabled={!checkoutResult}
           >
             Cetak Struk
           </Button>,
         ]}
-        width={400}
+        width={380}
         destroyOnClose
       >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '12px' }}>
-          {createdTransactionId && (
-            <iframe
-              id="receipt-iframe"
-              src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/transactions/${createdTransactionId}/receipt`}
-              style={{
-                width: '300px',
-                height: '450px',
-                border: '1px solid #D6D3D1',
-                borderRadius: '4px',
-                backgroundColor: '#FFFFFF',
-              }}
-            />
-          )}
-        </div>
+        {checkoutResult && (
+          <div style={{
+            fontFamily: "'Source Code Pro', monospace",
+            padding: '16px',
+            border: '1px dashed #D6D3D1',
+            borderRadius: '8px',
+            backgroundColor: '#FFFBF5',
+            color: '#1C1917',
+            fontSize: '13px',
+            lineHeight: 1.5
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>{storeSetting?.storeName || 'Kantin Nusantara'}</h3>
+              <div style={{ fontSize: '11px', color: '#57534E', marginTop: '4px' }}>{storeSetting?.address || ''}</div>
+              <div style={{ fontSize: '11px', color: '#57534E' }}>Telp: {storeSetting?.phone || ''}</div>
+            </div>
+            <div style={{ borderTop: '1px dashed #D6D3D1', margin: '8px 0' }} />
+            <div>
+              <strong>No:</strong> {checkoutResult.transactionCode}<br />
+              <strong>Tgl:</strong> {new Date(checkoutResult.transactionDate).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}<br />
+              <strong>Kasir:</strong> {checkoutResult.cashier?.fullName || 'System'}<br />
+              <strong>Pelanggan:</strong> {checkoutResult.customerName || 'Tamu'}<br />
+            </div>
+            <div style={{ borderTop: '1px dashed #D6D3D1', margin: '8px 0' }} />
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                {checkoutResult.items.map((item: any) => (
+                  <tr key={item.id}>
+                    <td style={{ padding: '4px 0' }}>
+                      {item.product?.name || 'Produk'}<br />
+                      <span style={{ fontSize: '11px', color: '#57534E' }}>{item.quantity} x {formatter.format(Number(item.priceAtPurchase || item.price))}</span>
+                    </td>
+                    <td style={{ textAlign: 'right', verticalAlign: 'bottom', padding: '4px 0' }}>
+                      {formatter.format(Number(item.quantity) * Number(item.priceAtPurchase || item.price))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ borderTop: '1px dashed #D6D3D1', margin: '8px 0' }} />
+            <table style={{ width: '100%', fontWeight: 'bold' }}>
+              <tbody>
+                <tr>
+                  <td>Total Tagihan</td>
+                  <td style={{ textAlign: 'right' }}>{formatter.format(Number(checkoutResult.totalAmount))}</td>
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 'normal', color: '#57534E' }}>Uang Diterima</td>
+                  <td style={{ textAlign: 'right', fontWeight: 'normal' }}>{formatter.format(Number(checkoutResult.cashReceived))}</td>
+                </tr>
+                <tr>
+                  <td>Kembalian</td>
+                  <td style={{ textAlign: 'right' }}>{formatter.format(Number(checkoutResult.cashReturn || checkoutResult.cashReceived - checkoutResult.totalAmount))}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style={{ borderTop: '1px dashed #D6D3D1', margin: '16px 0 8px 0' }} />
+            <div style={{ textAlign: 'center', fontSize: '11px', color: '#57534E' }}>
+              Terima Kasih atas Kunjungan Anda!<br />
+              POS UMKM Premium
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

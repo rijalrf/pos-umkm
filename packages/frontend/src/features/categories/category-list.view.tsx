@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Space, Modal, Form, Input, Typography, message, Popconfirm, Card } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Modal, Form, Input, Typography, message, Card, Dropdown } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import { CategoriesService, CategoryPayload } from './categories.service';
+import { ConfirmModal } from '../../components/common/confirm-modal.component';
 
 const { Title, Paragraph } = Typography;
 
@@ -19,6 +20,27 @@ export const CategoryListView: React.FC = () => {
   const [form] = Form.useForm();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [submitLoading, setSubmitLoading] = useState(false);
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [categoryIdToDelete, setCategoryIdToDelete] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleDeleteClick = (id: string) => {
+    setCategoryIdToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!categoryIdToDelete) return;
+    setDeleteLoading(true);
+    try {
+      await handleDelete(categoryIdToDelete);
+    } finally {
+      setDeleteLoading(false);
+      setDeleteConfirmOpen(false);
+      setCategoryIdToDelete(null);
+    }
+  };
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -114,30 +136,40 @@ export const CategoryListView: React.FC = () => {
     {
       title: 'Aksi',
       key: 'actions',
-      width: 150,
-      render: (_: any, record: CategoryItem) => (
-        <Space size="middle">
-          <Button
-            type="text"
-            icon={<EditOutlined style={{ color: '#C2410C' }} />}
-            onClick={() => handleOpenEditModal(record)}
-          />
-          <Popconfirm
-            title="Hapus Kategori"
-            description="Apakah Anda yakin ingin menghapus kategori ini? Semua produk yang berkaitan dengan kategori ini juga akan terhapus."
-            onConfirm={() => handleDelete(record.id)}
-            okText="Ya"
-            cancelText="Tidak"
-            okButtonProps={{ danger: true }}
-          >
+      width: 100,
+      align: 'center' as const,
+      render: (_: any, record: CategoryItem) => {
+        const actionMenu = {
+          items: [
+            {
+              key: 'edit',
+              label: 'Edit',
+              icon: <EditOutlined style={{ color: '#C2410C' }} />,
+              onClick: () => handleOpenEditModal(record)
+            },
+            {
+              type: 'divider' as const,
+            },
+            {
+              key: 'delete',
+              label: 'Hapus',
+              icon: <DeleteOutlined />,
+              danger: true,
+              onClick: () => handleDeleteClick(record.id)
+            }
+          ]
+        };
+
+        return (
+          <Dropdown menu={actionMenu} trigger={['click']} placement="bottomRight">
             <Button
               type="text"
-              danger
-              icon={<DeleteOutlined style={{ color: '#DC2626' }} />}
+              icon={<MoreOutlined style={{ fontSize: '18px', color: '#57534E' }} />}
+              style={{ padding: 0 }}
             />
-          </Popconfirm>
-        </Space>
-      ),
+          </Dropdown>
+        );
+      }
     },
   ];
 
@@ -222,6 +254,15 @@ export const CategoryListView: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      <ConfirmModal
+        open={deleteConfirmOpen}
+        title="Hapus Kategori"
+        description="Apakah Anda yakin ingin menghapus kategori ini? Semua produk yang berkaitan dengan kategori ini juga akan terhapus secara permanen."
+        confirmLoading={deleteLoading}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
     </div>
   );
 };

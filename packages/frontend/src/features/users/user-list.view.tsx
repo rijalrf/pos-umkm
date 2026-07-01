@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Space, Tag, Popconfirm, message, Typography, Card } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, KeyOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Tag, message, Typography, Card, Dropdown } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, KeyOutlined, MoreOutlined } from '@ant-design/icons';
 import { UsersPresenter } from './users.presenter';
 import { UserFormView } from './user-form.view';
 import { PasswordChangeModalView } from './password-change-modal.view';
+import { ConfirmModal } from '../../components/common/confirm-modal.component';
 
 const { Title, Paragraph } = Typography;
 
@@ -17,6 +18,27 @@ export const UserListView: React.FC = () => {
   const [formVisible, setFormVisible] = useState<boolean>(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [pwVisible, setPwVisible] = useState<boolean>(false);
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userIdToDelete, setUserIdToDelete] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleDeleteClick = (id: string) => {
+    setUserIdToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!userIdToDelete) return;
+    setDeleteLoading(true);
+    try {
+      await handleDelete(userIdToDelete);
+    } finally {
+      setDeleteLoading(false);
+      setDeleteConfirmOpen(false);
+      setUserIdToDelete(null);
+    }
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -107,31 +129,40 @@ export const UserListView: React.FC = () => {
     {
       title: 'Aksi',
       key: 'actions',
-      render: (_: any, record: any) => (
-        <Space size="middle">
-          <Button
-            type="text"
-            icon={<EditOutlined style={{ color: '#C2410C' }} />}
-            onClick={() => handleEdit(record.id)}
-            style={{ padding: 0 }}
-          />
-          <Popconfirm
-            title="Apakah Anda yakin ingin menghapus pengguna ini?"
-            description="Tindakan ini tidak dapat dibatalkan."
-            onConfirm={() => handleDelete(record.id)}
-            okText="Hapus"
-            cancelText="Batal"
-            okButtonProps={{ danger: true, style: { borderRadius: '4px' } }}
-            cancelButtonProps={{ style: { borderRadius: '4px' } }}
-          >
+      width: 100,
+      align: 'center' as const,
+      render: (_: any, record: any) => {
+        const actionMenu = {
+          items: [
+            {
+              key: 'edit',
+              label: 'Edit',
+              icon: <EditOutlined style={{ color: '#C2410C' }} />,
+              onClick: () => handleEdit(record.id)
+            },
+            {
+              type: 'divider' as const,
+            },
+            {
+              key: 'delete',
+              label: 'Hapus',
+              icon: <DeleteOutlined />,
+              danger: true,
+              onClick: () => handleDeleteClick(record.id)
+            }
+          ]
+        };
+
+        return (
+          <Dropdown menu={actionMenu} trigger={['click']} placement="bottomRight">
             <Button
               type="text"
-              icon={<DeleteOutlined style={{ color: '#DC2626' }} />}
+              icon={<MoreOutlined style={{ fontSize: '18px', color: '#57534E' }} />}
               style={{ padding: 0 }}
             />
-          </Popconfirm>
-        </Space>
-      ),
+          </Dropdown>
+        );
+      }
     },
   ];
 
@@ -208,6 +239,14 @@ export const UserListView: React.FC = () => {
         visible={pwVisible}
         onCancel={() => setPwVisible(false)}
         onSuccess={() => setPwVisible(false)}
+      />
+      <ConfirmModal
+        open={deleteConfirmOpen}
+        title="Hapus Pengguna"
+        description="Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan."
+        confirmLoading={deleteLoading}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteConfirmOpen(false)}
       />
     </div>
   );
