@@ -100,6 +100,8 @@ export class TransactionsService {
           customerId: data.customerId || null,
           customerName,
           cashierId,
+          tableId: data.tableId || null,
+          tableNumber: data.tableNumber || null,
           totalAmount: new Prisma.Decimal(totalAmount),
           cashReceived: new Prisma.Decimal(data.cashReceived),
           cashReturn: new Prisma.Decimal(cashReturn),

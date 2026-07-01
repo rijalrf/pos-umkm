@@ -37,6 +37,28 @@ export class PublicService {
     };
   }
 
+  async getTableById(idOrCode: string) {
+    let table = await prisma.table.findUnique({
+      where: { id: idOrCode },
+    });
+    
+    if (!table) {
+      table = await prisma.table.findUnique({
+        where: { code: idOrCode },
+      });
+    }
+
+    if (!table || table.status !== 'ACTIVE') {
+      throw new BadRequestError('Meja tidak ditemukan atau tidak aktif');
+    }
+    return {
+      id: table.id,
+      number: table.number,
+      code: table.code,
+      status: table.status,
+    };
+  }
+
   async checkout(input: PublicCheckoutInput) {
     let customerId: string | undefined;
     let customerName: string | undefined;
@@ -53,6 +75,17 @@ export class PublicService {
         throw new BadRequestError('Guest name is required for guest checkout');
       }
       customerName = input.guestName;
+    }
+
+    let tableNumber: string | undefined;
+    if (input.tableId) {
+      const table = await prisma.table.findUnique({
+        where: { id: input.tableId },
+      });
+      if (!table || table.status !== 'ACTIVE') {
+        throw new BadRequestError('Meja tidak aktif atau tidak ditemukan');
+      }
+      tableNumber = table.number;
     }
 
     const cashier = await prisma.user.findFirst({
@@ -76,6 +109,8 @@ export class PublicService {
     const tx = await this.transactionsService.createTransaction(cashier.id, {
       customerId,
       customerName,
+      tableId: input.tableId,
+      tableNumber,
       items: input.items,
       cashReceived: totalAmount,
     });

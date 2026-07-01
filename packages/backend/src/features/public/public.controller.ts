@@ -64,6 +64,19 @@ export class PublicController {
     }
   };
 
+  getTableById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const data = await this.service.getTableById(id);
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   checkout = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = await this.service.checkout(req.body);

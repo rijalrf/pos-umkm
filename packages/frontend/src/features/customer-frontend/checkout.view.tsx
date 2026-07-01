@@ -114,6 +114,10 @@ export const CheckoutView: React.FC = () => {
       payload.memberData = memberData;
     }
 
+    if (cart.tableId) {
+      payload.tableId = cart.tableId;
+    }
+
     try {
       const tx = await presenter.checkout(payload);
       if (tx) {
@@ -177,11 +181,9 @@ export const CheckoutView: React.FC = () => {
         />
       )}
 
-      {checkoutStep !== 'success' && (
+      {checkoutStep === 'review' && (
         <Title level={2} style={{ fontFamily: 'var(--font-headline)', color: '#1C1917', marginBottom: '24px' }}>
-          {checkoutStep === 'checkout'
-            ? 'Daftar Keranjang'
-            : 'Review Pesanan'}
+          Review Pesanan
         </Title>
       )}
 
@@ -219,6 +221,9 @@ export const CheckoutView: React.FC = () => {
               style={{ borderColor: '#E7E5E4', borderRadius: '12px' }}
               styles={{ body: { padding: '24px' } }}
             >
+              <Text strong style={{ display: 'block', marginBottom: '12px', color: '#1C1917', fontSize: '14px' }}>
+                Daftar Keranjang
+              </Text>
               <List
                 dataSource={cart.items}
                 renderItem={(item) => (
@@ -293,6 +298,16 @@ export const CheckoutView: React.FC = () => {
                 <Text strong style={{ display: 'block', marginBottom: '12px', color: '#1C1917', fontSize: '14px' }}>
                   Data Pelanggan
                 </Text>
+
+                {/* Nomor Meja — Teks Biasa dengan Label Standar Form */}
+                <Form.Item label="Nomor Meja" style={{ marginBottom: '16px' }}>
+                  <Text style={{
+                    fontSize: '15px',
+                    color: cart.tableCode ? '#C2410C' : '#8C8A87',
+                  }}>
+                    {cart.tableCode ? cart.tableCode : 'Tanpa Meja'}
+                  </Text>
+                </Form.Item>
 
                 <Form.Item
                   label="Nama Pelanggan"
@@ -508,6 +523,12 @@ export const CheckoutView: React.FC = () => {
                 <Text strong style={{ color: '#1C1917' }}>{buyerName}</Text>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
+                <Text style={{ color: '#57534E' }}>Meja:</Text>
+                <Text strong style={{ color: cart.tableCode ? '#C2410C' : '#1C1917' }}>
+                  {cart.tableCode ? cart.tableCode : 'Tanpa Meja'}
+                </Text>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
                 <Text style={{ color: '#57534E' }}>Tipe:</Text>
                 <Text strong style={{ color: '#1C1917' }}>Tamu</Text>
               </div>
@@ -628,6 +649,12 @@ export const CheckoutView: React.FC = () => {
                 <Text style={{ color: '#57534E' }}>Pelanggan:</Text>
                 <Text strong style={{ color: '#1C1917' }}>
                   {createdTx.customerName || 'Tamu'}
+                </Text>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+                <Text style={{ color: '#57534E' }}>Meja:</Text>
+                <Text strong style={{ color: cart.tableCode ? '#C2410C' : '#1C1917' }}>
+                  {cart.tableCode ? cart.tableCode : 'Tanpa Meja'}
                 </Text>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>

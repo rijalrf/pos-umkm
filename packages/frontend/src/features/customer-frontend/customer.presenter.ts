@@ -135,6 +135,7 @@ export function useCustomerPresenter() {
     guestName?: string;
     memberData?: CustomerRegisterPayload;
     items: { productId: string; quantity: number }[];
+    tableId?: string;
   }) => {
     setLoading(true);
     try {

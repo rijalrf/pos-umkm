@@ -88,6 +88,8 @@ model Transaction {
   customerId       String?           @map("customer_id")
   customerName     String?           @map("customer_name")
   cashierId        String            @map("cashier_id")
+  tableId          String?           @map("table_id")
+  tableNumber      String?           @map("table_number")
   totalAmount      Decimal           @db.Decimal(15, 2) @map("total_amount")
   cashReceived     Decimal           @db.Decimal(15, 2) @map("cash_received")
   cashReturn       Decimal           @db.Decimal(15, 2) @map("cash_return")
@@ -96,6 +98,7 @@ model Transaction {
   
   customer         Customer?         @relation(fields: [customerId], references: [id], onDelete: SetNull)
   cashier          User              @relation(fields: [cashierId], references: [id])
+  table            Table?            @relation(fields: [tableId], references: [id], onDelete: SetNull)
   items            TransactionItem[]
   
   @@map("transactions")
@@ -144,4 +147,18 @@ model GDriveConfig {
   updatedAt    DateTime  @updatedAt @map("updated_at")
   
   @@map("gdrive_config")
+}
+
+// ==================== TABLES (Meja) ====================
+model Table {
+  id        String   @id @default(uuid())
+  code      String   @unique @map("code")
+  number    String   @unique @map("number")
+  status    String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  transactions Transaction[]
+  
+  @@map("tables")
 }

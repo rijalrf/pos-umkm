@@ -10,6 +10,7 @@ import reportsRoutes from './features/reports/reports.routes';
 import customersRoutes from './features/customers/customers.routes';
 import publicRoutes from './features/public/public.routes';
 import usersRoutes from './features/users/users.routes';
+import tablesRoutes from './features/tables/tables.routes';
 import { errorHandler } from './shared/middleware/error-handler.middleware';
 import { logger } from './shared/utils/logger.util';
 
@@ -40,6 +41,7 @@ app.use('/api/transactions', transactionsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/customer', customersRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/tables', tablesRoutes);
 
 // Base route
 app.get('/api/health', (_req, res) => {

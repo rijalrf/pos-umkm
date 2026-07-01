@@ -6,6 +6,8 @@ export interface CreateTransactionItemInput {
 export interface CreateTransactionInput {
   customerId?: string;
   customerName?: string;
+  tableId?: string;
+  tableNumber?: string;
   items: CreateTransactionItemInput[];
   cashReceived: number;
 }

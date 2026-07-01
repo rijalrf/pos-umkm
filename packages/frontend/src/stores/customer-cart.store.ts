@@ -8,15 +8,23 @@ export interface CustomerCartItem {
 
 interface CustomerCartState {
   items: CustomerCartItem[];
+  tableId: string | null;
+  tableNumber: string | null;
+  tableCode: string | null;
   addItem: (product: ProductItem) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  setTable: (id: string | null, number: string | null, code: string | null) => void;
+  clearTable: () => void;
   getTotalAmount: () => number;
 }
 
 export const useCustomerCartStore = create<CustomerCartState>((set, get) => ({
   items: [],
+  tableId: localStorage.getItem('customer_table_id'),
+  tableNumber: localStorage.getItem('customer_table_number'),
+  tableCode: localStorage.getItem('customer_table_code'),
   addItem: (product: ProductItem) => {
     const items = get().items;
     const existingIndex = items.findIndex((item) => item.product.id === product.id);
@@ -57,6 +65,24 @@ export const useCustomerCartStore = create<CustomerCartState>((set, get) => ({
     }
   },
   clearCart: () => set({ items: [] }),
+  setTable: (id: string | null, number: string | null, code: string | null) => {
+    if (id) localStorage.setItem('customer_table_id', id);
+    else localStorage.removeItem('customer_table_id');
+
+    if (number) localStorage.setItem('customer_table_number', number);
+    else localStorage.removeItem('customer_table_number');
+
+    if (code) localStorage.setItem('customer_table_code', code);
+    else localStorage.removeItem('customer_table_code');
+
+    set({ tableId: id, tableNumber: number, tableCode: code });
+  },
+  clearTable: () => {
+    localStorage.removeItem('customer_table_id');
+    localStorage.removeItem('customer_table_number');
+    localStorage.removeItem('customer_table_code');
+    set({ tableId: null, tableNumber: null, tableCode: null });
+  },
   getTotalAmount: () => {
     return get().items.reduce((sum, item) => sum + parseFloat(item.product.price) * item.quantity, 0);
   },
