@@ -37,16 +37,24 @@ export class PublicService {
     };
   }
 
-  async getTableById(id: string) {
-    const table = await prisma.table.findUnique({
-      where: { id },
+  async getTableById(idOrCode: string) {
+    let table = await prisma.table.findUnique({
+      where: { id: idOrCode },
     });
+    
+    if (!table) {
+      table = await prisma.table.findUnique({
+        where: { code: idOrCode },
+      });
+    }
+
     if (!table || table.status !== 'ACTIVE') {
       throw new BadRequestError('Meja tidak ditemukan atau tidak aktif');
     }
     return {
       id: table.id,
       number: table.number,
+      code: table.code,
       status: table.status,
     };
   }

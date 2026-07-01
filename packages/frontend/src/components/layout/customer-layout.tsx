@@ -56,11 +56,6 @@ export const CustomerLayout: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {cart.tableCode && (
-              <Text style={{ fontSize: '11px', color: '#FFD6B8', fontFamily: "'Source Code Pro', monospace", letterSpacing: '0.05em', fontWeight: 700 }}>
-                Meja {cart.tableCode}
-              </Text>
-            )}
             <Text style={{ fontSize: '12px', color: '#FFFBF5', opacity: 0.9 }}>
               {cartCount} Produk di Keranjang
             </Text>
