@@ -84,4 +84,22 @@ export class UsersController {
       next(error);
     }
   };
+
+  updateProfile = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const currentUserId = req.user?.id;
+      if (!currentUserId) {
+        throw new Error('User context not found');
+      }
+      const data = await this.service.updateUser(currentUserId, {
+        fullName: req.body.fullName
+      });
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

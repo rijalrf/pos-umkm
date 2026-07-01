@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Tabs, Form, Input, Button, Space, Typography, Badge, message, Upload, Spin } from 'antd';
+import { Tabs, Form, Input, Button, Space, Typography, Badge, message, Upload, Spin, Card } from 'antd';
 import { SettingOutlined, GoogleOutlined, CheckCircleOutlined, CloseCircleOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useSearchParams } from 'react-router-dom';
 import { SettingsPresenter } from './settings.presenter';
@@ -155,13 +155,13 @@ export const SettingsView: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '16px' }}>
+    <div>
       <div style={{ marginBottom: '24px' }}>
-        <Title level={2} style={{ fontFamily: "'Playfair Display', serif", color: '#C2410C', margin: 0 }}>
-          Settings
+        <Title level={2} style={{ fontFamily: "'Inter', sans-serif", color: '#C2410C', margin: 0 }}>
+          Pengaturan
         </Title>
         <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#57534E', marginTop: '4px' }}>
-          Configure Google Drive integration for product images and modify store profile.
+          Konfigurasikan integrasi Google Drive untuk gambar produk dan sesuaikan profil toko.
         </Paragraph>
       </div>
 
@@ -180,7 +180,7 @@ export const SettingsView: React.FC = () => {
               key: 'gdrive',
               label: (
                 <span style={{ fontSize: '15px', fontWeight: 600 }}>
-                  <GoogleOutlined /> Google Drive Integration
+                  <GoogleOutlined /> Integrasi Google Drive
                 </span>
               ),
               children: (
@@ -189,27 +189,27 @@ export const SettingsView: React.FC = () => {
                     <Space size="middle">
                       <GoogleOutlined style={{ fontSize: '32px', color: '#C2410C' }} />
                       <div>
-                        <Text strong style={{ display: 'block', fontSize: '16px' }}>Google Drive Connection Status</Text>
+                        <Text strong style={{ display: 'block', fontSize: '16px' }}>Status Koneksi Google Drive</Text>
                         <Text type="secondary" style={{ fontSize: '13px' }}>
-                          Used to store and serve product images securely.
+                          Digunakan untuk menyimpan dan menyajikan gambar produk secara aman.
                         </Text>
                       </div>
                     </Space>
                     <div>
                       {loadingStatus ? (
-                        <Badge status="processing" text="Checking status..." />
+                        <Badge status="processing" text="Memeriksa status..." />
                       ) : gdriveConnected ? (
                         <Space>
                           <Badge status="success" />
                           <span style={{ color: '#166534', fontWeight: 600, backgroundColor: '#DCFCE7', padding: '4px 10px', borderRadius: '4px', border: '1px solid #BBF7D0', fontSize: '12px' }}>
-                            <CheckCircleOutlined /> CONNECTED
+                            <CheckCircleOutlined /> TERHUBUNG
                           </span>
                         </Space>
                       ) : (
                         <Space>
                           <Badge status="error" />
                           <span style={{ color: '#991B1B', fontWeight: 600, backgroundColor: '#FEE2E2', padding: '4px 10px', borderRadius: '4px', border: '1px solid #FCA5A5', fontSize: '12px' }}>
-                            <CloseCircleOutlined /> NOT CONNECTED
+                            <CloseCircleOutlined /> BELUM TERHUBUNG
                           </span>
                         </Space>
                       )}
@@ -218,26 +218,26 @@ export const SettingsView: React.FC = () => {
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                     <div>
-                      <Title level={4} style={{ fontFamily: "'Playfair Display', serif", margin: '0 0 16px 0', fontSize: '18px' }}>
-                        Step-by-step Setup Guide
+                      <Title level={4} style={{ fontFamily: "'Inter', sans-serif", margin: '0 0 16px 0', fontSize: '18px' }}>
+                        Panduan Konfigurasi Langkah Demi Langkah
                       </Title>
                       <Paragraph style={{ fontSize: '14px', lineHeight: '1.6', color: '#57534E' }}>
-                        1. Go to the <strong><a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">Google Cloud Console</a></strong>.<br />
-                        2. Create a new project or select an existing one.<br />
-                        3. Search for <strong>Google Drive API</strong> and enable it.<br />
-                        4. Go to <strong>OAuth consent screen</strong>, set it up as External, and add scope <code>.../auth/drive.file</code>.<br />
-                        5. Go to <strong>Credentials</strong>, click <i>Create Credentials</i> → <i>OAuth client ID</i> (Application type: Web application).<br />
-                        6. Under <strong>Authorized redirect URIs</strong>, add:
+                        1. Buka <strong><a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">Google Cloud Console</a></strong>.<br />
+                        2. Buat proyek baru atau pilih proyek yang sudah ada.<br />
+                        3. Cari <strong>Google Drive API</strong> dan aktifkan.<br />
+                        4. Buka <strong>OAuth consent screen</strong>, atur tipe sebagai Eksternal, dan tambahkan scope <code>.../auth/drive.file</code>.<br />
+                        5. Buka <strong>Credentials</strong>, klik <i>Buat Kredensial</i> → <i>OAuth client ID</i> (Tipe aplikasi: Web application).<br />
+                        6. Di bagian <strong>Authorized redirect URIs</strong>, tambahkan:
                         <pre style={{ backgroundColor: '#F5F5F4', padding: '8px', borderRadius: '4px', fontSize: '12px', marginTop: '6px', border: '1px solid #E7E5E4', overflowX: 'auto' }}>
                           http://localhost:3000/api/settings/gdrive/callback
                         </pre>
-                        7. Copy the client ID and client secret, paste them in the form and click <strong>Authorize</strong>.
+                        7. Salin client ID dan client secret, tempelkan di form dan klik <strong>Otorisasi</strong>.
                       </Paragraph>
                     </div>
 
                     <div style={{ borderLeft: '1px solid #E7E5E4', paddingLeft: '24px' }}>
-                      <Title level={4} style={{ fontFamily: "'Playfair Display', serif", margin: '0 0 16px 0', fontSize: '18px' }}>
-                        Configuration Credentials
+                      <Title level={4} style={{ fontFamily: "'Inter', sans-serif", margin: '0 0 16px 0', fontSize: '18px' }}>
+                        Kredensial Konfigurasi
                       </Title>
 
                       <Form
@@ -249,17 +249,17 @@ export const SettingsView: React.FC = () => {
                         <Form.Item
                           name="clientId"
                           label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Client ID</span>}
-                          rules={[{ required: true, message: 'Please enter Client ID' }]}
+                          rules={[{ required: true, message: 'Client ID wajib diisi!' }]}
                         >
-                          <Input placeholder="Enter your Google OAuth Client ID" />
+                          <Input placeholder="Masukkan Google OAuth Client ID Anda" />
                         </Form.Item>
 
                         <Form.Item
                           name="clientSecret"
                           label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Client Secret</span>}
-                          rules={[{ required: true, message: 'Please enter Client Secret' }]}
+                          rules={[{ required: true, message: 'Client Secret wajib diisi!' }]}
                         >
-                          <Input.Password placeholder="Enter your Google OAuth Client Secret" />
+                          <Input.Password placeholder="Masukkan Google OAuth Client Secret Anda" />
                         </Form.Item>
 
                         <Form.Item style={{ marginBottom: 0 }}>
@@ -276,7 +276,7 @@ export const SettingsView: React.FC = () => {
                                 borderRadius: '4px',
                               }}
                             >
-                              Test Connection
+                              Uji Koneksi
                             </Button>
                             <Button
                               type="primary"
@@ -289,7 +289,7 @@ export const SettingsView: React.FC = () => {
                                 borderRadius: '4px',
                               }}
                             >
-                              Authorize
+                              Otorisasi
                             </Button>
                           </Space>
                         </Form.Item>
@@ -303,17 +303,17 @@ export const SettingsView: React.FC = () => {
               key: 'store',
               label: (
                 <span style={{ fontSize: '15px', fontWeight: 600 }}>
-                  <SettingOutlined /> Store Settings
+                  <SettingOutlined /> Profil Toko
                 </span>
               ),
               children: (
-                <Spin spinning={storeLoading} tip="Loading store settings...">
+                <Spin spinning={storeLoading} tip="Memuat pengaturan toko...">
                   <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '32px', marginTop: '16px' }}>
                     
                     {/* Left side: Logo Uploader */}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <Text strong style={{ display: 'block', marginBottom: '12px', fontSize: '13px', color: '#1C1917' }}>
-                        Store Logo
+                        Logo Toko
                       </Text>
                       <Upload
                         name="logo"
@@ -341,12 +341,12 @@ export const SettingsView: React.FC = () => {
                         ) : (
                           <div style={{ padding: '8px', textAlign: 'center' }}>
                             {uploadingLogo ? <LoadingOutlined style={{ color: '#C2410C' }} /> : <PlusOutlined style={{ color: '#C2410C' }} />}
-                            <div style={{ marginTop: 8, fontSize: '13px', color: '#57534E' }}>Upload Logo</div>
+                            <div style={{ marginTop: 8, fontSize: '13px', color: '#57534E' }}>Unggah Logo</div>
                           </div>
                         )}
                       </Upload>
                       <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '12px', textAlign: 'center', color: '#78716C' }}>
-                        Supports JPG/PNG.<br />Max file size 2MB.
+                        Mendukung JPG/PNG.<br />Ukuran file maksimal 2MB.
                       </Text>
                     </div>
 
@@ -361,56 +361,56 @@ export const SettingsView: React.FC = () => {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                           <Form.Item
                             name="storeName"
-                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Store Name</span>}
-                            rules={[{ required: true, message: 'Please enter store name' }]}
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Nama Toko</span>}
+                            rules={[{ required: true, message: 'Nama toko wajib diisi!' }]}
                           >
                             <Input />
                           </Form.Item>
 
                           <Form.Item
                             name="phone"
-                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Phone Number</span>}
-                            rules={[{ required: true, message: 'Please enter phone number' }]}
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Nomor Telepon</span>}
+                            rules={[{ required: true, message: 'Nomor telepon wajib diisi!' }]}
                           >
                             <Input />
                           </Form.Item>
 
                           <Form.Item
                             name="email"
-                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Email Address</span>}
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Alamat Email</span>}
                           >
                             <Input type="email" />
                           </Form.Item>
 
                           <Form.Item
                             name="currency"
-                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Currency Symbol</span>}
-                            rules={[{ required: true, message: 'Please enter currency' }]}
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Simbol Mata Uang</span>}
+                            rules={[{ required: true, message: 'Simbol mata uang wajib diisi!' }]}
                           >
-                            <Input placeholder="e.g. IDR, $, Rp" />
+                            <Input placeholder="Contoh: IDR, $, Rp" />
                           </Form.Item>
 
                           <Form.Item
                             name="dateFormat"
-                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Date Format</span>}
-                            rules={[{ required: true, message: 'Please enter date format' }]}
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Format Tanggal</span>}
+                            rules={[{ required: true, message: 'Format tanggal wajib diisi!' }]}
                           >
-                            <Input placeholder="e.g. DD/MM/YYYY" />
+                            <Input placeholder="Contoh: DD/MM/YYYY" />
                           </Form.Item>
 
                           <Form.Item
                             name="timezone"
-                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Timezone</span>}
-                            rules={[{ required: true, message: 'Please enter timezone' }]}
+                            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Zona Waktu</span>}
+                            rules={[{ required: true, message: 'Zona waktu wajib diisi!' }]}
                           >
-                            <Input placeholder="e.g. Asia/Jakarta" />
+                            <Input placeholder="Contoh: Asia/Jakarta" />
                           </Form.Item>
                         </div>
 
                         <Form.Item
                           name="address"
-                          label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Store Address</span>}
-                          rules={[{ required: true, message: 'Please enter address' }]}
+                          label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Alamat Toko</span>}
+                          rules={[{ required: true, message: 'Alamat toko wajib diisi!' }]}
                         >
                           <Input.TextArea rows={3} />
                         </Form.Item>
@@ -427,7 +427,7 @@ export const SettingsView: React.FC = () => {
                               borderRadius: '4px',
                             }}
                           >
-                            Save Settings
+                            Simpan Pengaturan
                           </Button>
                         </Form.Item>
                       </Form>

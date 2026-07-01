@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, InputNumber, Select, Upload, Button, message } from 'antd';
+import React, { useEffect, useState, useRef } from 'react';
+import { Modal, Form, Input, InputNumber, Select, Upload, Button, message, Row, Col } from 'antd';
 import { InboxOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { ProductsService, ProductPayload } from './products.service';
@@ -27,6 +27,9 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  // Focus ref
+  const kodeInputRef = useRef<any>(null);
+
   useEffect(() => {
     if (open) {
       setFileList([]);
@@ -47,18 +50,23 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       } else {
         form.resetFields();
       }
+
+      // Auto-focus Kode input field
+      setTimeout(() => {
+        kodeInputRef.current?.focus();
+      }, 100);
     }
   }, [open, editingProduct, form]);
 
   const handleBeforeUpload = (file: File) => {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
     if (!isJpgOrPng) {
-      message.error('You can only upload JPG/PNG files!');
+      message.error('Anda hanya dapat mengunggah file JPG/PNG!');
       return Upload.LIST_IGNORE;
     }
     const isLt5M = file.size / 1024 / 1024 < 5;
     if (!isLt5M) {
-      message.error('Image must be smaller than 5MB!');
+      message.error('Ukuran gambar tidak boleh lebih dari 5MB!');
       return Upload.LIST_IGNORE;
     }
     
@@ -107,37 +115,37 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         productId = editingProduct.id;
         const response = await ProductsService.update(productId, payload);
         if (!response.success) {
-          throw new Error(response.message || 'Failed to update product');
+          throw new Error(response.message || 'Gagal memperbarui produk');
         }
       } else {
         const response = await ProductsService.create(payload);
         if (response.success && response.data) {
           productId = response.data.id;
         } else {
-          throw new Error(response.message || 'Failed to create product');
+          throw new Error(response.message || 'Gagal menambahkan produk');
         }
       }
 
       // Handle image upload if a file is selected
       if (fileList.length > 0 && fileList[0]?.originFileObj && productId) {
         try {
-          message.loading({ content: 'Uploading image to Google Drive...', key: 'uploading' });
+          message.loading({ content: 'Mengunggah gambar ke Google Drive...', key: 'uploading' });
           const uploadRes = await ProductsService.uploadImage(productId, fileList[0].originFileObj as File);
           if (uploadRes.success) {
-            message.success({ content: 'Image uploaded successfully!', key: 'uploading' });
+            message.success({ content: 'Gambar berhasil diunggah!', key: 'uploading' });
           } else {
-            message.warning({ content: 'Product saved, but image upload failed', key: 'uploading' });
+            message.warning({ content: 'Produk berhasil disimpan, tetapi gagal mengunggah gambar', key: 'uploading' });
           }
         } catch (uploadError) {
           console.error(uploadError);
-          message.warning({ content: 'Product saved, but image upload failed', key: 'uploading' });
+          message.warning({ content: 'Produk berhasil disimpan, tetapi gagal mengunggah gambar', key: 'uploading' });
         }
       }
 
-      message.success(`Product ${isUpdate ? 'updated' : 'created'} successfully`);
+      message.success(`Produk berhasil ${isUpdate ? 'diperbarui' : 'ditambahkan'}`);
       onSuccess();
     } catch (error: any) {
-      const errMsg = error.response?.data?.message || error.message || 'Error processing request';
+      const errMsg = error.response?.data?.message || error.message || 'Terjadi kesalahan saat memproses data';
       message.error(errMsg);
     } finally {
       setConfirmLoading(false);
@@ -146,95 +154,114 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
   return (
     <Modal
-      title={<span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#C2410C' }}>{editingProduct ? 'Edit Product' : 'Add Product'}</span>}
+      title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, color: '#C2410C' }}>{editingProduct ? 'Edit Produk' : 'Tambah Produk'}</span>}
       open={open}
       onOk={handleOk}
       confirmLoading={confirmLoading}
       onCancel={onCancel}
       destroyOnClose
-      width={600}
+      width={850}
     >
       <Form form={form} layout="vertical" style={{ marginTop: '16px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-          <div>
-            <Form.Item
-              name="name"
-              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Product Name</span>}
-              rules={[{ required: true, message: 'Please enter product name' }]}
-            >
-              <Input placeholder="e.g. Nasi Goreng Spesial" />
-            </Form.Item>
-
+        <Row gutter={24}>
+          {/* Left Column: All Input Fields */}
+          <Col span={14}>
             <Form.Item
               name="sku"
-              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>SKU / Barcode</span>}
-              rules={[{ required: true, message: 'Please enter SKU barcode code' }]}
+              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Kode</span>}
+              rules={[{ required: true, message: 'Kode wajib diisi!' }]}
             >
-              <Input placeholder="e.g. FOOD-NSGR-01" />
+              <Input ref={kodeInputRef} placeholder="Contoh: SKU-MAK-001" style={{ height: '42px', borderRadius: '4px' }} />
             </Form.Item>
 
             <Form.Item
-              name="categoryId"
-              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Category</span>}
-              rules={[{ required: true, message: 'Please select a category' }]}
+              name="name"
+              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Nama Produk</span>}
+              rules={[{ required: true, message: 'Nama produk wajib diisi!' }]}
             >
-              <Select placeholder="Select category">
-                {categories.map((cat) => (
-                  <Select.Option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </Select.Option>
-                ))}
-              </Select>
+              <Input placeholder="Contoh: Nasi Goreng Spesial" style={{ height: '42px', borderRadius: '4px' }} />
             </Form.Item>
 
-            <Form.Item
-              name="price"
-              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Price (IDR)</span>}
-              rules={[{ required: true, message: 'Please enter price' }]}
-            >
-              <InputNumber
-                style={{ width: '100%' }}
-                min={0}
-                formatter={(value) => `Rp ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(value) => value!.replace(/Rp\s?|(,*)/g, '') as any}
-              />
-            </Form.Item>
-          </div>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="categoryId"
+                  label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Kategori</span>}
+                  rules={[{ required: true, message: 'Kategori wajib diisi!' }]}
+                >
+                  <Select placeholder="Pilih Kategori" style={{ height: '42px', borderRadius: '4px' }}>
+                    {categories.map((cat) => (
+                      <Select.Option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="price"
+                  label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Harga (Rp)</span>}
+                  rules={[{ required: true, message: 'Harga wajib diisi!' }]}
+                >
+                  <InputNumber
+                    style={{ width: '100%', height: '42px', display: 'flex', alignItems: 'center', borderRadius: '4px' }}
+                    min={0}
+                    formatter={(value) => `Rp ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value!.replace(/Rp\s?|(,*)/g, '') as any}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-          <div>
-            <Form.Item
-              name="stock"
-              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Stock</span>}
-              rules={[{ required: true, message: 'Please enter stock quantity' }]}
-            >
-              <InputNumber style={{ width: '100%' }} min={0} precision={0} />
-            </Form.Item>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="stock"
+                  label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Stok</span>}
+                  rules={[{ required: true, message: 'Jumlah stok wajib diisi!' }]}
+                >
+                  <InputNumber style={{ width: '100%', height: '42px', display: 'flex', alignItems: 'center', borderRadius: '4px' }} min={0} precision={0} />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="stockAlertThreshold"
+                  label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Batas Minimum Stok</span>}
+                  tooltip="Ketika stok turun di bawah angka ini, sistem akan menandainya sebagai stok rendah."
+                  initialValue={10}
+                >
+                  <InputNumber style={{ width: '100%', height: '42px', display: 'flex', alignItems: 'center', borderRadius: '4px' }} min={0} precision={0} />
+                </Form.Item>
+              </Col>
+            </Row>
 
             <Form.Item
-              name="stockAlertThreshold"
-              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Stock Alert Threshold</span>}
-              tooltip="When stock drops below this number, the system will highlight it as low stock."
-              initialValue={10}
+              name="description"
+              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Deskripsi</span>}
+              style={{ marginBottom: 0 }}
             >
-              <InputNumber style={{ width: '100%' }} min={0} precision={0} />
+              <Input.TextArea placeholder="Masukkan deskripsi produk..." rows={3} style={{ borderRadius: '4px' }} />
             </Form.Item>
+          </Col>
 
-            {/* Product Image Section */}
+          {/* Right Column: Image Frame Upload & Preview */}
+          <Col span={10}>
             <Form.Item
-              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Product Image</span>}
+              label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Gambar Produk</span>}
             >
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {previewUrl ? (
-                  <div style={{ position: 'relative', width: '100%', height: '140px', border: '1px solid #D6D3D1', borderRadius: '4px', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFBF5' }}>
-                    <img src={previewUrl} alt="Product" style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                  <div style={{ position: 'relative', width: '100%', height: '445px', border: '1px solid #D6D3D1', borderRadius: '8px', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFBF5' }}>
+                    <img src={previewUrl} alt="Product" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     <Button
                       type="primary"
                       danger
                       icon={<DeleteOutlined />}
                       shape="circle"
-                      size="small"
+                      size="middle"
                       onClick={handleRemoveImage}
-                      style={{ position: 'absolute', top: '8px', right: '8px' }}
+                      style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}
                     />
                   </div>
                 ) : (
@@ -244,34 +271,29 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     showUploadList={false}
                     style={{
                       border: '1.5px dashed #D6D3D1',
-                      borderRadius: '4px',
-                      padding: '16px',
+                      borderRadius: '8px',
+                      height: '445px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
                       backgroundColor: '#FFFBF5',
                     }}
                   >
                     <p className="ant-upload-drag-icon" style={{ margin: 0 }}>
-                      <InboxOutlined style={{ color: '#C2410C', fontSize: '28px' }} />
+                      <InboxOutlined style={{ color: '#C2410C', fontSize: '48px' }} />
                     </p>
-                    <p className="ant-upload-text" style={{ fontSize: '12px', margin: '4px 0 0 0', color: '#1C1917' }}>
-                      Click or drag image here
+                    <p className="ant-upload-text" style={{ fontSize: '14px', margin: '12px 0 0 0', color: '#1C1917', fontWeight: 600 }}>
+                      Klik atau seret gambar ke sini
                     </p>
-                    <p className="ant-upload-hint" style={{ fontSize: '10px', color: '#57534E' }}>
-                      PNG, JPG up to 5MB
+                    <p className="ant-upload-hint" style={{ fontSize: '12px', color: '#57534E', marginTop: '4px' }}>
+                      PNG, JPG maksimal 5MB
                     </p>
                   </Upload.Dragger>
                 )}
               </div>
             </Form.Item>
-          </div>
-        </div>
-
-        <Form.Item
-          name="description"
-          label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Description</span>}
-          style={{ marginBottom: 0 }}
-        >
-          <Input.TextArea placeholder="Enter product description" rows={3} />
-        </Form.Item>
+          </Col>
+        </Row>
       </Form>
     </Modal>
   );

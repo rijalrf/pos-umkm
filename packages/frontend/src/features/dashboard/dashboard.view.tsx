@@ -3,6 +3,7 @@ import { Card, Col, Row, Statistic, Typography, Spin, Table } from 'antd';
 import { ShoppingOutlined, UserOutlined, LineChartOutlined, ShopOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../../stores/auth.store';
 import { ReportsService, ReportResponseData } from '../reports/reports.service';
+import { ReportsCharts } from '../reports/reports-charts.component';
 
 const { Title, Paragraph } = Typography;
 
@@ -74,7 +75,7 @@ export const DashboardView: React.FC = () => {
   return (
     <div>
       <div style={{ marginBottom: '24px' }}>
-        <Title level={2} style={{ margin: 0, fontFamily: "'Playfair Display', serif", color: '#C2410C' }}>Ringkasan Backoffice</Title>
+        <Title level={2} style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#C2410C' }}>Ringkasan Backoffice</Title>
         <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#57534E', fontSize: '15px' }}>
           Selamat datang kembali, {user?.fullName}. Berikut adalah ringkasan sistem kasir dan penjualan Anda.
         </Paragraph>
@@ -118,11 +119,18 @@ export const DashboardView: React.FC = () => {
             </Col>
           </Row>
 
+          <div style={{ marginTop: '24px' }}>
+            <ReportsCharts
+              salesData={reportData?.salesOverTime || []}
+              topProducts={reportData?.topProducts || []}
+            />
+          </div>
+
           <Row gutter={[16, 16]} style={{ marginTop: '24px' }}>
             <Col xs={24} md={12}>
               <Card
                 style={{ borderColor: '#E7E5E4', background: '#FFFFFF', height: '100%' }}
-                title={<span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}><ShoppingOutlined style={{ color: '#C2410C' }} /> 5 Produk Terlaris</span>}
+                title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}><ShoppingOutlined style={{ color: '#C2410C' }} /> 5 Produk Terlaris</span>}
               >
                 <Table
                   dataSource={reportData?.topProducts.slice(0, 5) || []}
@@ -137,7 +145,7 @@ export const DashboardView: React.FC = () => {
             <Col xs={24} md={12}>
               <Card
                 style={{ borderColor: '#E7E5E4', background: '#FFFFFF', height: '100%' }}
-                title={<span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}><HistoryOutlined style={{ color: '#365314' }} /> Panduan Cepat</span>}
+                title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}><HistoryOutlined style={{ color: '#365314' }} /> Panduan Cepat</span>}
               >
                 <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#1C1917', lineHeight: '1.6', fontSize: '14px' }}>
                   Aplikasi POS UMKM dirancang untuk memudahkan transaksi kasir secara offline maupun online.
@@ -154,7 +162,7 @@ export const DashboardView: React.FC = () => {
       ) : (
         <Row gutter={[16, 16]}>
           <Col xs={24}>
-            <Card style={{ borderColor: '#E7E5E4', background: '#FFFFFF' }} title={<span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600 }}>Akses Kasir</span>}>
+            <Card style={{ borderColor: '#E7E5E4', background: '#FFFFFF' }} title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Akses Kasir</span>}>
               <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#1C1917', lineHeight: '1.6' }}>
                 Halo, Anda login sebagai Kasir. Gunakan menu <strong>Penjualan</strong> untuk mulai melayani transaksi pembayaran pelanggan.
               </Paragraph>

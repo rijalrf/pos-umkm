@@ -42,7 +42,7 @@ export const PasswordChangeModalView: React.FC<PasswordChangeModalViewProps> = (
     <Modal
       open={visible}
       title={
-        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '20px', color: '#C2410C' }}>
+        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '20px', color: '#C2410C' }}>
           Change Password
         </span>
       }

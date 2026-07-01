@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Space, Tag, Popconfirm, message, Typography, Card } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, KeyOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Tag, message, Typography, Card, Dropdown } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, KeyOutlined, MoreOutlined } from '@ant-design/icons';
 import { UsersPresenter } from './users.presenter';
 import { UserFormView } from './user-form.view';
 import { PasswordChangeModalView } from './password-change-modal.view';
+import { ConfirmModal } from '../../components/common/confirm-modal.component';
 
 const { Title, Paragraph } = Typography;
 
@@ -17,6 +18,27 @@ export const UserListView: React.FC = () => {
   const [formVisible, setFormVisible] = useState<boolean>(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [pwVisible, setPwVisible] = useState<boolean>(false);
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userIdToDelete, setUserIdToDelete] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleDeleteClick = (id: string) => {
+    setUserIdToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!userIdToDelete) return;
+    setDeleteLoading(true);
+    try {
+      await handleDelete(userIdToDelete);
+    } finally {
+      setDeleteLoading(false);
+      setDeleteConfirmOpen(false);
+      setUserIdToDelete(null);
+    }
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -62,19 +84,19 @@ export const UserListView: React.FC = () => {
       render: (text: string) => <strong style={{ color: '#1C1917' }}>{text}</strong>,
     },
     {
-      title: 'Full Name',
+      title: 'Nama Lengkap',
       dataIndex: 'fullName',
       key: 'fullName',
     },
     {
-      title: 'Role',
+      title: 'Peran',
       dataIndex: 'role',
       key: 'role',
       render: (role: string) => {
         if (role === 'ADMIN') {
           return <Tag color="#C2410C">ADMIN</Tag>;
         }
-        return <Tag color="#365314">CASHIER</Tag>;
+        return <Tag color="#365314">KASIR</Tag>;
       },
     },
     {
@@ -94,44 +116,53 @@ export const UserListView: React.FC = () => {
             border: `1px solid ${isActive ? '#BBF7D0' : '#FCA5A5'}`,
           }}
         >
-          {isActive ? 'Active' : 'Inactive'}
+          {isActive ? 'Aktif' : 'Tidak Aktif'}
         </span>
       ),
     },
     {
-      title: 'Created At',
+      title: 'Tanggal Dibuat',
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (dateStr: string) => new Date(dateStr).toLocaleDateString(),
     },
     {
-      title: 'Actions',
+      title: 'Aksi',
       key: 'actions',
-      render: (_: any, record: any) => (
-        <Space size="middle">
-          <Button
-            type="text"
-            icon={<EditOutlined style={{ color: '#C2410C' }} />}
-            onClick={() => handleEdit(record.id)}
-            style={{ padding: 0 }}
-          />
-          <Popconfirm
-            title="Are you sure you want to delete this user?"
-            description="This action cannot be undone."
-            onConfirm={() => handleDelete(record.id)}
-            okText="Delete"
-            cancelText="Cancel"
-            okButtonProps={{ danger: true, style: { borderRadius: '4px' } }}
-            cancelButtonProps={{ style: { borderRadius: '4px' } }}
-          >
+      width: 100,
+      align: 'center' as const,
+      render: (_: any, record: any) => {
+        const actionMenu = {
+          items: [
+            {
+              key: 'edit',
+              label: 'Edit',
+              icon: <EditOutlined style={{ color: '#C2410C' }} />,
+              onClick: () => handleEdit(record.id)
+            },
+            {
+              type: 'divider' as const,
+            },
+            {
+              key: 'delete',
+              label: 'Hapus',
+              icon: <DeleteOutlined />,
+              danger: true,
+              onClick: () => handleDeleteClick(record.id)
+            }
+          ]
+        };
+
+        return (
+          <Dropdown menu={actionMenu} trigger={['click']} placement="bottomRight">
             <Button
               type="text"
-              icon={<DeleteOutlined style={{ color: '#DC2626' }} />}
+              icon={<MoreOutlined style={{ fontSize: '18px', color: '#57534E' }} />}
               style={{ padding: 0 }}
             />
-          </Popconfirm>
-        </Space>
-      ),
+          </Dropdown>
+        );
+      }
     },
   ];
 
@@ -139,11 +170,11 @@ export const UserListView: React.FC = () => {
     <div style={{ width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
-          <Title level={2} style={{ fontFamily: "'Playfair Display', serif", color: '#C2410C', margin: 0 }}>
-            User Management
+          <Title level={2} style={{ fontFamily: "'Inter', sans-serif", color: '#C2410C', margin: 0 }}>
+            Pengguna
           </Title>
           <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#57534E', marginTop: '4px', marginBottom: 0 }}>
-            Manage backoffice user accounts for administrators and cashiers.
+            Kelola akun pengguna backoffice untuk administrator dan staf kasir.
           </Paragraph>
         </div>
         <Space>
@@ -158,7 +189,7 @@ export const UserListView: React.FC = () => {
               borderRadius: '4px',
             }}
           >
-            Change My Password
+            Ubah Password Saya
           </Button>
           <Button
             type="primary"
@@ -171,7 +202,7 @@ export const UserListView: React.FC = () => {
               borderRadius: '4px',
             }}
           >
-            Add User
+            Tambah Pengguna
           </Button>
         </Space>
       </div>
@@ -182,7 +213,7 @@ export const UserListView: React.FC = () => {
           borderRadius: '8px',
           backgroundColor: '#FFFFFF',
         }}
-        bodyStyle={{ padding: '0px' }}
+        bodyStyle={{ padding: '24px' }}
       >
         <Table
           dataSource={users}
@@ -208,6 +239,14 @@ export const UserListView: React.FC = () => {
         visible={pwVisible}
         onCancel={() => setPwVisible(false)}
         onSuccess={() => setPwVisible(false)}
+      />
+      <ConfirmModal
+        open={deleteConfirmOpen}
+        title="Hapus Pengguna"
+        description="Apakah Anda yakin ingin menghapus pengguna ini? Tindakan ini tidak dapat dibatalkan."
+        confirmLoading={deleteLoading}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteConfirmOpen(false)}
       />
     </div>
   );

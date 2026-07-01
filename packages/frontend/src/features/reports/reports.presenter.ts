@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { ReportsService, ReportResponseData, ReportsQuery } from './reports.service';
 import { message } from 'antd';
 
@@ -67,11 +67,6 @@ export function useReportsPresenter(initialStartDate?: string, initialEndDate?: 
       message.error('Gagal memproses cetak PDF');
     }
   }, [startDate, endDate]);
-
-  // Load report data on mount if query dates are provided, or load default empty query
-  useEffect(() => {
-    fetchReport();
-  }, [fetchReport]);
 
   return {
     loading,

@@ -9,6 +9,8 @@ import { TransactionListView } from '../features/sales/transaction-list.view';
 import { SettingsView } from '../features/settings/store-settings.view';
 import { ReportsView } from '../features/reports/reports.view';
 import { UserListView } from '../features/users/user-list.view';
+import { ProfileView } from '../features/users/profile.view';
+import { CustomerListView } from '../features/customers/customer-list.view';
 import { BackofficeLayout } from '../components/layout/backoffice-layout';
 import { ProtectedRoute } from '../components/common/protected-route.component';
 
@@ -74,7 +76,9 @@ export const AppRoutes: React.FC = () => {
         {/* Common backoffice views */}
         <Route path="sales" element={<SalesView />} />
         <Route path="transactions" element={<TransactionListView />} />
+        <Route path="customers" element={<CustomerListView />} />
         <Route path="settings" element={<SettingsView />} />
+        <Route path="profile" element={<ProfileView />} />
       </Route>
 
       {/* Customer Shop Catalog & Member Account Flow */}

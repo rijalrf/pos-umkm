@@ -9,6 +9,12 @@ export class CustomersRepository {
     });
   }
 
+  async findByPhone(phone: string): Promise<Customer | null> {
+    return prisma.customer.findFirst({
+      where: { phone },
+    });
+  }
+
   async findById(id: string): Promise<Customer | null> {
     return prisma.customer.findUnique({
       where: { id },

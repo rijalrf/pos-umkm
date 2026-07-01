@@ -81,6 +81,11 @@ Files must be named using camelCase or kebab-case combined with the layer type, 
    - Use the custom Winston logger (`logger.util.ts`) for all application logs.
    - Use descriptive log levels: `error` for system failures, `warn` for validation issues/client errors, `info` for startup/connections, and `debug` for temporary troubleshooting.
 
+5. **DRY (Don't Repeat Yourself) Principle:**
+   - **CRITICAL:** Do **NOT** duplicate code, styles, or configuration. AI agents and developers must strictly reuse existing utility functions, component helpers, types, and configurations instead of rewriting them.
+   - If a similar utility, service, helper function, or state store already exists in the project, you **MUST** import and reuse it.
+   - Consolidate repeating patterns into shared components (under `src/components/common/`) or helper utilities when you notice duplicated code structure.
+
 ---
 
 ## 4. UI/UX and Styling (Frontend)
@@ -104,6 +109,8 @@ Files must be named using camelCase or kebab-case combined with the layer type, 
 - **Ask Before Destructive Operations:** Always seek user confirmation before deleting databases, tables, major files, or running heavy system scripts.
 - **Maintain Comments:** Preserve existing comments and docstrings unless they are outdated or explicitly requested to be removed.
 - **Testing:** Ensure mock data or seed scripts are updated whenever DB schema changes.
+- **Language Constraint:** AI agents must always respond, explain, and converse in Indonesian (Bahasa Indonesia).
+- **Ask and Confirm Ambiguous Choices:** If there is any ambiguity or choices regarding requirements, design, structure, or implementation, AI agents **MUST** and **ARE OBLIGATED** to ask the user for confirmation (e.g. using `ask_question` tool) before proceeding.
 
 ---
 
