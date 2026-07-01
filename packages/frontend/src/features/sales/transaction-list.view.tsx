@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Input, DatePicker, Space, Card, Typography, Modal } from 'antd';
+import { Table, Button, Input, DatePicker, Space, Typography, Modal, Card } from 'antd';
 import { SearchOutlined, PrinterOutlined, CalendarOutlined, EyeOutlined } from '@ant-design/icons';
 import { useTransactionsPresenter } from './transactions.presenter';
 
@@ -46,7 +46,7 @@ export const TransactionListView: React.FC = () => {
 
   const columns = [
     {
-      title: 'Transaction Code',
+      title: 'Kode Transaksi',
       dataIndex: 'transactionCode',
       key: 'transactionCode',
       render: (text: string) => (
@@ -56,32 +56,32 @@ export const TransactionListView: React.FC = () => {
       ),
     },
     {
-      title: 'Date & Time',
+      title: 'Tanggal & Waktu',
       dataIndex: 'transactionDate',
       key: 'transactionDate',
       render: (dateStr: string) => new Date(dateStr).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
     },
     {
-      title: 'Cashier',
+      title: 'Kasir',
       dataIndex: 'cashier',
       key: 'cashier',
       render: (cashier: any) => cashier?.fullName || 'System',
     },
     {
-      title: 'Customer',
+      title: 'Pelanggan',
       dataIndex: 'customerName',
       key: 'customerName',
-      render: (text: string) => text || <Text type="secondary">Guest / Walk-in</Text>,
+      render: (text: string) => text || <Text type="secondary">Pelanggan Umum</Text>,
     },
     {
-      title: 'Total Amount',
+      title: 'Total Belanja',
       dataIndex: 'totalAmount',
       key: 'totalAmount',
       align: 'right' as const,
       render: (val: number) => <strong style={{ color: '#1C1917' }}>{formatter.format(Number(val))}</strong>,
     },
     {
-      title: 'Actions',
+      title: 'Aksi',
       key: 'actions',
       render: (_: any, record: any) => (
         <Space size="middle">
@@ -106,39 +106,46 @@ export const TransactionListView: React.FC = () => {
     <div style={{ width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <Title level={2} style={{ margin: 0, fontFamily: "'Playfair Display', serif", color: '#C2410C' }}>
-            Transaction History
+          <Title level={2} style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#C2410C' }}>
+            Penjualan
           </Title>
           <Paragraph style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#57534E' }}>
-            View, search, and review all previous sales transactions and print receipts.
+            Lihat, cari, dan tinjau seluruh transaksi penjualan sebelumnya serta cetak struk.
           </Paragraph>
         </div>
       </div>
 
-      <Card bordered={true} style={{ marginBottom: '16px', borderColor: '#E7E5E4' }}>
-        <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Input.Search
-            placeholder="Search by Code or Customer Name..."
-            allowClear
-            enterButton={<SearchOutlined />}
-            onSearch={handleSearch}
-            style={{ width: 320 }}
-          />
-
-          <Space wrap>
-            <span style={{ fontWeight: 600, color: '#1C1917', fontFamily: "'Inter', sans-serif" }}>
-              <CalendarOutlined /> Filter Date:
-            </span>
-            <RangePicker
-              onChange={handleRangeChange}
-              placeholder={['Start Date', 'End Date']}
-              style={{ borderColor: '#D6D3D1' }}
+      <Card
+        style={{
+          border: '1px solid #E7E5E4',
+          borderRadius: '8px',
+          backgroundColor: '#FFFFFF',
+        }}
+        bodyStyle={{ padding: '24px' }}
+      >
+        <div style={{ marginBottom: '24px' }}>
+          <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Input.Search
+              placeholder="Cari berdasarkan Kode atau Nama Pelanggan..."
+              allowClear
+              enterButton={<SearchOutlined />}
+              onSearch={handleSearch}
+              style={{ width: 320 }}
             />
-          </Space>
-        </Space>
-      </Card>
 
-      <Card bordered={true} style={{ borderColor: '#E7E5E4' }}>
+            <Space wrap>
+              <span style={{ fontWeight: 600, color: '#1C1917', fontFamily: "'Inter', sans-serif" }}>
+                <CalendarOutlined /> Filter Tanggal:
+              </span>
+              <RangePicker
+                onChange={handleRangeChange}
+                placeholder={['Tanggal Mulai', 'Tanggal Selesai']}
+                style={{ borderColor: '#D6D3D1' }}
+              />
+            </Space>
+          </Space>
+        </div>
+
         <Table
           columns={columns}
           dataSource={transactions}
@@ -157,7 +164,7 @@ export const TransactionListView: React.FC = () => {
 
       {/* Printable Receipt Modal */}
       <Modal
-        title={<span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>Transaction Receipt</span>}
+        title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>Struk Transaksi</span>}
         open={receiptModalOpen}
         onCancel={() => {
           setReceiptModalOpen(false);
@@ -171,7 +178,7 @@ export const TransactionListView: React.FC = () => {
               setSelectedTxId(null);
             }}
           >
-            Close
+            Tutup
           </Button>,
           <Button
             key="print"
@@ -185,7 +192,7 @@ export const TransactionListView: React.FC = () => {
             }}
             style={{ backgroundColor: '#C2410C', borderColor: '#C2410C' }}
           >
-            Print Receipt
+            Cetak Struk
           </Button>,
         ]}
         width={400}

@@ -46,7 +46,7 @@ export const ReportsCharts: React.FC<ChartsProps> = ({ salesData, topProducts })
 
     return (
       <div style={{ width: '100%' }}>
-        <h4 style={{ fontFamily: "'Playfair Display', serif", fontSize: '18px', color: '#1C1917', marginBottom: '16px' }}>Tren Penjualan (IDR)</h4>
+        <h4 style={{ fontFamily: "'Inter', sans-serif", fontSize: '18px', color: '#1C1917', marginBottom: '16px' }}>Tren Penjualan (IDR)</h4>
         <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
           {/* Grid lines & Y Labels */}
           {yTicks.map((tick, i) => {
@@ -125,7 +125,7 @@ export const ReportsCharts: React.FC<ChartsProps> = ({ salesData, topProducts })
 
     return (
       <div style={{ width: '100%' }}>
-        <h4 style={{ fontFamily: "'Playfair Display', serif", fontSize: '18px', color: '#1C1917', marginBottom: '16px' }}>Top 5 Produk Terlaris (Unit)</h4>
+        <h4 style={{ fontFamily: "'Inter', sans-serif", fontSize: '18px', color: '#1C1917', marginBottom: '16px' }}>Top 5 Produk Terlaris (Unit)</h4>
         <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
           {limitProducts.map((p, index) => {
             const y = padding.top + index * rowHeight;

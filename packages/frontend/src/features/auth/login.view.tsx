@@ -47,10 +47,10 @@ export const LoginView: React.FC = () => {
         }} />
 
         <div style={{ zIndex: 2, maxWidth: '480px', textAlign: 'center' }}>
-          <Title level={1} style={{ color: '#ffffff', fontFamily: "'Playfair Display', serif", fontSize: '3rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
+          <Title level={1} style={{ color: '#ffffff', fontFamily: "'Inter', sans-serif", fontSize: '3rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
             Market<span style={{ color: '#FFFBF5', fontWeight: 300 }}>Nest</span>
           </Title>
-          <Title level={4} style={{ color: '#FFFBF5', opacity: 0.9, fontFamily: "'Playfair Display', serif", fontWeight: 400, marginTop: '12px', marginBottom: '32px', fontSize: '1.25rem' }}>
+          <Title level={4} style={{ color: '#FFFBF5', opacity: 0.9, fontFamily: "'Inter', sans-serif", fontWeight: 400, marginTop: '12px', marginBottom: '32px', fontSize: '1.25rem' }}>
             Setiap produk menceritakan kisah pembuatnya. Kelola penjualan dan inventaris kerajinan Anda dengan hangat.
           </Title>
           <div style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '12px', padding: '24px', backdropFilter: 'blur(8px)' }}>
@@ -86,7 +86,7 @@ export const LoginView: React.FC = () => {
           bodyStyle={{ padding: 0 }}
         >
           <div style={{ marginBottom: '40px' }}>
-            <Title level={2} style={{ color: '#C2410C', fontFamily: "'Playfair Display', serif", fontWeight: 700, margin: 0 }}>
+            <Title level={2} style={{ color: '#C2410C', fontFamily: "'Inter', sans-serif", fontWeight: 700, margin: 0 }}>
               Selamat Datang
             </Title>
             <Text style={{ color: '#57534E', fontFamily: "'Inter', sans-serif" }}>Masuk ke akun Backoffice POS UMKM</Text>

@@ -146,7 +146,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
 
   return (
     <Modal
-      title={<span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#C2410C' }}>{editingProduct ? 'Edit Product' : 'Add Product'}</span>}
+      title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, color: '#C2410C' }}>{editingProduct ? 'Edit Product' : 'Add Product'}</span>}
       open={open}
       onOk={handleOk}
       confirmLoading={confirmLoading}

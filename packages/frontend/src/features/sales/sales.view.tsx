@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { Row, Col, Card, Input, Button, Divider, InputNumber, Modal, message, Radio, Typography, Tag, Empty, Select } from 'antd';
-import { SearchOutlined, ShoppingCartOutlined, PlusOutlined, MinusOutlined, DeleteOutlined, PrinterOutlined, UserOutlined } from '@ant-design/icons';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { Row, Col, Card, Input, Button, Divider, InputNumber, Modal, message, Radio, Typography, Tag, Empty, Grid, Space } from 'antd';
+import { SearchOutlined, ShoppingCartOutlined, PlusOutlined, MinusOutlined, DeleteOutlined, PrinterOutlined, UserOutlined, PhoneOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useCartStore } from '../../stores/cart.store';
 import { ProductsService } from '../products/products.service';
 import { CategoriesService } from '../categories/categories.service';
@@ -11,6 +11,8 @@ const { Title, Text, Paragraph } = Typography;
 
 export const SalesView: React.FC = () => {
   const cart = useCartStore();
+  const screens = Grid.useBreakpoint();
+  const isMobile = screens.md === false;
 
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
@@ -27,9 +29,49 @@ export const SalesView: React.FC = () => {
   const [cashReceived, setCashReceived] = useState<number>(0);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
+  // Member phone search states
+  const [phoneSearch, setPhoneSearch] = useState('');
+  const [searchingMember, setSearchingMember] = useState(false);
+  const [searchedMemberResult, setSearchedMemberResult] = useState<any | null>(null);
+
+  // Input refs for auto-focus
+  const guestInputRef = useRef<any>(null);
+  const phoneInputRef = useRef<any>(null);
+
   // Receipt Modal
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [createdTransactionId, setCreatedTransactionId] = useState<string | null>(null);
+
+  const handleSearchMember = async () => {
+    if (!phoneSearch.trim()) {
+      message.warning('Silakan masukkan nomor HP member terlebih dahulu!');
+      return;
+    }
+
+    setSearchingMember(true);
+    setCustomerId(undefined);
+    setSearchedMemberResult(null);
+
+    try {
+      const res = await SalesService.searchCustomerByPhone(phoneSearch.trim());
+      if (res.success && res.data) {
+        setSearchedMemberResult(res.data);
+        setCustomerId(res.data.id);
+        setCustomerName(res.data.name);
+        message.success(`Member ditemukan: ${res.data.name}`);
+      } else {
+        message.warning('Member dengan nomor HP tersebut tidak ditemukan!');
+        setCustomerName('');
+      }
+    } catch (e: any) {
+      console.error(e);
+      const errMsg = e.response?.data?.message || 'Gagal mencari data member!';
+      message.error(errMsg);
+      setCustomerName('');
+    } finally {
+      setSearchingMember(false);
+    }
+  };
 
   // Fetch products and categories
   const loadInitialData = async () => {
@@ -57,21 +99,28 @@ export const SalesView: React.FC = () => {
     loadInitialData();
   }, []);
 
-  // Filter products locally for instantaneous typing response
+  // Filter products locally for instantaneous typing response and sort available stock first
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
+    const list = products.filter((product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(search.toLowerCase()) ||
         product.sku.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = selectedCategory ? product.categoryId === selectedCategory : true;
       return matchesSearch && matchesCategory;
     });
+
+    // Sort: stock > 0 first, stock === 0 last
+    return [...list].sort((a, b) => {
+      const aAvailable = a.stock > 0 ? 1 : 0;
+      const bAvailable = b.stock > 0 ? 1 : 0;
+      return bAvailable - aAvailable;
+    });
   }, [products, search, selectedCategory]);
 
   const handleAddToCart = (product: ProductItem) => {
     try {
       cart.addItem(product);
-      message.success(`Added ${product.name} to cart`);
+      message.success(`Berhasil menambahkan ${product.name} ke keranjang`);
     } catch (e: any) {
       message.error(e.message);
     }
@@ -87,7 +136,7 @@ export const SalesView: React.FC = () => {
 
   const handleCheckout = async () => {
     if (cart.items.length === 0) {
-      message.warning('Cart is empty');
+      message.warning('Keranjang belanja kosong');
       return;
     }
 
@@ -137,9 +186,6 @@ export const SalesView: React.FC = () => {
     minimumFractionDigits: 0,
   });
 
-  const handleQuickCash = (amount: number) => {
-    setCashReceived(amount);
-  };
 
   const resetSalesView = () => {
     cart.clearCart();
@@ -147,26 +193,50 @@ export const SalesView: React.FC = () => {
     setCustomerName('Guest');
     setCustomerId(undefined);
     setCustomerType('guest');
+    setPhoneSearch('');
+    setSearchedMemberResult(null);
     setCreatedTransactionId(null);
     setReceiptModalOpen(false);
   };
 
+  const handleCustomerTypeChange = (type: 'guest' | 'member') => {
+    setCustomerType(type);
+    if (type === 'guest') {
+      setPhoneSearch('');
+      setSearchedMemberResult(null);
+      setCustomerId(undefined);
+      setCustomerName('Guest');
+      setTimeout(() => guestInputRef.current?.focus(), 50);
+    } else {
+      setCustomerId(undefined);
+      setCustomerName('');
+      setPhoneSearch('');
+      setSearchedMemberResult(null);
+      setTimeout(() => phoneInputRef.current?.focus(), 50);
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 190px)', width: '100%' }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: isMobile ? 'auto' : 'calc(100vh - 190px)',
+      width: '100%'
+    }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
         <div>
-          <Title level={2} style={{ margin: 0, fontFamily: "'Playfair Display', serif", color: '#C2410C' }}>
-            Kasir / Sales
+          <Title level={2} style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#C2410C' }}>
+            Kasir
           </Title>
           <Paragraph style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#57534E' }}>
-            Process sales transactions, manage active cart, and print receipts.
+            Proses transaksi penjualan, kelola keranjang belanja, dan cetak struk.
           </Paragraph>
         </div>
       </div>
 
-      <Row gutter={16} style={{ flex: 1, minHeight: 0 }}>
+      <Row gutter={[16, 16]} style={{ flex: isMobile ? 'none' : 1, minHeight: 0 }}>
         {/* Left Side: Product Catalog */}
-        <Col span={14} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Col xs={24} md={14} style={{ display: 'flex', flexDirection: 'column', height: isMobile ? 'auto' : '100%', marginBottom: isMobile ? '16px' : '0' }}>
           <div
             style={{
               display: 'flex',
@@ -182,7 +252,7 @@ export const SalesView: React.FC = () => {
           >
             <div style={{ marginBottom: '16px' }}>
               <Input
-                placeholder="Search by name or SKU/barcode..."
+                placeholder="Cari produk berdasarkan nama atau SKU..."
                 prefix={<SearchOutlined style={{ color: '#A8A29E' }} />}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -203,7 +273,7 @@ export const SalesView: React.FC = () => {
                   color: selectedCategory === null ? '#FFFFFF' : '#1C1917',
                 }}
               >
-                All Categories
+                Semua Kategori
               </Button>
               {categories.map((cat) => (
                 <Button
@@ -227,9 +297,9 @@ export const SalesView: React.FC = () => {
             {/* Products Grid */}
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '4px' }}>
               {loading ? (
-                <div style={{ textAlign: 'center', padding: '40px' }}>Loading catalog...</div>
+                <div style={{ textAlign: 'center', padding: '40px' }}>Memuat katalog produk...</div>
               ) : filteredProducts.length === 0 ? (
-                <Empty description="No products found" style={{ marginTop: '40px' }} />
+                <Empty description="Produk tidak ditemukan" style={{ marginTop: '40px' }} />
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
                   {filteredProducts.map((product) => {
@@ -252,14 +322,14 @@ export const SalesView: React.FC = () => {
                         {/* Product Image */}
                         <div style={{ height: '110px', backgroundColor: '#FFFBF5', border: '1px solid #E7E5E4', borderRadius: '4px', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', marginBottom: '8px', position: 'relative' }}>
                           {product.imageUrl ? (
-                            <img src={product.imageUrl} alt={product.name} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} />
+                            <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           ) : (
                             <ShoppingCartOutlined style={{ fontSize: '32px', color: '#D4A373' }} />
                           )}
 
                           {isOutOfStock && (
                             <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                              <Tag color="red">OUT OF STOCK</Tag>
+                              <Tag color="red">STOK HABIS</Tag>
                             </div>
                           )}
                         </div>
@@ -275,10 +345,10 @@ export const SalesView: React.FC = () => {
                         <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <Text style={{ color: '#C2410C', fontWeight: 'bold' }}>{formatter.format(Number(product.price))}</Text>
                           {isLowStock && !isOutOfStock && (
-                            <Tag color="warning" style={{ fontSize: '9px', margin: 0 }}>Stock: {product.stock}</Tag>
+                            <Tag color="warning" style={{ fontSize: '9px', margin: 0 }}>Stok: {product.stock}</Tag>
                           )}
                           {!isLowStock && (
-                            <Text type="secondary" style={{ fontSize: '11px' }}>Stock: {product.stock}</Text>
+                            <Text type="secondary" style={{ fontSize: '11px' }}>Stok: {product.stock}</Text>
                           )}
                         </div>
                       </Card>
@@ -291,7 +361,7 @@ export const SalesView: React.FC = () => {
         </Col>
 
         {/* Right Side: Cart and Checkout */}
-        <Col span={10} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Col xs={24} md={10} style={{ display: 'flex', flexDirection: 'column', height: isMobile ? 'auto' : '100%' }}>
           <div
             style={{
               display: 'flex',
@@ -305,18 +375,28 @@ export const SalesView: React.FC = () => {
               overflow: 'hidden'
             }}
           >
-            <Title level={4} style={{ fontFamily: "'Playfair Display', serif", margin: '0 0 12px 0', display: 'flex', justifyContent: 'space-between' }}>
-              <span><ShoppingCartOutlined /> Active Cart</span>
+            <Title level={4} style={{ fontFamily: "'Inter', sans-serif", margin: '0 0 12px 0', display: 'flex', justifyContent: 'space-between' }}>
+              <span><ShoppingCartOutlined /> Keranjang Belanja</span>
               <Button size="small" type="link" danger onClick={cart.clearCart} disabled={cart.items.length === 0}>
-                Clear Cart
+                Kosongkan
               </Button>
             </Title>
 
             {/* Cart Items List */}
-            <div style={{ flex: 1, overflowY: 'auto', border: '1px solid #E7E5E4', borderRadius: '4px', padding: '8px', marginBottom: '16px', backgroundColor: '#FFFBF5' }}>
+            <div style={{
+              flex: isMobile ? 'none' : 1,
+              maxHeight: isMobile ? '300px' : 'none',
+              overflowY: 'auto',
+              border: '1px solid #E7E5E4',
+              borderRadius: '4px',
+              padding: '8px',
+              marginBottom: '16px',
+              backgroundColor: '#FFFBF5',
+              minHeight: '120px'
+            }}>
               {cart.items.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#A8A29E' }}>
-                  Cart is empty. Select products on the left.
+                  Keranjang belanja kosong. Pilih produk di sebelah kiri.
                 </div>
               ) : (
                 cart.items.map((item) => (
@@ -369,48 +449,73 @@ export const SalesView: React.FC = () => {
             {/* Customer Settings */}
             <div style={{ marginBottom: '16px' }}>
               <div style={{ marginBottom: '8px' }}>
-                <Text strong style={{ fontSize: '13px' }}>Customer Type</Text>
+                <Text strong style={{ fontSize: '13px' }}>Tipe Pelanggan</Text>
               </div>
-              <Radio.Group value={customerType} onChange={(e) => setCustomerType(e.target.value)} style={{ marginBottom: '10px' }}>
-                <Radio value="guest">Guest / Walk-in</Radio>
+              <Radio.Group value={customerType} onChange={(e) => handleCustomerTypeChange(e.target.value as any)} style={{ marginBottom: '10px' }}>
+                <Radio value="guest">Tamu</Radio>
                 <Radio value="member">Member</Radio>
               </Radio.Group>
 
               {customerType === 'guest' ? (
                 <Input
+                  ref={guestInputRef}
                   prefix={<UserOutlined style={{ color: '#A8A29E' }} />}
-                  placeholder="Enter Guest Name (e.g. Budi)"
+                  placeholder="Masukkan nama tamu (misal: Budi)"
                   value={customerName === 'Guest' ? '' : customerName}
                   onChange={(e) => setCustomerName(e.target.value || 'Guest')}
                   style={{ height: '42px', borderRadius: '4px' }}
                 />
               ) : (
-                <Select
-                  showSearch
-                  placeholder="Select Member Customer"
-                  style={{ width: '100%', height: '42px' }}
-                  onChange={(val: string) => {
-                    setCustomerId(val);
-                    setCustomerName('');
-                  }}
-                  value={customerId}
-                  options={[
-                    { value: 'mock-id-1', label: 'Asep (asep@example.com)' },
-                    { value: 'mock-id-2', label: 'Dewi (dewi@example.com)' },
-                  ]}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <Space.Compact style={{ width: '100%' }}>
+                    <Input
+                      ref={phoneInputRef}
+                      prefix={<PhoneOutlined style={{ color: '#A8A29E' }} />}
+                      placeholder="Masukkan nomor HP member (misal: 0812...)"
+                      value={phoneSearch}
+                      onChange={(e) => setPhoneSearch(e.target.value)}
+                      onPressEnter={handleSearchMember}
+                      style={{ height: '42px', borderTopLeftRadius: '4px', borderBottomLeftRadius: '4px' }}
+                    />
+                    <Button
+                      type="primary"
+                      onClick={handleSearchMember}
+                      loading={searchingMember}
+                      style={{ height: '42px', backgroundColor: '#C2410C', borderColor: '#C2410C' }}
+                    >
+                      Cari
+                    </Button>
+                  </Space.Compact>
+
+                   {searchedMemberResult && (
+                    <div style={{
+                      backgroundColor: '#DCFCE7',
+                      border: '1px solid #BBF7D0',
+                      borderRadius: '4px',
+                      padding: '10px 14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px'
+                    }}>
+                      <CheckCircleOutlined style={{ color: '#166534', fontSize: '18px' }} />
+                      <Text strong style={{ color: '#166534', fontSize: '14px' }}>
+                        {searchedMemberResult.name}
+                      </Text>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
             {/* Calculations & Checkout */}
             <div style={{ backgroundColor: '#FFFBF5', padding: '16px', border: '1px solid #E7E5E4', borderRadius: '4px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <Text style={{ fontSize: '15px' }}>Total Amount</Text>
+                <Text style={{ fontSize: '15px' }}>Total Tagihan</Text>
                 <Text strong style={{ fontSize: '20px', color: '#C2410C' }}>{formatter.format(totalAmount)}</Text>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <Text style={{ fontSize: '14px' }}>Cash Received</Text>
+                <Text style={{ fontSize: '14px' }}>Uang Diterima</Text>
                 <InputNumber
                   style={{ width: '160px', height: '42px', display: 'flex', alignItems: 'center' }}
                   min={0}
@@ -421,25 +526,8 @@ export const SalesView: React.FC = () => {
                 />
               </div>
 
-              {/* Quick Cash Buttons */}
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                {[totalAmount, 10000, 20000, 50000, 100000].map((amt) => {
-                  if (amt < totalAmount && amt !== totalAmount) return null;
-                  return (
-                    <Button
-                      key={amt}
-                      size="small"
-                      onClick={() => handleQuickCash(amt)}
-                      style={{ fontSize: '11px', borderRadius: '4px' }}
-                    >
-                      {amt === totalAmount ? 'Exact' : formatter.format(amt)}
-                    </Button>
-                  );
-                })}
-              </div>
-
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <Text style={{ fontSize: '14px' }}>Cash Return (Kembalian)</Text>
+                <Text style={{ fontSize: '14px' }}>Kembalian</Text>
                 <Text strong style={{ fontSize: '16px', color: changeAmount > 0 ? '#166534' : '#1C1917' }}>
                   {formatter.format(changeAmount)}
                 </Text>
@@ -453,14 +541,16 @@ export const SalesView: React.FC = () => {
                 onClick={handleCheckout}
                 disabled={cart.items.length === 0 || cashReceived < totalAmount}
                 style={{
-                  backgroundColor: '#C2410C',
-                  borderColor: '#C2410C',
+                  backgroundColor: (cart.items.length === 0 || cashReceived < totalAmount) ? '#E7E5E4' : '#C2410C',
+                  borderColor: (cart.items.length === 0 || cashReceived < totalAmount) ? '#D6D3D1' : '#C2410C',
+                  color: (cart.items.length === 0 || cashReceived < totalAmount) ? '#A8A29E' : '#FFFFFF',
                   height: '50px',
                   borderRadius: '4px',
                   fontWeight: 'bold',
+                  cursor: (cart.items.length === 0 || cashReceived < totalAmount) ? 'not-allowed' : 'pointer'
                 }}
               >
-                Process Transaction
+                Proses Transaksi
               </Button>
             </div>
           </div>
@@ -469,12 +559,12 @@ export const SalesView: React.FC = () => {
 
       {/* Printable Receipt Modal */}
       <Modal
-        title={<span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700 }}>Transaction Receipt</span>}
+        title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>Struk Transaksi</span>}
         open={receiptModalOpen}
         onCancel={resetSalesView}
         footer={[
           <Button key="close" onClick={resetSalesView}>
-            New Transaction
+            Transaksi Baru
           </Button>,
           <Button
             key="print"
@@ -488,7 +578,7 @@ export const SalesView: React.FC = () => {
             }}
             style={{ backgroundColor: '#C2410C', borderColor: '#C2410C' }}
           >
-            Print Receipt
+            Cetak Struk
           </Button>,
         ]}
         width={400}

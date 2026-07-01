@@ -62,19 +62,19 @@ export const UserListView: React.FC = () => {
       render: (text: string) => <strong style={{ color: '#1C1917' }}>{text}</strong>,
     },
     {
-      title: 'Full Name',
+      title: 'Nama Lengkap',
       dataIndex: 'fullName',
       key: 'fullName',
     },
     {
-      title: 'Role',
+      title: 'Peran',
       dataIndex: 'role',
       key: 'role',
       render: (role: string) => {
         if (role === 'ADMIN') {
           return <Tag color="#C2410C">ADMIN</Tag>;
         }
-        return <Tag color="#365314">CASHIER</Tag>;
+        return <Tag color="#365314">KASIR</Tag>;
       },
     },
     {
@@ -94,18 +94,18 @@ export const UserListView: React.FC = () => {
             border: `1px solid ${isActive ? '#BBF7D0' : '#FCA5A5'}`,
           }}
         >
-          {isActive ? 'Active' : 'Inactive'}
+          {isActive ? 'Aktif' : 'Tidak Aktif'}
         </span>
       ),
     },
     {
-      title: 'Created At',
+      title: 'Tanggal Dibuat',
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (dateStr: string) => new Date(dateStr).toLocaleDateString(),
     },
     {
-      title: 'Actions',
+      title: 'Aksi',
       key: 'actions',
       render: (_: any, record: any) => (
         <Space size="middle">
@@ -116,11 +116,11 @@ export const UserListView: React.FC = () => {
             style={{ padding: 0 }}
           />
           <Popconfirm
-            title="Are you sure you want to delete this user?"
-            description="This action cannot be undone."
+            title="Apakah Anda yakin ingin menghapus pengguna ini?"
+            description="Tindakan ini tidak dapat dibatalkan."
             onConfirm={() => handleDelete(record.id)}
-            okText="Delete"
-            cancelText="Cancel"
+            okText="Hapus"
+            cancelText="Batal"
             okButtonProps={{ danger: true, style: { borderRadius: '4px' } }}
             cancelButtonProps={{ style: { borderRadius: '4px' } }}
           >
@@ -139,11 +139,11 @@ export const UserListView: React.FC = () => {
     <div style={{ width: '100%' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
-          <Title level={2} style={{ fontFamily: "'Playfair Display', serif", color: '#C2410C', margin: 0 }}>
-            User Management
+          <Title level={2} style={{ fontFamily: "'Inter', sans-serif", color: '#C2410C', margin: 0 }}>
+            Pengguna
           </Title>
           <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#57534E', marginTop: '4px', marginBottom: 0 }}>
-            Manage backoffice user accounts for administrators and cashiers.
+            Kelola akun pengguna backoffice untuk administrator dan staf kasir.
           </Paragraph>
         </div>
         <Space>
@@ -158,7 +158,7 @@ export const UserListView: React.FC = () => {
               borderRadius: '4px',
             }}
           >
-            Change My Password
+            Ubah Password Saya
           </Button>
           <Button
             type="primary"
@@ -171,7 +171,7 @@ export const UserListView: React.FC = () => {
               borderRadius: '4px',
             }}
           >
-            Add User
+            Tambah Pengguna
           </Button>
         </Space>
       </div>
@@ -182,7 +182,7 @@ export const UserListView: React.FC = () => {
           borderRadius: '8px',
           backgroundColor: '#FFFFFF',
         }}
-        bodyStyle={{ padding: '0px' }}
+        bodyStyle={{ padding: '24px' }}
       >
         <Table
           dataSource={users}

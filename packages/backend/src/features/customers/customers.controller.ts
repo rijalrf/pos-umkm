@@ -68,4 +68,33 @@ export class CustomersController {
       next(error);
     }
   };
+
+  searchByPhone = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const phone = req.query.phone as string;
+      if (!phone) {
+        res.status(400).json({ success: false, message: 'Nomor HP wajib diisi untuk melakukan pencarian!' });
+        return;
+      }
+      const customer = await this.service.findByPhone(phone);
+      res.status(200).json({
+        success: true,
+        data: customer,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  listAll = async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const customers = await this.service.listAll();
+      res.status(200).json({
+        success: true,
+        data: customers,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

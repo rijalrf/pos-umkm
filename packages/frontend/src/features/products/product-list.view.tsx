@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Button, Input, Select, Space, Card, Typography, Popconfirm } from 'antd';
+import { Table, Button, Input, Select, Space, Typography, Popconfirm, Card } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, WarningOutlined } from '@ant-design/icons';
 import { useProductsPresenter, ProductItem } from './products.presenter';
 import { ProductFormModal } from './product-form.view';
@@ -67,13 +67,13 @@ export const ProductListView: React.FC = () => {
       ),
     },
     {
-      title: 'Product Name',
+      title: 'Nama Produk',
       dataIndex: 'name',
       key: 'name',
       render: (name: string) => <span style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>{name}</span>,
     },
     {
-      title: 'Category',
+      title: 'Kategori',
       dataIndex: ['category', 'name'],
       key: 'categoryName',
       render: (catName: string) => (
@@ -94,13 +94,13 @@ export const ProductListView: React.FC = () => {
       ),
     },
     {
-      title: 'Price',
+      title: 'Harga',
       dataIndex: 'price',
       key: 'price',
       render: (price: string) => <span style={{ fontFamily: "'Source Code Pro', monospace" }}>{formatCurrency(price)}</span>,
     },
     {
-      title: 'Stock',
+      title: 'Stok',
       key: 'stock',
       render: (_: any, record: ProductItem) => {
         const isLowStock = record.stock <= record.stockAlertThreshold;
@@ -121,7 +121,7 @@ export const ProductListView: React.FC = () => {
       },
     },
     {
-      title: 'Actions',
+      title: 'Aksi',
       key: 'actions',
       width: 150,
       render: (_: any, record: ProductItem) => (
@@ -132,11 +132,11 @@ export const ProductListView: React.FC = () => {
             onClick={() => handleOpenEdit(record)}
           />
           <Popconfirm
-            title="Delete Product"
-            description="Are you sure you want to delete this product?"
+            title="Hapus Produk"
+            description="Apakah Anda yakin ingin menghapus produk ini?"
             onConfirm={() => deleteProduct(record.id)}
-            okText="Yes"
-            cancelText="No"
+            okText="Ya"
+            cancelText="Tidak"
             okButtonProps={{ danger: true }}
           >
             <Button
@@ -155,9 +155,9 @@ export const ProductListView: React.FC = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <div>
-          <Title level={2} style={{ margin: 0, fontFamily: "'Playfair Display', serif", color: '#C2410C' }}>Products</Title>
+          <Title level={2} style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#C2410C' }}>Produk</Title>
           <Paragraph style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#57534E' }}>
-            Create, update, and manage product inventory listings.
+            Kelola, cari, dan perbarui seluruh informasi produk UMKM Anda.
           </Paragraph>
         </div>
         <Button
@@ -173,37 +173,44 @@ export const ProductListView: React.FC = () => {
             fontWeight: 600,
           }}
         >
-          Add Product
+          Tambah Produk
         </Button>
       </div>
 
-      <Card bordered={true} style={{ marginBottom: '16px', borderColor: '#E7E5E4' }}>
-        <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Input.Search
-            placeholder="Search by SKU or name..."
-            allowClear
-            enterButton={<SearchOutlined />}
-            onSearch={handleSearch}
-            style={{ width: 300 }}
-          />
+      <Card
+        style={{
+          border: '1px solid #E7E5E4',
+          borderRadius: '8px',
+          backgroundColor: '#FFFFFF',
+        }}
+        bodyStyle={{ padding: '24px' }}
+      >
+        <div style={{ marginBottom: '24px' }}>
+          <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
+            <Input.Search
+              placeholder="Cari berdasarkan SKU atau nama..."
+              allowClear
+              enterButton={<SearchOutlined />}
+              onSearch={handleSearch}
+              style={{ width: 300 }}
+            />
 
-          <Select
-            placeholder="Filter by Category"
-            allowClear
-            style={{ width: 200 }}
-            onChange={handleCategoryFilter}
-            value={query.categoryId}
-          >
-            {categories.map((cat) => (
-              <Select.Option key={cat.id} value={cat.id}>
-                {cat.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Space>
-      </Card>
+            <Select
+              placeholder="Filter Kategori"
+              allowClear
+              style={{ width: 200 }}
+              onChange={handleCategoryFilter}
+              value={query.categoryId}
+            >
+              {categories.map((cat) => (
+                <Select.Option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Space>
+        </div>
 
-      <Card bordered={true} style={{ borderColor: '#E7E5E4' }}>
         <Table
           columns={columns}
           dataSource={products}

@@ -95,7 +95,7 @@ export const UserFormView: React.FC<UserFormViewProps> = ({
     <Modal
       open={visible}
       title={
-        <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '20px', color: '#C2410C' }}>
+        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '20px', color: '#C2410C' }}>
           {isEdit ? 'Edit User' : 'Add New User'}
         </span>
       }

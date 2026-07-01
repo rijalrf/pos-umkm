@@ -13,7 +13,11 @@ export const api = axios.create({
 // Request interceptor to add JWT token
 api.interceptors.request.use(
   (config) => {
-    const isCustomerRequest = config.url?.startsWith('/customer');
+    const isCustomerRequest = 
+      config.url?.startsWith('/customer') && 
+      !config.url?.startsWith('/customer/search') && 
+      config.url !== '/customer' && 
+      config.url !== '/customer/';
     const token = isCustomerRequest
       ? useCustomerStore.getState().token
       : useAuthStore.getState().token;

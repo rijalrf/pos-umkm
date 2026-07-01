@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Space, Modal, Form, Input, Card, Typography, message, Popconfirm } from 'antd';
+import { Table, Button, Space, Modal, Form, Input, Typography, message, Popconfirm, Card } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { CategoriesService, CategoryPayload } from './categories.service';
 
@@ -59,13 +59,13 @@ export const CategoryListView: React.FC = () => {
     try {
       const response = await CategoriesService.delete(id);
       if (response.success) {
-        message.success('Category deleted successfully');
+        message.success('Kategori berhasil dihapus');
         fetchCategories();
       } else {
-        message.error(response.message || 'Failed to delete category');
+        message.error(response.message || 'Gagal menghapus kategori');
       }
     } catch (error: any) {
-      message.error(error.response?.data?.message || 'Error deleting category');
+      message.error(error.response?.data?.message || 'Gagal menghapus kategori');
     }
   };
 
@@ -75,24 +75,24 @@ export const CategoryListView: React.FC = () => {
       if (editingId) {
         const response = await CategoriesService.update(editingId, values);
         if (response.success) {
-          message.success('Category updated successfully');
+          message.success('Kategori berhasil diperbarui');
           setIsModalOpen(false);
           fetchCategories();
         } else {
-          message.error(response.message || 'Failed to update category');
+          message.error(response.message || 'Gagal memperbarui kategori');
         }
       } else {
         const response = await CategoriesService.create(values);
         if (response.success) {
-          message.success('Category created successfully');
+          message.success('Kategori berhasil dibuat');
           setIsModalOpen(false);
           fetchCategories();
         } else {
-          message.error(response.message || 'Failed to create category');
+          message.error(response.message || 'Gagal membuat kategori');
         }
       }
     } catch (error: any) {
-      message.error(error.response?.data?.message || 'Error processing request');
+      message.error(error.response?.data?.message || 'Gagal memproses permintaan');
     } finally {
       setSubmitLoading(false);
     }
@@ -100,19 +100,19 @@ export const CategoryListView: React.FC = () => {
 
   const columns = [
     {
-      title: 'Name',
+      title: 'Nama Kategori',
       dataIndex: 'name',
       key: 'name',
       render: (text: string) => <span style={{ fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>{text}</span>,
     },
     {
-      title: 'Description',
+      title: 'Deskripsi',
       dataIndex: 'description',
       key: 'description',
-      render: (text: string | null) => text || <span style={{ color: '#A8A29E', fontStyle: 'italic', fontFamily: "'Inter', sans-serif" }}>No description</span>,
+      render: (text: string | null) => text || <span style={{ color: '#A8A29E', fontStyle: 'italic', fontFamily: "'Inter', sans-serif" }}>Tidak ada deskripsi</span>,
     },
     {
-      title: 'Actions',
+      title: 'Aksi',
       key: 'actions',
       width: 150,
       render: (_: any, record: CategoryItem) => (
@@ -123,11 +123,11 @@ export const CategoryListView: React.FC = () => {
             onClick={() => handleOpenEditModal(record)}
           />
           <Popconfirm
-            title="Delete Category"
-            description="Are you sure you want to delete this category? All associated products will be deleted as well."
+            title="Hapus Kategori"
+            description="Apakah Anda yakin ingin menghapus kategori ini? Semua produk yang berkaitan dengan kategori ini juga akan terhapus."
             onConfirm={() => handleDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
+            okText="Ya"
+            cancelText="Tidak"
             okButtonProps={{ danger: true }}
           >
             <Button
@@ -144,10 +144,10 @@ export const CategoryListView: React.FC = () => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-        <div>
-          <Title level={2} style={{ margin: 0, fontFamily: "'Playfair Display', serif", color: '#C2410C' }}>Categories</Title>
+         <div>
+          <Title level={2} style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#C2410C' }}>Kategori</Title>
           <Paragraph style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#57534E' }}>
-            Manage category tags for product classification.
+            Kelola kategori produk untuk memudahkan pengelompokkan persediaan barang UMKM Anda.
           </Paragraph>
         </div>
         <Button
@@ -163,11 +163,18 @@ export const CategoryListView: React.FC = () => {
             fontWeight: 600,
           }}
         >
-          Add Category
+          Tambah Kategori
         </Button>
       </div>
 
-      <Card bordered={true} style={{ borderColor: '#E7E5E4' }}>
+      <Card
+        style={{
+          border: '1px solid #E7E5E4',
+          borderRadius: '8px',
+          backgroundColor: '#FFFFFF',
+        }}
+        bodyStyle={{ padding: '24px' }}
+      >
         <Table
           columns={columns}
           dataSource={categories}
@@ -178,7 +185,7 @@ export const CategoryListView: React.FC = () => {
       </Card>
 
       <Modal
-        title={<span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#C2410C' }}>{editingId ? 'Edit Category' : 'Create Category'}</span>}
+        title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, color: '#C2410C' }}>{editingId ? 'Ubah Kategori' : 'Tambah Kategori'}</span>}
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         footer={null}
@@ -192,24 +199,24 @@ export const CategoryListView: React.FC = () => {
         >
           <Form.Item
             name="name"
-            label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Category Name</span>}
-            rules={[{ required: true, message: 'Please input the category name!' }]}
+            label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Nama Kategori</span>}
+            rules={[{ required: true, message: 'Nama kategori wajib diisi!' }]}
           >
-            <Input placeholder="e.g. Makanan, Minuman, Snacking" />
+            <Input placeholder="Contoh: Makanan, Minuman, Pakaian" />
           </Form.Item>
 
           <Form.Item
             name="description"
-            label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Description</span>}
+            label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Deskripsi</span>}
           >
-            <Input.TextArea placeholder="Describe this category" rows={4} />
+            <Input.TextArea placeholder="Tulis deskripsi kategori" rows={4} />
           </Form.Item>
 
           <Form.Item style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 0 }}>
             <Space>
-              <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>
+              <Button onClick={() => setIsModalOpen(false)}>Batal</Button>
               <Button type="primary" htmlType="submit" loading={submitLoading} style={{ background: '#C2410C' }}>
-                {editingId ? 'Save Changes' : 'Create'}
+                {editingId ? 'Simpan Perubahan' : 'Buat Baru'}
               </Button>
             </Space>
           </Form.Item>

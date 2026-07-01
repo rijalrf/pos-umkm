@@ -122,4 +122,29 @@ export class CustomersService {
     }
     return this.repository.findTransactionsByCustomerId(customerId);
   }
+
+  async findByPhone(phone: string): Promise<CustomerPayload | null> {
+    const customer = await this.repository.findByPhone(phone);
+    if (!customer) return null;
+    return {
+      id: customer.id,
+      email: customer.email,
+      name: customer.name,
+      phone: customer.phone,
+      address: customer.address,
+      isEmailVerified: customer.isEmailVerified,
+    };
+  }
+
+  async listAll(): Promise<CustomerPayload[]> {
+    const list = await this.repository.findAll();
+    return list.map(customer => ({
+      id: customer.id,
+      email: customer.email,
+      name: customer.name,
+      phone: customer.phone,
+      address: customer.address,
+      isEmailVerified: customer.isEmailVerified,
+    }));
+  }
 }

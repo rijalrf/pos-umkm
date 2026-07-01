@@ -26,4 +26,9 @@ export class SalesService {
     const response = await api.get('/transactions', { params });
     return response.data;
   }
+
+  static async searchCustomerByPhone(phone: string) {
+    const response = await api.get('/customer/search', { params: { phone } });
+    return response.data;
+  }
 }
