@@ -69,11 +69,17 @@ export class CustomerService {
     return response.data;
   }
 
+  static async getPublicTableById(id: string) {
+    const response = await api.get(`/public/tables/${id}`);
+    return response.data;
+  }
+
   static async publicCheckout(payload: {
     customerType: 'guest' | 'member_register';
     guestName?: string;
     memberData?: CustomerRegisterPayload;
     items: { productId: string; quantity: number }[];
+    tableId?: string;
   }) {
     const response = await api.post('/public/checkout', payload);
     return response.data;

@@ -13,7 +13,8 @@ import {
   LineChartOutlined,
   HistoryOutlined,
   TeamOutlined,
-  BellOutlined
+  BellOutlined,
+  TableOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '../../stores/auth.store';
 import { message } from 'antd';
@@ -104,6 +105,11 @@ export const BackofficeLayout: React.FC = () => {
                 label: 'Kategori',
               },
               {
+                key: '/backoffice/tables',
+                icon: <TableOutlined />,
+                label: 'Meja',
+              },
+              {
                 key: '/backoffice/users',
                 icon: <UserOutlined />,
                 label: 'Pengguna',
@@ -160,6 +166,11 @@ export const BackofficeLayout: React.FC = () => {
                   key: '/backoffice/categories',
                   icon: <TagsOutlined />,
                   label: 'Kategori',
+                },
+                {
+                  key: '/backoffice/tables',
+                  icon: <TableOutlined />,
+                  label: 'Meja',
                 },
               ],
             },

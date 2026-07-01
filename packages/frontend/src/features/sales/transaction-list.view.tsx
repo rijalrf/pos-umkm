@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Input, DatePicker, Space, Typography, Modal, Card, message, Dropdown } from 'antd';
+import { Table, Button, Input, DatePicker, Space, Typography, Modal, Card, message, Dropdown, Tag } from 'antd';
 import { SearchOutlined, PrinterOutlined, CalendarOutlined, EyeOutlined, MoreOutlined } from '@ant-design/icons';
 import { useTransactionsPresenter } from './transactions.presenter';
 
@@ -114,6 +114,7 @@ export const TransactionListView: React.FC = () => {
             <strong>Tgl:</strong> ${dateStr}<br/>
             <strong>Kasir:</strong> ${tx.cashier?.fullName || 'System'}<br/>
             <strong>Pelanggan:</strong> ${tx.customerName || 'Tamu'}<br/>
+            ${tx.tableNumber ? `<strong>Meja:</strong> ${tx.tableNumber}<br/>` : ''}
           </div>
           <div class="divider"></div>
           <table>
@@ -180,7 +181,16 @@ export const TransactionListView: React.FC = () => {
       title: 'Pelanggan',
       dataIndex: 'customerName',
       key: 'customerName',
-      render: (text: string) => text || <Text type="secondary">Pelanggan Umum</Text>,
+      render: (text: string, record: any) => (
+        <Space direction="vertical" size={0}>
+          <span>{text || <Text type="secondary">Pelanggan Umum</Text>}</span>
+          {record.tableNumber && (
+            <Tag color="orange" style={{ margin: 0, fontSize: '11px', borderRadius: '4px' }}>
+              {record.tableNumber}
+            </Tag>
+          )}
+        </Space>
+      ),
     },
     {
       title: 'Total Belanja',
@@ -350,7 +360,14 @@ export const TransactionListView: React.FC = () => {
                   </div>
                   <div>
                     <span style={{ fontSize: '12px', color: '#878685', display: 'block' }}>Pelanggan</span>
-                    <span style={{ fontSize: '14px', color: '#1C1917', fontWeight: 600 }}>{selectedTx.customerName || 'Tamu'}</span>
+                    <span style={{ fontSize: '14px', color: '#1C1917', fontWeight: 600 }}>
+                      {selectedTx.customerName || 'Tamu'}
+                      {selectedTx.tableNumber && (
+                        <span style={{ marginLeft: '8px', color: '#C2410C' }}>
+                          ({selectedTx.tableNumber})
+                        </span>
+                      )}
+                    </span>
                   </div>
                 </div>
               </div>

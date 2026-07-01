@@ -11,6 +11,7 @@ import { ReportsView } from '../features/reports/reports.view';
 import { UserListView } from '../features/users/user-list.view';
 import { ProfileView } from '../features/users/profile.view';
 import { CustomerListView } from '../features/customers/customer-list.view';
+import { TableListView } from '../features/tables/table-list.view';
 import { BackofficeLayout } from '../components/layout/backoffice-layout';
 import { ProtectedRoute } from '../components/common/protected-route.component';
 
@@ -21,6 +22,7 @@ import { ProductDetailView } from '../features/customer-frontend/product-detail.
 import { VerifyEmailView } from '../features/customer-frontend/verify-email.view';
 import { TransactionHistoryView } from '../features/customer-frontend/transaction-history.view';
 import { CheckoutView } from '../features/customer-frontend/checkout.view';
+import { TableEntryView } from '../features/customer-frontend/table-entry.view';
 import { CustomerProtectedRoute } from '../components/common/customer-protected-route.component';
 
 export const AppRoutes: React.FC = () => {
@@ -57,6 +59,14 @@ export const AppRoutes: React.FC = () => {
           }
         />
         <Route
+          path="tables"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <TableListView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="reports"
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
@@ -89,6 +99,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="login" element={<Navigate to="/customer/catalog" replace />} />
         <Route path="register" element={<Navigate to="/customer/catalog" replace />} />
         <Route path="checkout" element={<CheckoutView />} />
+        <Route path="t/:tableId" element={<TableEntryView />} />
         <Route path="verify-email" element={<VerifyEmailView />} />
         <Route
           path="history"

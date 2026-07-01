@@ -9,6 +9,7 @@ async function main() {
   await prisma.transaction.deleteMany({});
   await prisma.product.deleteMany({});
   await prisma.category.deleteMany({});
+  await prisma.table.deleteMany({});
 
   const adminPassword = await bcrypt.hash('admin123', 10);
   const cashierPassword = await bcrypt.hash('kasir123', 10);
@@ -291,8 +292,25 @@ async function main() {
       },
     });
   }
+  
+  // Seeding Tables
+  const tablesData = [
+    { code: '001', number: 'Meja 01', status: 'ACTIVE' },
+    { code: '002', number: 'Meja 02', status: 'ACTIVE' },
+    { code: '003', number: 'Meja 03', status: 'ACTIVE' },
+    { code: '004', number: 'Meja 04', status: 'ACTIVE' },
+    { code: '005', number: 'Meja 05', status: 'ACTIVE' },
+    { code: '006', number: 'Meja Lesehan 1', status: 'ACTIVE' },
+    { code: '007', number: 'Meja Lesehan 2', status: 'ACTIVE' },
+  ];
 
-  console.log('✅ Seed completed with 20 culinary products (Makanan & Minuman)');
+  for (const table of tablesData) {
+    await prisma.table.create({
+      data: table,
+    });
+  }
+
+  console.log('✅ Seed completed with 20 culinary products (Makanan & Minuman) and 7 tables');
 }
 
 main()

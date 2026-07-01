@@ -11,6 +11,7 @@ router.get('/products', controller.getProducts);
 router.get('/products/:id', controller.getProductById);
 router.get('/categories', controller.getCategories);
 router.get('/store-info', controller.getStoreInfo);
+router.get('/tables/:id', controller.getTableById);
 router.post('/checkout', validate(publicCheckoutSchema), controller.checkout);
 
 export default router;

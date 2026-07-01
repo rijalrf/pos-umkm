@@ -9,7 +9,8 @@ import {
   ArrowLeftOutlined,
   UserOutlined,
   PhoneOutlined,
-  GiftOutlined
+  GiftOutlined,
+  EnvironmentOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
@@ -112,6 +113,10 @@ export const CheckoutView: React.FC = () => {
       payload.guestName = buyerName;
     } else {
       payload.memberData = memberData;
+    }
+
+    if (cart.tableId) {
+      payload.tableId = cart.tableId;
     }
 
     try {
@@ -293,6 +298,36 @@ export const CheckoutView: React.FC = () => {
                 <Text strong style={{ display: 'block', marginBottom: '12px', color: '#1C1917', fontSize: '14px' }}>
                   Data Pelanggan
                 </Text>
+
+                {/* Nomor Meja — selalu tampil jika scan QR */}
+                {cart.tableCode && (
+                  <Form.Item
+                    label={
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <EnvironmentOutlined style={{ color: '#C2410C' }} />
+                        Nomor Meja
+                      </span>
+                    }
+                    style={{ marginBottom: '16px' }}
+                  >
+                    <Input
+                      value={cart.tableCode}
+                      disabled
+                      style={{
+                        borderRadius: '4px',
+                        backgroundColor: '#FFFBF5',
+                        color: '#C2410C',
+                        fontWeight: 700,
+                        fontFamily: "'Source Code Pro', monospace",
+                        fontSize: '16px',
+                        letterSpacing: '0.08em',
+                        border: '1.5px solid #C2410C',
+                        WebkitTextFillColor: '#C2410C',
+                        cursor: 'default',
+                      }}
+                    />
+                  </Form.Item>
+                )}
 
                 <Form.Item
                   label="Nama Pelanggan"
