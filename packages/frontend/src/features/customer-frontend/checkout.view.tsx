@@ -288,14 +288,14 @@ export const CheckoutView: React.FC = () => {
                 )}
               />
 
-              {/* Data Pembeli Section */}
-              <div style={{ marginTop: '24px', borderTop: '1px solid #E7E5E4', paddingTop: '16px' }}>
+              {/* Data Pelanggan Section */}
+              <div style={{ marginTop: '24px', paddingTop: '16px' }}>
                 <Text strong style={{ display: 'block', marginBottom: '12px', color: '#1C1917', fontSize: '14px' }}>
-                  Data Pembeli
+                  Data Pelanggan
                 </Text>
 
                 <Form.Item
-                  label="Nama Pembeli"
+                  label="Nama Pelanggan"
                   name="guestName"
                   rules={[{ required: true, message: 'Masukkan nama Anda!' }]}
                 >
@@ -504,7 +504,7 @@ export const CheckoutView: React.FC = () => {
             {/* Info Pelanggan & Pembayaran */}
             <div style={{ borderTop: '1px solid #E7E5E4', paddingTop: '12px', marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
-                <Text style={{ color: '#57534E' }}>Pembeli:</Text>
+                <Text style={{ color: '#57534E' }}>Pelanggan:</Text>
                 <Text strong style={{ color: '#1C1917' }}>{buyerName}</Text>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
@@ -625,7 +625,7 @@ export const CheckoutView: React.FC = () => {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
-                <Text style={{ color: '#57534E' }}>Pembeli:</Text>
+                <Text style={{ color: '#57534E' }}>Pelanggan:</Text>
                 <Text strong style={{ color: '#1C1917' }}>
                   {createdTx.customerName || 'Tamu'}
                 </Text>
