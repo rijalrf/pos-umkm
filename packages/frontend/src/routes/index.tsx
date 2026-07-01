@@ -16,8 +16,6 @@ import { ProtectedRoute } from '../components/common/protected-route.component';
 import { CustomerLayout } from '../components/layout/customer-layout';
 import { CatalogView } from '../features/customer-frontend/catalog.view';
 import { ProductDetailView } from '../features/customer-frontend/product-detail.view';
-import { CustomerLoginView } from '../features/customer-frontend/customer-login.view';
-import { CustomerRegisterView } from '../features/customer-frontend/customer-register.view';
 import { VerifyEmailView } from '../features/customer-frontend/verify-email.view';
 import { TransactionHistoryView } from '../features/customer-frontend/transaction-history.view';
 import { CheckoutView } from '../features/customer-frontend/checkout.view';
@@ -84,8 +82,8 @@ export const AppRoutes: React.FC = () => {
         <Route index element={<Navigate to="catalog" replace />} />
         <Route path="catalog" element={<CatalogView />} />
         <Route path="product/:id" element={<ProductDetailView />} />
-        <Route path="login" element={<CustomerLoginView />} />
-        <Route path="register" element={<CustomerRegisterView />} />
+        <Route path="login" element={<Navigate to="/customer/catalog" replace />} />
+        <Route path="register" element={<Navigate to="/customer/catalog" replace />} />
         <Route path="checkout" element={<CheckoutView />} />
         <Route path="verify-email" element={<VerifyEmailView />} />
         <Route

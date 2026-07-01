@@ -1,5 +1,6 @@
 import { ProductsRepository } from '../products/products.repository';
 import { CategoriesRepository } from '../categories/categories.repository';
+import { SettingsRepository } from '../settings/settings.repository';
 import { GetProductsQuery } from '../products/products.schema';
 import { PublicCheckoutInput } from './public.schema';
 import { CustomersService } from '../customers/customers.service';
@@ -10,6 +11,7 @@ import { BadRequestError } from '../../shared/utils/errors.util';
 export class PublicService {
   private productsRepository = new ProductsRepository();
   private categoriesRepository = new CategoriesRepository();
+  private settingsRepository = new SettingsRepository();
   private customersService = new CustomersService();
   private transactionsService = new TransactionsService();
 
@@ -23,6 +25,16 @@ export class PublicService {
 
   async getCategories() {
     return this.categoriesRepository.findAll();
+  }
+
+  async getStoreInfo() {
+    const setting = await this.settingsRepository.getStoreSetting();
+    return {
+      storeName: setting.storeName,
+      address: setting.address,
+      phone: setting.phone,
+      logoUrl: setting.logoUrl ?? null,
+    };
   }
 
   async checkout(input: PublicCheckoutInput) {

@@ -64,6 +64,11 @@ export class CustomerService {
     return response.data;
   }
 
+  static async getPublicStoreInfo() {
+    const response = await api.get('/public/store-info');
+    return response.data;
+  }
+
   static async publicCheckout(payload: {
     customerType: 'guest' | 'member_register';
     guestName?: string;

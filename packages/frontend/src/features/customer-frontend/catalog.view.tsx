@@ -4,6 +4,7 @@ import { SearchOutlined, ShoppingOutlined, PlusOutlined, MinusOutlined } from '@
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { useCustomerPresenter } from './customer.presenter';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
+import { CustomerService } from './customer.service';
 
 const { Text } = Typography;
 
@@ -21,10 +22,20 @@ export const CatalogView: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [storeName, setStoreName] = useState<string>('POS UMKM');
+  const [storeAddress, setStoreAddress] = useState<string>('');
+  const [storeLogo, setStoreLogo] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+    CustomerService.getPublicStoreInfo()
+      .then((res) => {
+        if (res?.data?.storeName) setStoreName(res.data.storeName);
+        if (res?.data?.address) setStoreAddress(res.data.address);
+        if (res?.data?.logoUrl) setStoreLogo(res.data.logoUrl);
+      })
+      .catch(() => {});
   }, [fetchProducts, fetchCategories]);
 
   const handleSearch = (val: string) => {
@@ -69,9 +80,14 @@ export const CatalogView: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
+            overflow: 'hidden',
           }}
         >
-          <span style={{ fontSize: '18px', color: '#C2410C' }}>🏪</span>
+          {storeLogo ? (
+            <img src={storeLogo} alt={storeName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <span style={{ fontSize: '18px', color: '#C2410C' }}>🏪</span>
+          )}
         </div>
         
         {/* Store Info */}
@@ -86,21 +102,21 @@ export const CatalogView: React.FC = () => {
               lineHeight: 1.2,
             }}
           >
-            POS UMKM
+            {storeName}
           </h1>
-          <p
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '11px',
-              color: '#57534E',
-              margin: 0,
-              letterSpacing: '0.02em',
-              textTransform: 'uppercase',
-              fontWeight: 600,
-            }}
-          >
-            Sistem Kasir & Wirausaha Modern
-          </p>
+          {storeAddress && (
+            <p
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '11px',
+                color: '#57534E',
+                margin: 0,
+                lineHeight: 1.4,
+              }}
+            >
+              {storeAddress}
+            </p>
+          )}
         </div>
       </div>
 
@@ -262,15 +278,13 @@ export const CatalogView: React.FC = () => {
                           </Text>
 
                           {quantityInCart === 0 ? (
+                            !isOutOfStock && (
                             <Button
                               type="primary"
                               icon={<PlusOutlined style={{ fontSize: '15px' }} />}
-                              disabled={isOutOfStock}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (!isOutOfStock) {
-                                  onAddToCart(p);
-                                }
+                                onAddToCart(p);
                               }}
                               style={{
                                 backgroundColor: '#C2410C',
@@ -284,6 +298,7 @@ export const CatalogView: React.FC = () => {
                                 padding: 0,
                               }}
                             />
+                            )
                           ) : (
                             <div
                               onClick={(e) => e.stopPropagation()}
