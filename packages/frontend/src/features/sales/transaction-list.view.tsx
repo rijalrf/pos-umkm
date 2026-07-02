@@ -193,6 +193,20 @@ export const TransactionListView: React.FC = () => {
       ),
     },
     {
+      title: 'Nomor Meja',
+      dataIndex: 'table',
+      key: 'table',
+      render: (table: any) => (
+        table?.code ? (
+          <code style={{ fontFamily: "'Source Code Pro', monospace", fontWeight: 600, color: '#365314' }}>
+            {table.code}
+          </code>
+        ) : (
+          <Text type="secondary">-</Text>
+        )
+      ),
+    },
+    {
       title: 'Total Belanja',
       dataIndex: 'totalAmount',
       key: 'totalAmount',
