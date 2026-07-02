@@ -102,6 +102,7 @@ export class TransactionsService {
           cashierId,
           tableId: data.tableId || null,
           tableNumber: data.tableNumber || null,
+          paymentMethod: data.paymentMethod || 'CASH',
           totalAmount: new Prisma.Decimal(totalAmount),
           cashReceived: new Prisma.Decimal(data.cashReceived),
           cashReturn: new Prisma.Decimal(cashReturn),

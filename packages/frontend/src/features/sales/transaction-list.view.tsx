@@ -115,6 +115,7 @@ export const TransactionListView: React.FC = () => {
             <strong>Kasir:</strong> ${tx.cashier?.fullName || 'System'}<br/>
             <strong>Pelanggan:</strong> ${tx.customerName || 'Tamu'}<br/>
             ${tx.tableNumber ? `<strong>Meja:</strong> ${tx.tableNumber}<br/>` : ''}
+            <strong>Pembayaran:</strong> ${tx.paymentMethod === 'QRIS' ? 'QRIS' : 'TUNAI'}<br/>
           </div>
           <div class="divider"></div>
           <table>
@@ -128,14 +129,16 @@ export const TransactionListView: React.FC = () => {
               <td>Total Tagihan</td>
               <td style="text-align: right;">${formatter.format(Number(tx.totalAmount))}</td>
             </tr>
+            ${tx.paymentMethod !== 'QRIS' ? `
             <tr>
               <td>Uang Diterima</td>
               <td style="text-align: right;">${formatter.format(Number(tx.cashReceived))}</td>
             </tr>
             <tr>
               <td>Kembalian</td>
-              <td style="text-align: right;">${formatter.format(Number(tx.cashReceived) - Number(tx.totalAmount))}</td>
+              <td style="text-align: right;">${formatter.format(Number(tx.cashReturn || tx.cashReceived - tx.totalAmount))}</td>
             </tr>
+            ` : ''}
           </table>
           <div class="divider"></div>
           <div class="text-center" style="font-size: 11px; margin-top: 15px;">
@@ -351,10 +354,26 @@ export const TransactionListView: React.FC = () => {
                     <span style={{ fontSize: '12px', color: '#878685', display: 'block' }}>Kode Transaksi</span>
                     <strong style={{ fontSize: '14px', color: '#1C1917', fontFamily: "'Source Code Pro', monospace" }}>{selectedTx.transactionCode}</strong>
                   </div>
-                  <div>
+                  <div style={{ marginBottom: '8px' }}>
                     <span style={{ fontSize: '12px', color: '#878685', display: 'block' }}>Waktu Transaksi</span>
                     <span style={{ fontSize: '14px', color: '#1C1917' }}>
                       {new Date(selectedTx.transactionDate).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '12px', color: '#878685', display: 'block' }}>Metode Pembayaran</span>
+                    <span style={{
+                      fontSize: '12px',
+                      color: selectedTx.paymentMethod === 'QRIS' ? '#166534' : '#C2410C',
+                      backgroundColor: selectedTx.paymentMethod === 'QRIS' ? '#DCFCE7' : '#FDF6EC',
+                      border: selectedTx.paymentMethod === 'QRIS' ? '1px solid #BBF7D0' : '1px solid #FCA5A5',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      fontWeight: 600,
+                      display: 'inline-block',
+                      marginTop: '4px'
+                    }}>
+                      {selectedTx.paymentMethod === 'QRIS' ? 'QRIS' : 'TUNAI'}
                     </span>
                   </div>
                 </div>

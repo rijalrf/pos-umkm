@@ -13,6 +13,7 @@ export const createTransactionSchema = z.object({
       )
       .min(1, 'At least one item is required'),
     cashReceived: z.number().nonnegative('Cash received must be 0 or greater'),
+    paymentMethod: z.string().optional(),
   }),
 });
 

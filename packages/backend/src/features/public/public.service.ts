@@ -113,6 +113,7 @@ export class PublicService {
       tableNumber,
       items: input.items,
       cashReceived: totalAmount,
+      paymentMethod: input.paymentMethod,
     });
 
     return tx;
