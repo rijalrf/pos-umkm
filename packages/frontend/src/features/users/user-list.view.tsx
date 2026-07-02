@@ -174,7 +174,7 @@ export const UserListView: React.FC = () => {
             Pengguna
           </Title>
           <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#57534E', marginTop: '4px', marginBottom: 0 }}>
-            Kelola akun pengguna backoffice untuk administrator dan staf kasir.
+            Kelola akun pengguna aplikasi untuk administrator dan staf kasir.
           </Paragraph>
         </div>
         <Space>

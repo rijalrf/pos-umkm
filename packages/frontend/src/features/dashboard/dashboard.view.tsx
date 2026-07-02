@@ -75,7 +75,7 @@ export const DashboardView: React.FC = () => {
   return (
     <div>
       <div style={{ marginBottom: '24px' }}>
-        <Title level={2} style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#C2410C' }}>Ringkasan Backoffice</Title>
+        <Title level={2} style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#C2410C' }}>Dashboard</Title>
         <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#57534E', fontSize: '15px' }}>
           Selamat datang kembali, {user?.fullName}. Berikut adalah ringkasan sistem kasir dan penjualan Anda.
         </Paragraph>
