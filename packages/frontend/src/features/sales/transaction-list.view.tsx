@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Input, DatePicker, Space, Typography, Modal, Card, message, Dropdown, Tag } from 'antd';
+import { Table, Button, Input, DatePicker, Space, Typography, Modal, Card, message, Dropdown } from 'antd';
 import { SearchOutlined, PrinterOutlined, CalendarOutlined, EyeOutlined, MoreOutlined } from '@ant-design/icons';
 import { useTransactionsPresenter } from './transactions.presenter';
 
@@ -181,16 +181,7 @@ export const TransactionListView: React.FC = () => {
       title: 'Pelanggan',
       dataIndex: 'customerName',
       key: 'customerName',
-      render: (text: string, record: any) => (
-        <Space direction="vertical" size={0}>
-          <span>{text || <Text type="secondary">Pelanggan Umum</Text>}</span>
-          {record.tableNumber && (
-            <Tag color="orange" style={{ margin: 0, fontSize: '11px', borderRadius: '4px' }}>
-              {record.tableNumber}
-            </Tag>
-          )}
-        </Space>
-      ),
+      render: (text: string) => text || <Text type="secondary">Pelanggan Umum</Text>,
     },
     {
       title: 'Nomor Meja',
