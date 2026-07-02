@@ -3,7 +3,7 @@ import { TransactionsController } from './transactions.controller';
 import { authenticate } from '../../shared/middleware/auth.middleware';
 import { authorize } from '../../shared/middleware/role-guard.middleware';
 import { validate } from '../../shared/middleware/validate.middleware';
-import { createTransactionSchema, getTransactionByIdSchema, getTransactionsSchema } from './transactions.schema';
+import { createTransactionSchema, getTransactionByIdSchema, getTransactionsSchema, payTransactionSchema } from './transactions.schema';
 
 const router = Router();
 const controller = new TransactionsController();
@@ -16,6 +16,9 @@ router.get('/', authorize(['CASHIER', 'ADMIN']), validate(getTransactionsSchema)
 
 // Create transaction - Cashier or Admin
 router.post('/', authorize(['CASHIER', 'ADMIN']), validate(createTransactionSchema), controller.create);
+
+// Complete a pending transaction - Cashier or Admin
+router.put('/:id/pay', authorize(['CASHIER', 'ADMIN']), validate(payTransactionSchema), controller.payPending);
 
 // Get transaction details - Cashier or Admin
 router.get('/:id', authorize(['CASHIER', 'ADMIN']), validate(getTransactionByIdSchema), controller.getById);

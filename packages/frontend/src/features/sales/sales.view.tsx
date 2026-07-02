@@ -286,7 +286,7 @@ export const SalesView: React.FC = () => {
             <strong>Tgl:</strong> ${dateStr}<br/>
             <strong>Kasir:</strong> ${tx.cashier?.fullName || 'System'}<br/>
             <strong>Pelanggan:</strong> ${tx.customerName || 'Tamu'}<br/>
-            <strong>Pembayaran:</strong> ${tx.paymentMethod === 'QRIS' ? 'QRIS' : 'TUNAI'}<br/>
+            <strong>Pembayaran:</strong> ${tx.paymentMethod}<br/>
           </div>
           <div class="divider"></div>
           <table>
@@ -300,7 +300,7 @@ export const SalesView: React.FC = () => {
               <td>Total Tagihan</td>
               <td style="text-align: right;">${formatter.format(Number(tx.totalAmount))}</td>
             </tr>
-            ${tx.paymentMethod !== 'QRIS' ? `
+            ${tx.paymentMethod === 'CASH' ? `
             <tr>
               <td>Uang Diterima</td>
               <td style="text-align: right;">${formatter.format(Number(tx.cashReceived))}</td>
@@ -740,7 +740,7 @@ export const SalesView: React.FC = () => {
               <strong>Tgl:</strong> {new Date(checkoutResult.transactionDate).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}<br />
               <strong>Kasir:</strong> {checkoutResult.cashier?.fullName || 'System'}<br />
               <strong>Pelanggan:</strong> {checkoutResult.customerName || 'Tamu'}<br />
-              <strong>Pembayaran:</strong> {checkoutResult.paymentMethod === 'QRIS' ? 'QRIS' : 'TUNAI'}<br />
+              <strong>Pembayaran:</strong> {checkoutResult.paymentMethod}<br />
             </div>
             <div style={{ borderTop: '1px dashed #D6D3D1', margin: '8px 0' }} />
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -765,7 +765,7 @@ export const SalesView: React.FC = () => {
                   <td>Total Tagihan</td>
                   <td style={{ textAlign: 'right' }}>{formatter.format(Number(checkoutResult.totalAmount))}</td>
                 </tr>
-                {checkoutResult.paymentMethod !== 'QRIS' && (
+                {checkoutResult.paymentMethod === 'CASH' && (
                   <>
                     <tr>
                       <td style={{ fontWeight: 'normal', color: '#57534E' }}>Uang Diterima</td>

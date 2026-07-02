@@ -11,4 +11,5 @@ export interface CreateTransactionInput {
   items: CreateTransactionItemInput[];
   cashReceived: number;
   paymentMethod?: string;
+  status?: string;
 }

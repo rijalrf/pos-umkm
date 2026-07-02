@@ -66,4 +66,24 @@ export class TransactionsController {
       next(error);
     }
   };
+
+  payPending = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const cashierId = req.user!.id;
+      const transaction = await this.service.payPendingTransaction(req.params.id, cashierId, req.body);
+      
+      logger.info('Transaction paid/completed successfully', {
+        transactionId: transaction.id,
+        code: transaction.transactionCode,
+        cashierId,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: { transaction },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

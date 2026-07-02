@@ -85,13 +85,21 @@ export class TransactionsService {
         });
       }
 
-      if (data.cashReceived < totalAmount) {
-        throw new BadRequestError(
-          `Insufficient cash received. Total: Rp ${totalAmount}, Received: Rp ${data.cashReceived}`
-        );
-      }
+      let cashReceivedVal = data.cashReceived;
+      let cashReturnVal = 0;
+      const status = data.status || 'PAID';
 
-      const cashReturn = data.cashReceived - totalAmount;
+      if (status === 'PENDING') {
+        cashReceivedVal = 0;
+        cashReturnVal = 0;
+      } else {
+        if (data.cashReceived < totalAmount) {
+          throw new BadRequestError(
+            `Insufficient cash received. Total: Rp ${totalAmount}, Received: Rp ${data.cashReceived}`
+          );
+        }
+        cashReturnVal = data.cashReceived - totalAmount;
+      }
 
       // Create transaction
       const createdTx = await tx.transaction.create({
@@ -103,9 +111,10 @@ export class TransactionsService {
           tableId: data.tableId || null,
           tableNumber: data.tableNumber || null,
           paymentMethod: data.paymentMethod || 'CASH',
+          status,
           totalAmount: new Prisma.Decimal(totalAmount),
-          cashReceived: new Prisma.Decimal(data.cashReceived),
-          cashReturn: new Prisma.Decimal(cashReturn),
+          cashReceived: new Prisma.Decimal(cashReceivedVal),
+          cashReturn: new Prisma.Decimal(cashReturnVal),
           items: {
             create: itemsToCreate,
           },
@@ -237,8 +246,73 @@ export class TransactionsService {
           <div>Terima Kasih atas Kunjungan Anda</div>
           <div>Layanan Pelanggan POS UMKM</div>
         </div>
-      </body>
-      </html>
+    </body>
+    </html>
     `;
+  }
+
+  async payPendingTransaction(id: string, cashierId: string, data: { cashReceived: number; paymentMethod: string }) {
+    const tx = await this.getTransactionById(id);
+    if (tx.status !== 'PENDING') {
+      throw new BadRequestError('Transaction is already paid or not pending');
+    }
+
+    const total = Number(tx.totalAmount);
+    const paymentMethod = data.paymentMethod;
+    let cashReceivedVal = data.cashReceived;
+    let cashReturnVal = 0;
+
+    if (paymentMethod === 'QRIS' || paymentMethod === 'DEBIT' || paymentMethod === 'TRANSFER') {
+      cashReceivedVal = total;
+      cashReturnVal = 0;
+    } else {
+      if (data.cashReceived < total) {
+        throw new BadRequestError(
+          `Insufficient cash received. Total: Rp ${total}, Received: Rp ${data.cashReceived}`
+        );
+      }
+      cashReturnVal = data.cashReceived - total;
+    }
+
+    return prisma.transaction.update({
+      where: { id },
+      data: {
+        status: 'PAID',
+        cashierId,
+        paymentMethod,
+        cashReceived: new Prisma.Decimal(cashReceivedVal),
+        cashReturn: new Prisma.Decimal(cashReturnVal),
+      },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                sku: true,
+              },
+            },
+          },
+        },
+        cashier: {
+          select: {
+            username: true,
+            fullName: true,
+          },
+        },
+        customer: {
+          select: {
+            email: true,
+            name: true,
+          },
+        },
+        table: {
+          select: {
+            code: true,
+            number: true,
+          },
+        },
+      },
+    });
   }
 }
