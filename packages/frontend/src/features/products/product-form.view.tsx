@@ -129,7 +129,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       // Handle image upload if a file is selected
       if (fileList.length > 0 && fileList[0]?.originFileObj && productId) {
         try {
-          message.loading({ content: 'Mengunggah gambar ke Google Drive...', key: 'uploading' });
+          message.loading({ content: 'Mengunggah gambar...', key: 'uploading' });
           const uploadRes = await ProductsService.uploadImage(productId, fileList[0].originFileObj as File);
           if (uploadRes.success) {
             message.success({ content: 'Gambar berhasil diunggah!', key: 'uploading' });

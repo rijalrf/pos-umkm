@@ -34,6 +34,7 @@ export class PublicService {
       address: setting.address,
       phone: setting.phone,
       logoUrl: setting.logoUrl ?? null,
+      qrisUrl: setting.qrisUrl ?? null,
     };
   }
 

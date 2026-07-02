@@ -3,25 +3,65 @@ import { Readable } from 'stream';
 import { prisma } from '../../config/database.config';
 import { logger } from '../utils/logger.util';
 import { decrypt, encrypt } from '../utils/encryption.util';
+import { env } from '../../config/env.config';
+import fs from 'fs';
+import path from 'path';
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
+
+const saveFileLocally = async (fileName: string, buffer: Buffer): Promise<string> => {
+  const uploadsDir = path.join(__dirname, '../../../uploads');
+  
+  // Ensure uploads directory exists
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  const filePath = path.join(uploadsDir, fileName);
+  await fs.promises.writeFile(filePath, buffer);
+
+  const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`;
+  const fileUrl = `${backendUrl}/uploads/${fileName}`;
+
+  logger.info('File saved locally to server', {
+    fileName,
+    filePath,
+    fileUrl,
+  });
+
+  return fileUrl;
+};
 
 export const getOAuth2Client = async () => {
   const config = await prisma.gDriveConfig.findFirst();
 
-  if (!config || !config.isConnected) {
-    throw new Error('Google Drive not configured');
+  const clientId = process.env.GDRIVE_CLIENT_ID || (config?.clientId ? decrypt(config.clientId) : '');
+  const clientSecret = process.env.GDRIVE_CLIENT_SECRET || (config?.clientSecret ? decrypt(config.clientSecret) : '');
+  const redirectUri = process.env.GDRIVE_REDIRECT_URI || '';
+
+  if (!clientId || !clientSecret) {
+    throw new Error('Google Drive credentials (GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET) not configured');
+  }
+
+  const refreshToken = process.env.GDRIVE_REFRESH_TOKEN || (config?.refreshToken ? decrypt(config.refreshToken) : '');
+  const accessToken = config?.accessToken ? decrypt(config.accessToken) : undefined;
+
+  const isConnectedEnv = !!process.env.GDRIVE_CLIENT_ID && !!process.env.GDRIVE_CLIENT_SECRET && !!process.env.GDRIVE_REFRESH_TOKEN;
+  const isConnectedDb = config ? config.isConnected : false;
+
+  if (!isConnectedEnv && !isConnectedDb) {
+    throw new Error('Google Drive not configured or connected');
   }
 
   const oauth2Client = new google.auth.OAuth2(
-    decrypt(config.clientId),
-    decrypt(config.clientSecret),
-    process.env.GDRIVE_REDIRECT_URI
+    clientId,
+    clientSecret,
+    redirectUri
   );
 
   oauth2Client.setCredentials({
-    refresh_token: decrypt(config.refreshToken),
-    access_token: decrypt(config.accessToken),
+    refresh_token: refreshToken,
+    access_token: accessToken,
   });
 
   return oauth2Client;
@@ -32,6 +72,33 @@ export const uploadToDrive = async (
   mimeType: string,
   buffer: Buffer
 ): Promise<string> => {
+  // Always save to local server first
+  const localUrl = await saveFileLocally(fileName, buffer);
+
+  // Check if Google Drive upload is enabled in config
+  const shouldUploadToDrive = env.uploadToGDrive;
+  if (!shouldUploadToDrive) {
+    logger.info('Google Drive upload is disabled. Returning local server file URL.', { fileName, localUrl });
+    return localUrl;
+  }
+
+  // Check if Google Drive is configured
+  let isGDriveConfigured = false;
+  try {
+    const config = await prisma.gDriveConfig.findFirst();
+    const hasEnvConfig = !!process.env.GDRIVE_CLIENT_ID && !!process.env.GDRIVE_CLIENT_SECRET;
+    const isConnectedEnv = hasEnvConfig && !!process.env.GDRIVE_REFRESH_TOKEN;
+    const isConnectedDb = config ? config.isConnected : false;
+    isGDriveConfigured = isConnectedEnv || isConnectedDb;
+  } catch (err) {
+    isGDriveConfigured = false;
+  }
+
+  if (!isGDriveConfigured) {
+    logger.warn('Google Drive is enabled but not configured. Falling back to local file URL.', { fileName, localUrl });
+    return localUrl;
+  }
+
   try {
     const auth = await getOAuth2Client();
     const drive = google.drive({ version: 'v3', auth });
@@ -68,18 +135,20 @@ export const uploadToDrive = async (
     // Get direct link
     const fileUrl = `https://drive.google.com/uc?id=${response.data.id}`;
 
-    logger.info('File uploaded to Google Drive', {
+    logger.info('File uploaded to Google Drive successfully', {
       fileName,
-      fileId: response.data.id,
+      id: response.data.id,
+      fileUrl,
     });
 
     return fileUrl;
   } catch (error) {
-    logger.error('Failed to upload to Google Drive', {
+    logger.error('Failed to upload to Google Drive. Falling back to local file URL.', {
       error: error instanceof Error ? error.message : 'Unknown error',
       fileName,
+      localUrl,
     });
-    throw new Error('Failed to upload to Google Drive');
+    return localUrl;
   }
 };
 
@@ -123,13 +192,16 @@ export const authorizeGoogleDrive = async (
 export const handleOAuthCallback = async (code: string): Promise<void> => {
   const config = await prisma.gDriveConfig.findFirst();
 
-  if (!config) {
-    throw new Error('Google Drive not configured');
+  const clientId = process.env.GDRIVE_CLIENT_ID || (config?.clientId ? decrypt(config.clientId) : '');
+  const clientSecret = process.env.GDRIVE_CLIENT_SECRET || (config?.clientSecret ? decrypt(config.clientSecret) : '');
+
+  if (!clientId || !clientSecret) {
+    throw new Error('Google Drive credentials (GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET) not configured');
   }
 
   const oauth2Client = new google.auth.OAuth2(
-    decrypt(config.clientId),
-    decrypt(config.clientSecret),
+    clientId,
+    clientSecret,
     process.env.GDRIVE_REDIRECT_URI
   );
 
@@ -139,9 +211,20 @@ export const handleOAuthCallback = async (code: string): Promise<void> => {
     throw new Error('Failed to get tokens from Google');
   }
 
-  await prisma.gDriveConfig.update({
-    where: { id: config.id },
-    data: {
+  await prisma.gDriveConfig.upsert({
+    where: { id: config?.id || 'default' },
+    update: {
+      clientId: encrypt(clientId),
+      clientSecret: encrypt(clientSecret),
+      refreshToken: encrypt(tokens.refresh_token),
+      accessToken: encrypt(tokens.access_token),
+      tokenExpiry: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+      isConnected: true,
+    },
+    create: {
+      id: 'default',
+      clientId: encrypt(clientId),
+      clientSecret: encrypt(clientSecret),
       refreshToken: encrypt(tokens.refresh_token),
       accessToken: encrypt(tokens.access_token),
       tokenExpiry: tokens.expiry_date ? new Date(tokens.expiry_date) : null,

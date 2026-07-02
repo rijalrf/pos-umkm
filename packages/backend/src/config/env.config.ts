@@ -15,6 +15,7 @@ export const env = {
   gdriveClientId: process.env.GDRIVE_CLIENT_ID || '',
   gdriveClientSecret: process.env.GDRIVE_CLIENT_SECRET || '',
   gdriveRedirectUri: process.env.GDRIVE_REDIRECT_URI || '',
+  uploadToGDrive: process.env.UPLOAD_TO_GDRIVE === 'true',
   emailFrom: process.env.EMAIL_FROM || 'noreply@pos-umkm.com',
   emailService: process.env.EMAIL_SERVICE || 'nodemailer',
   emailSmtpHost: process.env.EMAIL_SMTP_HOST || '',

@@ -33,6 +33,8 @@ export const CheckoutView: React.FC = () => {
   const [storeName, setStoreName] = useState<string>('Toko');
   const [storeAddress, setStoreAddress] = useState<string>('');
   const [storeLogo, setStoreLogo] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS'>('CASH');
+  const [storeQris, setStoreQris] = useState<string | null>(null);
 
   const hasInvalidStock = cart.items.some(
     (item) => item.product.stock === 0 || item.quantity > item.product.stock
@@ -73,6 +75,7 @@ export const CheckoutView: React.FC = () => {
         if (res?.data?.storeName) setStoreName(res.data.storeName);
         if (res?.data?.address) setStoreAddress(res.data.address);
         if (res?.data?.logoUrl) setStoreLogo(res.data.logoUrl);
+        if (res?.data?.qrisUrl) setStoreQris(res.data.qrisUrl);
       })
       .catch(() => {});
   }, []);
@@ -106,6 +109,7 @@ export const CheckoutView: React.FC = () => {
         productId: item.product.id,
         quantity: item.quantity,
       })),
+      paymentMethod,
     };
 
     if (customerType === 'guest') {
@@ -356,16 +360,17 @@ export const CheckoutView: React.FC = () => {
                   Metode Pembayaran
                 </Text>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {/* Pay at Cashier Option (Enabled & Active) */}
+                  {/* Tunai Option */}
                   <div
+                    onClick={() => setPaymentMethod('CASH')}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
                       borderRadius: '6px',
-                      border: '1.5px solid #C2410C',
-                      background: '#FFFBF5',
+                      border: paymentMethod === 'CASH' ? '1.5px solid #C2410C' : '1.5px solid #E7E5E4',
+                      background: paymentMethod === 'CASH' ? '#FFFBF5' : '#FFFFFF',
                       cursor: 'pointer',
                     }}
                   >
@@ -374,33 +379,33 @@ export const CheckoutView: React.FC = () => {
                         width: '18px',
                         height: '18px',
                         borderRadius: '50%',
-                        border: '1.5px solid #C2410C',
+                        border: paymentMethod === 'CASH' ? '1.5px solid #C2410C' : '1.5px solid #D6D3D1',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
                     >
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C2410C' }} />
+                      {paymentMethod === 'CASH' && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C2410C' }} />}
                     </div>
                     <div>
-                      <Text strong style={{ display: 'block', fontSize: '14px', color: '#1C1917' }}>
-                        Bayar di Kasir
+                      <Text strong style={{ display: 'block', fontSize: '14px', color: paymentMethod === 'CASH' ? '#1C1917' : '#57534E' }}>
+                        Tunai
                       </Text>
                     </div>
                   </div>
 
-                  {/* QR Code / QRIS Option (Disabled) */}
+                  {/* QRIS Option */}
                   <div
+                    onClick={() => setPaymentMethod('QRIS')}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px',
                       borderRadius: '6px',
-                      border: '1.5px solid #E7E5E4',
-                      background: '#F5F5F4',
-                      opacity: 0.5,
-                      cursor: 'not-allowed',
+                      border: paymentMethod === 'QRIS' ? '1.5px solid #C2410C' : '1.5px solid #E7E5E4',
+                      background: paymentMethod === 'QRIS' ? '#FFFBF5' : '#FFFFFF',
+                      cursor: 'pointer',
                     }}
                   >
                     <div
@@ -408,12 +413,17 @@ export const CheckoutView: React.FC = () => {
                         width: '18px',
                         height: '18px',
                         borderRadius: '50%',
-                        border: '1.5px solid #D6D3D1',
+                        border: paymentMethod === 'QRIS' ? '1.5px solid #C2410C' : '1.5px solid #D6D3D1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
-                    />
+                    >
+                      {paymentMethod === 'QRIS' && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C2410C' }} />}
+                    </div>
                     <div>
-                      <Text strong style={{ display: 'block', fontSize: '14px', color: '#A8A29E' }}>
-                        QRIS / QR Code (Segera Hadir)
+                      <Text strong style={{ display: 'block', fontSize: '14px', color: paymentMethod === 'QRIS' ? '#1C1917' : '#57534E' }}>
+                        QRIS
                       </Text>
                     </div>
                   </div>
@@ -534,8 +544,8 @@ export const CheckoutView: React.FC = () => {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '13px' }}>
                 <Text style={{ color: '#57534E' }}>Pembayaran:</Text>
-                <span style={{ background: '#DCFCE7', color: '#166534', padding: '1px 6px', borderRadius: '4px', fontSize: '10px', fontWeight: 600 }}>
-                  Bayar di Kasir
+                <span style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 600 }}>
+                  {paymentMethod === 'QRIS' ? 'QRIS' : 'Tunai'}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E7E5E4', paddingTop: '10px', marginTop: '10px' }}>
@@ -545,6 +555,32 @@ export const CheckoutView: React.FC = () => {
                 </Text>
               </div>
             </div>
+
+            {/* QRIS Scan Section (Sebelum Pesanan Berhasil) */}
+            {paymentMethod === 'QRIS' && (
+              <div style={{ textAlign: 'center', marginTop: '20px', padding: '16px', background: '#FFFBF5', border: '1.5px solid #D4A373', borderRadius: '8px' }}>
+                <Text strong style={{ display: 'block', marginBottom: '12px', color: '#1C1917', fontSize: '14px' }}>
+                  Silakan Pindai QRIS Toko untuk Membayar
+                </Text>
+                {storeQris ? (
+                  <img 
+                    src={storeQris} 
+                    alt="QRIS Toko" 
+                    style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain', display: 'block', margin: '0 auto 12px auto', border: '1px solid #E7E5E4', padding: '8px', borderRadius: '6px', background: '#FFFFFF' }} 
+                  />
+                ) : (
+                  <div style={{ padding: '16px', background: '#F5F5F4', color: '#78716C', borderRadius: '6px', marginBottom: '12px' }}>
+                    <p style={{ margin: 0, fontSize: '13px' }}>QRIS Toko belum dikonfigurasi.</p>
+                  </div>
+                )}
+                <Text type="secondary" style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>
+                  Total Tagihan: {formatter.format(cart.getTotalAmount())}
+                </Text>
+                <Text style={{ fontSize: '12px', fontStyle: 'italic', color: '#57534E' }}>
+                  Setelah sukses melakukan transfer pembayaran, silakan ketuk tombol "Bayar Sekarang" di bawah untuk memproses pesanan.
+                </Text>
+              </div>
+            )}
 
           </Card>
 
@@ -586,7 +622,7 @@ export const CheckoutView: React.FC = () => {
                 height: '38px',
               }}
             >
-              Pesan Sekarang
+              {paymentMethod === 'QRIS' ? 'Bayar Sekarang' : 'Pesan Sekarang'}
             </Button>
           </div>
         </div>
@@ -659,8 +695,8 @@ export const CheckoutView: React.FC = () => {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
                 <Text style={{ color: '#57534E' }}>Metode Pembayaran:</Text>
-                <span style={{ background: '#DCFCE7', color: '#166534', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
-                  Bayar di Kasir
+                <span style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>
+                  {createdTx.paymentMethod === 'QRIS' ? 'QRIS' : 'Tunai'}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E7E5E4', paddingTop: '12px', marginTop: '12px' }}>
@@ -670,6 +706,15 @@ export const CheckoutView: React.FC = () => {
                 </Text>
               </div>
             </div>
+
+            {/* QRIS Status Section (Setelah Pesanan Berhasil) */}
+            {createdTx.paymentMethod === 'QRIS' && (
+              <div style={{ textAlign: 'center', margin: '24px 0', padding: '16px', background: '#FFFBF5', border: '1.5px solid #D4A373', borderRadius: '8px' }}>
+                <Text strong style={{ display: 'block', marginBottom: '8px', color: '#365314', fontSize: '14px' }}>Pembayaran QRIS Sedang Diproses</Text>
+                <Text style={{ fontSize: '12px', color: '#57534E', display: 'block', marginBottom: '8px' }}>Pesanan Anda sudah diterima oleh sistem.</Text>
+                <Text style={{ fontSize: '11px', fontStyle: 'italic', color: '#78716C' }}>Mohon tunjukkan bukti transaksi sukses atau tunggu verifikasi dari kasir.</Text>
+              </div>
+            )}
 
             {/* Ucapan Terimakasih */}
             <div style={{ textAlign: 'center' }}>

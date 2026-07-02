@@ -32,4 +32,7 @@ router.put('/store', authenticate, authorize(['ADMIN']), validate(updateStoreSet
 // Only Admin can upload store logo
 router.post('/store/logo', authenticate, authorize(['ADMIN']), upload.single('logo'), controller.uploadLogo);
 
+// Only Admin can upload store QRIS
+router.post('/store/qris', authenticate, authorize(['ADMIN']), upload.single('qris'), controller.uploadQris);
+
 export default router;

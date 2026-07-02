@@ -386,3 +386,18 @@ h4.ant-typography.font-lora {
   border-color: #A8A29E !important;
   transform: translateY(-2px);
 }
+
+/* Override gaya tombol disabled untuk mengatasi konflik dengan gaya inline */
+.ant-btn:disabled,
+.ant-btn[disabled],
+.ant-btn.ant-btn-disabled,
+.ant-btn-primary:disabled,
+.ant-btn-primary[disabled],
+.ant-btn-primary.ant-btn-disabled {
+  background-color: #F5F5F4 !important;
+  background: #F5F5F4 !important;
+  border-color: #E7E5E4 !important;
+  color: #A8A29E !important;
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
