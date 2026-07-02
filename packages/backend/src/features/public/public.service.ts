@@ -7,6 +7,7 @@ import { CustomersService } from '../customers/customers.service';
 import { TransactionsService } from '../transactions/transactions.service';
 import { prisma } from '../../config/database.config';
 import { BadRequestError } from '../../shared/utils/errors.util';
+import { hashPassword } from '../../shared/utils/bcrypt.util';
 
 export class PublicService {
   private productsRepository = new ProductsRepository();
@@ -76,6 +77,42 @@ export class PublicService {
         throw new BadRequestError('Guest name is required for guest checkout');
       }
       customerName = input.guestName;
+
+      if (input.phone) {
+        // Cek apakah pelanggan dengan nomor telepon ini sudah terdaftar
+        let customer = await prisma.customer.findFirst({
+          where: { phone: input.phone },
+        });
+
+        if (!customer) {
+          // Jika belum ada, daftarkan sebagai pelanggan baru.
+          // Karena email unik dan password hash wajib di skema database, buat email & password dummy.
+          const dummyEmail = `${input.phone}@pos-umkm.local`;
+          const dummyPassword = `pass-${input.phone}`;
+          const passwordHash = await hashPassword(dummyPassword);
+
+          customer = await prisma.customer.create({
+            data: {
+              email: dummyEmail,
+              passwordHash,
+              name: input.guestName,
+              phone: input.phone,
+              isEmailVerified: true, // Otomatis terverifikasi
+            },
+          });
+        } else {
+          // Jika sudah ada, update namanya jika berbeda
+          if (customer.name !== input.guestName) {
+            customer = await prisma.customer.update({
+              where: { id: customer.id },
+              data: { name: input.guestName },
+            });
+          }
+        }
+
+        customerId = customer.id;
+        customerName = customer.name;
+      }
     }
 
     let tableNumber: string | undefined;

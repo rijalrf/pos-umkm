@@ -211,9 +211,9 @@ export const TransactionListView: React.FC = () => {
       dataIndex: 'transactionCode',
       key: 'transactionCode',
       render: (text: string) => (
-        <code style={{ fontFamily: "'Source Code Pro', monospace", fontWeight: 600, color: '#C2410C' }}>
+        <span style={{ fontWeight: 600, color: '#C2410C' }}>
           {text}
-        </code>
+        </span>
       ),
     },
     {
@@ -240,9 +240,9 @@ export const TransactionListView: React.FC = () => {
       key: 'table',
       render: (table: any) => (
         table?.code ? (
-          <code style={{ fontFamily: "'Source Code Pro', monospace", fontWeight: 600, color: '#365314' }}>
+          <span style={{ fontWeight: 600, color: '#365314' }}>
             {table.code}
-          </code>
+          </span>
         ) : (
           <Text type="secondary">-</Text>
         )

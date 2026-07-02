@@ -81,19 +81,7 @@ export const ProductListView: React.FC = () => {
       title: 'Kode',
       dataIndex: 'sku',
       key: 'sku',
-      render: (sku: string) => (
-        <span style={{
-          fontFamily: "'Source Code Pro', monospace",
-          fontSize: '13px',
-          background: '#FFFBF5',
-          border: '1.5px solid #D6D3D1',
-          borderRadius: '4px',
-          padding: '2px 8px',
-          color: '#57534E',
-        }}>
-          {sku}
-        </span>
-      ),
+      render: (sku: string) => <span style={{ color: '#57534E' }}>{sku}</span>,
     },
     {
       title: 'Nama Produk',
@@ -105,28 +93,13 @@ export const ProductListView: React.FC = () => {
       title: 'Kategori',
       dataIndex: ['category', 'name'],
       key: 'categoryName',
-      render: (catName: string) => (
-        <span style={{
-          background: '#F0FDF4',
-          color: '#365314',
-          border: '1px solid #DCFCE7',
-          borderRadius: '4px',
-          padding: '2px 8px',
-          fontSize: '12px',
-          fontWeight: 600,
-          fontFamily: "'Inter', sans-serif",
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-        }}>
-          {catName || 'N/A'}
-        </span>
-      ),
+      render: (catName: string) => <span>{catName || '-'}</span>,
     },
     {
       title: 'Harga',
       dataIndex: 'price',
       key: 'price',
-      render: (price: string) => <span style={{ fontFamily: "'Source Code Pro', monospace" }}>{formatCurrency(price)}</span>,
+      render: (price: string) => <span>{formatCurrency(price)}</span>,
     },
     {
       title: 'Stok',
@@ -137,8 +110,7 @@ export const ProductListView: React.FC = () => {
           <Space>
             <span style={{
               color: isLowStock ? '#DC2626' : 'inherit',
-              fontWeight: isLowStock ? 700 : 'normal',
-              fontFamily: "'Source Code Pro', monospace"
+              fontWeight: isLowStock ? 700 : 'normal'
             }}>
               {record.stock}
             </span>
@@ -301,7 +273,7 @@ export const ProductListView: React.FC = () => {
             <div style={{ flex: 1 }}>
               <div style={{ marginBottom: '16px' }}>
                 <span style={{ fontSize: '12px', color: '#878685', display: 'block', fontWeight: 600 }}>Kode</span>
-                <span style={{ fontFamily: "'Source Code Pro', monospace", fontWeight: 600, fontSize: '15px', color: '#1C1917' }}>{detailProduct.sku}</span>
+                <span style={{ fontWeight: 600, fontSize: '15px', color: '#1C1917' }}>{detailProduct.sku}</span>
               </div>
               <div style={{ marginBottom: '16px' }}>
                 <span style={{ fontSize: '12px', color: '#878685', display: 'block', fontWeight: 600 }}>Nama Produk</span>

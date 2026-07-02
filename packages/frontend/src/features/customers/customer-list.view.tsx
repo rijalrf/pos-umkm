@@ -29,6 +29,14 @@ export const CustomerListView: React.FC = () => {
     fetchCustomers();
   }, []);
 
+  const maskPhone = (phone?: string) => {
+    if (!phone) return '-';
+    if (phone.length <= 7) {
+      return phone.slice(0, 3) + '*'.repeat(phone.length - 3);
+    }
+    return phone.slice(0, 4) + '*'.repeat(phone.length - 7) + phone.slice(-3);
+  };
+
   const filteredCustomers = useMemo(() => {
     if (!search.trim()) return customers;
     const q = search.toLowerCase();
@@ -36,7 +44,6 @@ export const CustomerListView: React.FC = () => {
       (c) =>
         c.name.toLowerCase().includes(q) ||
         (c.phone && c.phone.toLowerCase().includes(q)) ||
-        c.email.toLowerCase().includes(q) ||
         (c.address && c.address.toLowerCase().includes(q))
     );
   }, [customers, search]);
@@ -52,12 +59,7 @@ export const CustomerListView: React.FC = () => {
       title: 'Nomor HP',
       dataIndex: 'phone',
       key: 'phone',
-      render: (text: string) => text || '-',
-    },
-    {
-      title: 'Alamat Email',
-      dataIndex: 'email',
-      key: 'email',
+      render: (text: string) => maskPhone(text),
     },
     {
       title: 'Status Verifikasi',
@@ -109,7 +111,7 @@ export const CustomerListView: React.FC = () => {
       >
         <div style={{ marginBottom: '24px' }}>
           <Input
-            placeholder="Cari berdasarkan nama, email, nomor HP, atau alamat..."
+            placeholder="Cari berdasarkan nama, nomor HP, atau alamat..."
             prefix={<SearchOutlined style={{ color: '#A8A29E' }} />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}

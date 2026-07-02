@@ -4,6 +4,7 @@ export const publicCheckoutSchema = z.object({
   body: z.object({
     customerType: z.enum(['guest', 'member_register']),
     guestName: z.string().optional(),
+    phone: z.string().optional(),
     memberData: z
       .object({
         email: z.string().email('Invalid email address'),

@@ -80,7 +80,6 @@ export const TableListView: React.FC = () => {
           strong
           style={{
             color: '#C2410C',
-            fontFamily: "'Source Code Pro', monospace",
             fontSize: '15px',
             letterSpacing: '0.05em',
           }}

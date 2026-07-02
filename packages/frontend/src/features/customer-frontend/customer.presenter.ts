@@ -133,6 +133,7 @@ export function useCustomerPresenter() {
   const checkout = async (payload: {
     customerType: 'guest' | 'member_register';
     guestName?: string;
+    phone?: string;
     memberData?: CustomerRegisterPayload;
     items: { productId: string; quantity: number }[];
     tableId?: string;

@@ -127,7 +127,7 @@ export const ReportsView: React.FC = () => {
       title: 'SKU',
       dataIndex: 'sku',
       key: 'sku',
-      render: (text: string) => <code style={{ fontFamily: "'Source Code Pro', monospace" }}>{text}</code>,
+      render: (text: string) => <span>{text}</span>,
     },
     {
       title: 'Kategori',
@@ -176,7 +176,7 @@ export const ReportsView: React.FC = () => {
       title: 'Username',
       dataIndex: 'username',
       key: 'username',
-      render: (text: string) => <code style={{ fontFamily: "'Source Code Pro', monospace" }}>@{text}</code>,
+      render: (text: string) => <span>@{text}</span>,
     },
     {
       title: 'Total Transaksi',

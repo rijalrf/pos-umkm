@@ -29,6 +29,7 @@ export const CheckoutView: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [buyerName, setBuyerName] = useState<string>('');
+  const [buyerPhone, setBuyerPhone] = useState<string>('');
   const [customerType] = useState<'guest'>('guest');
   const [storeName, setStoreName] = useState<string>('Toko');
   const [storeAddress, setStoreAddress] = useState<string>('');
@@ -101,7 +102,7 @@ export const CheckoutView: React.FC = () => {
     }
   };
 
-  const handleProcessCheckout = async (buyerName: string, customerType: 'guest' | 'member_register', memberData?: any) => {
+  const handleProcessCheckout = async (customerType: 'guest' | 'member_register', memberData?: any) => {
     setErrorMessage(null);
     const payload: any = {
       customerType,
@@ -114,6 +115,9 @@ export const CheckoutView: React.FC = () => {
 
     if (customerType === 'guest') {
       payload.guestName = buyerName;
+      if (buyerPhone) {
+        payload.phone = buyerPhone;
+      }
     } else {
       payload.memberData = memberData;
     }
@@ -214,9 +218,10 @@ export const CheckoutView: React.FC = () => {
             form={form}
             layout="vertical"
             requiredMark={false}
-            initialValues={{ guestName: buyerName }}
+            initialValues={{ guestName: buyerName, phone: buyerPhone }}
             onFinish={(values) => {
               setBuyerName(values.guestName);
+              setBuyerPhone(values.phone || '');
               setCheckoutStep('review');
             }}
             style={{ maxWidth: '600px', margin: '0 auto' }}
@@ -612,7 +617,7 @@ export const CheckoutView: React.FC = () => {
             <Button
               type="default"
               loading={presenter.loading}
-              onClick={() => handleProcessCheckout(buyerName, customerType, null)}
+              onClick={() => handleProcessCheckout(customerType, null)}
               style={{
                 backgroundColor: '#FFFFFF',
                 color: '#C2410C',

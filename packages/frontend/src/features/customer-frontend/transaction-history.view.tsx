@@ -29,9 +29,9 @@ export const TransactionHistoryView: React.FC = () => {
       dataIndex: 'transactionCode',
       key: 'transactionCode',
       render: (text: string) => (
-        <code style={{ fontFamily: "'Source Code Pro', monospace", fontWeight: 600, color: '#C2410C' }}>
+        <span style={{ fontWeight: 600, color: '#C2410C' }}>
           {text}
-        </code>
+        </span>
       ),
     },
     {
