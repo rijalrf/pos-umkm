@@ -1,8 +1,8 @@
 import { api } from '../../libs/api.lib';
 
 export interface GDriveConfigPayload {
-  clientId: string;
-  clientSecret: string;
+  clientId?: string;
+  clientSecret?: string;
 }
 
 export interface StoreSettingsPayload {
@@ -45,6 +45,17 @@ export class SettingsService {
     const formData = new FormData();
     formData.append('logo', file);
     const response = await api.post('/settings/store/logo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
+  static async uploadStoreQris(file: File) {
+    const formData = new FormData();
+    formData.append('qris', file);
+    const response = await api.post('/settings/store/qris', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

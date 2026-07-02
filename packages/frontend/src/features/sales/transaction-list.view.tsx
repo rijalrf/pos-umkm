@@ -583,14 +583,14 @@ export const TransactionListView: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
+             <div style={{ marginBottom: '16px' }}>
               <Text style={{ display: 'block', marginBottom: '8px', color: '#57534E', fontWeight: 600 }}>Metode Pembayaran</Text>
               <Radio.Group
                 value={payMethod}
                 onChange={(e) => {
                   const method = e.target.value;
                   setPayMethod(method);
-                  if (method === 'QRIS' || method === 'DEBIT' || method === 'TRANSFER') {
+                  if (method === 'QRIS') {
                     setPayCashReceived(Number(payingTx.totalAmount));
                   } else {
                     setPayCashReceived(0);
@@ -598,14 +598,14 @@ export const TransactionListView: React.FC = () => {
                 }}
                 optionType="button"
                 buttonStyle="solid"
-                style={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: '8px' }}
+                style={{ width: '100%', display: 'flex', gap: '8px' }}
               >
-                <Radio.Button value="CASH" style={{ flex: '1 1 45%', textAlign: 'center', height: '40px', lineHeight: '38px', borderRadius: '4px' }}>TUNAI</Radio.Button>
-                <Radio.Button value="QRIS" style={{ flex: '1 1 45%', textAlign: 'center', height: '40px', lineHeight: '38px', borderRadius: '4px' }}>QRIS</Radio.Button>
-                <Radio.Button value="DEBIT" style={{ flex: '1 1 45%', textAlign: 'center', height: '40px', lineHeight: '38px', borderRadius: '4px' }}>DEBIT</Radio.Button>
-                <Radio.Button value="TRANSFER" style={{ flex: '1 1 45%', textAlign: 'center', height: '40px', lineHeight: '38px', borderRadius: '4px' }}>TRANSFER</Radio.Button>
+                <Radio.Button value="CASH" style={{ flex: '1', textAlign: 'center', height: '40px', lineHeight: '38px', borderRadius: '4px' }}>TUNAI</Radio.Button>
+                <Radio.Button value="QRIS" style={{ flex: '1', textAlign: 'center', height: '40px', lineHeight: '38px', borderRadius: '4px' }}>QRIS</Radio.Button>
               </Radio.Group>
             </div>
+
+
 
             {payMethod === 'CASH' && (
               <>

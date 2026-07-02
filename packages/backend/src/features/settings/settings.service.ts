@@ -16,8 +16,12 @@ export class SettingsService {
 
   async getGDriveStatus(): Promise<GDriveConfigStatus> {
     const config = await this.repository.getGDriveConfig();
+    const hasEnvConfig = !!process.env.GDRIVE_CLIENT_ID && !!process.env.GDRIVE_CLIENT_SECRET;
+    const isConnectedEnv = hasEnvConfig && !!process.env.GDRIVE_REFRESH_TOKEN;
+    const isConnectedDb = config ? config.isConnected : false;
+
     return {
-      isConnected: config ? config.isConnected : false,
+      isConnected: isConnectedEnv || isConnectedDb,
     };
   }
 
@@ -57,5 +61,23 @@ export class SettingsService {
     logger.info('Store logo uploaded successfully', { logoUrl });
 
     return logoUrl;
+  }
+
+  async uploadQris(file: Express.Multer.File): Promise<string> {
+    const ext = path.extname(file.originalname);
+    const fileName = `store-qris-${Date.now()}${ext}`;
+
+    logger.info('Uploading store QRIS to Google Drive', {
+      fileName,
+      fileSize: file.size,
+    });
+
+    const qrisUrl = await uploadToDrive(fileName, file.mimetype, file.buffer);
+
+    await this.repository.updateStoreSetting({ qrisUrl });
+
+    logger.info('Store QRIS uploaded successfully', { qrisUrl });
+
+    return qrisUrl;
   }
 }

@@ -19,7 +19,13 @@ export class SettingsController {
 
   authorize = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { clientId, clientSecret } = req.body;
+      const clientId = process.env.GDRIVE_CLIENT_ID || req.body?.clientId;
+      const clientSecret = process.env.GDRIVE_CLIENT_SECRET || req.body?.clientSecret;
+
+      if (!clientId || !clientSecret) {
+        throw new Error('Google Drive credentials (GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET) not configured in .env');
+      }
+
       const authUrl = await this.settingsService.getAuthorizeUrl(clientId, clientSecret);
       res.json({
         success: true,
@@ -99,6 +105,26 @@ export class SettingsController {
       res.status(200).json({
         success: true,
         data: { logoUrl },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  uploadQris = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const file = req.file;
+      if (!file) {
+        res.status(400).json({
+          success: false,
+          message: 'No QRIS file uploaded',
+        });
+        return;
+      }
+      const qrisUrl = await this.settingsService.uploadQris(file);
+      res.status(200).json({
+        success: true,
+        data: { qrisUrl },
       });
     } catch (error) {
       next(error);

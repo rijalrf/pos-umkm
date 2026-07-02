@@ -54,4 +54,13 @@ export class SettingsPresenter {
       throw new Error(error.response?.data?.message || 'Failed to upload store logo');
     }
   }
+
+  async uploadStoreQris(file: File) {
+    try {
+      const response = await SettingsService.uploadStoreQris(file);
+      return response.data; // { qrisUrl: string }
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to upload store QRIS');
+    }
+  }
 }

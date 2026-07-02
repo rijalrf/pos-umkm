@@ -20,6 +20,8 @@ services:
     volumes:
       - ./packages/backend/src:/app/src
       - ./packages/backend/prisma:/app/prisma
+      - ./packages/backend/.env:/app/.env
+      - ./packages/backend/uploads:/app/uploads
       - /app/node_modules
     extra_hosts:
       - "host.docker.internal:host-gateway"

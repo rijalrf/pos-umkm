@@ -129,6 +129,7 @@ model StoreSetting {
   phone      String
   email      String?
   logoUrl    String?  @map("logo_url")
+  qrisUrl    String?  @map("qris_url")
   currency   String   @default("IDR")
   timezone   String   @default("Asia/Jakarta")
   dateFormat String   @default("DD/MM/YYYY") @map("date_format")
