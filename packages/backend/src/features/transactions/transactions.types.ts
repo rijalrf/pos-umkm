@@ -10,4 +10,6 @@ export interface CreateTransactionInput {
   tableNumber?: string;
   items: CreateTransactionItemInput[];
   cashReceived: number;
+  paymentMethod?: string;
+  status?: string;
 }

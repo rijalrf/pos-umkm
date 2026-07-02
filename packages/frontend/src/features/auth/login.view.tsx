@@ -6,7 +6,8 @@ import { useLoginPresenter } from './login.presenter';
 const { Title, Text } = Typography;
 
 export const LoginView: React.FC = () => {
-  const { loading, handleLogin } = useLoginPresenter();
+  const { loading, handleLogin, storeInfo } = useLoginPresenter();
+  const displayName = storeInfo?.storeName || 'POS UMKM';
 
   return (
     <Layout style={{ minHeight: '100vh', flexDirection: 'row', background: '#FFFBF5' }}>
@@ -32,7 +33,7 @@ export const LoginView: React.FC = () => {
           width: '300px',
           height: '300px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255,251,245,0.15) 0%, rgba(255,251,245,0) 70%)',
+          background: 'radial-gradient(circle, rgba(255,255,245,0.15) 0%, rgba(255,255,245,0) 70%)',
           top: '-50px',
           left: '-50px',
         }} />
@@ -46,18 +47,37 @@ export const LoginView: React.FC = () => {
           right: '-50px',
         }} />
 
-        <div style={{ zIndex: 2, maxWidth: '480px', textAlign: 'center' }}>
+        <div style={{ zIndex: 2, maxWidth: '480px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {storeInfo?.logoUrl ? (
+            <img
+              src={storeInfo.logoUrl}
+              alt={displayName}
+              style={{
+                height: '80px',
+                marginBottom: '20px',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                border: '2px solid rgba(255,255,255,0.2)',
+                padding: '4px',
+                background: 'rgba(255,255,255,0.1)'
+              }}
+            />
+          ) : null}
           <Title level={1} style={{ color: '#ffffff', fontFamily: "'Inter', sans-serif", fontSize: '3rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
-            Market<span style={{ color: '#FFFBF5', fontWeight: 300 }}>Nest</span>
+            {displayName}
           </Title>
-          <Title level={4} style={{ color: '#FFFBF5', opacity: 0.9, fontFamily: "'Inter', sans-serif", fontWeight: 400, marginTop: '12px', marginBottom: '32px', fontSize: '1.25rem' }}>
-            Setiap produk menceritakan kisah pembuatnya. Kelola penjualan dan inventaris kerajinan Anda dengan hangat.
-          </Title>
-          <div style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '12px', padding: '24px', backdropFilter: 'blur(8px)' }}>
-            <Text style={{ color: '#FFFBF5', display: 'block', fontSize: '0.95rem', fontFamily: "'Inter', sans-serif" }}>
-              "Mendukung keunikan produk handmade dan artisan Indonesia melalui sistem manajemen toko yang sederhana dan manusiawi."
-            </Text>
-          </div>
+          {storeInfo?.address && (
+            <div style={{ marginTop: '32px', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '12px', padding: '24px', backdropFilter: 'blur(8px)', width: '100%' }}>
+              <Text style={{ color: '#FFFBF5', display: 'block', fontSize: '0.95rem', fontFamily: "'Inter', sans-serif", opacity: 0.9, lineHeight: '1.6' }}>
+                {storeInfo.address}
+              </Text>
+              {storeInfo.phone && (
+                <Text style={{ color: '#FFFBF5', display: 'block', fontSize: '0.9rem', fontFamily: "'Inter', sans-serif", opacity: 0.8, marginTop: '12px' }}>
+                  Hubungi: {storeInfo.phone}
+                </Text>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -78,7 +98,7 @@ export const LoginView: React.FC = () => {
           <Title level={2} style={{ color: '#C2410C', fontFamily: "'Inter', sans-serif", fontWeight: 700, margin: 0 }}>
             Selamat Datang
           </Title>
-          <Text style={{ color: '#57534E', fontFamily: "'Inter', sans-serif" }}>Masuk ke akun Backoffice POS UMKM</Text>
+          <Text style={{ color: '#57534E', fontFamily: "'Inter', sans-serif" }}>Masuk ke Aplikasi {displayName}</Text>
         </div>
 
         <Form

@@ -3,7 +3,7 @@ import { Breadcrumb } from 'antd';
 import { useLocation, Link } from 'react-router-dom';
 
 const routeLabels: Record<string, string> = {
-  backoffice: 'Backoffice',
+  backoffice: 'Dashboard',
   products: 'Produk',
   categories: 'Kategori',
   users: 'Pengguna',

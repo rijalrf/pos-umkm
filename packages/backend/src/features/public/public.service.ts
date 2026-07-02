@@ -113,6 +113,8 @@ export class PublicService {
       tableNumber,
       items: input.items,
       cashReceived: totalAmount,
+      paymentMethod: input.paymentMethod || 'CASH',
+      status: 'PENDING',
     });
 
     return tx;

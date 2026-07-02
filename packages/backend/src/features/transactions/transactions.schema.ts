@@ -13,6 +13,8 @@ export const createTransactionSchema = z.object({
       )
       .min(1, 'At least one item is required'),
     cashReceived: z.number().nonnegative('Cash received must be 0 or greater'),
+    paymentMethod: z.string().optional(),
+    status: z.string().optional(),
   }),
 });
 
@@ -32,5 +34,16 @@ export const getTransactionsSchema = z.object({
   }),
 });
 
+export const payTransactionSchema = z.object({
+  params: z.object({
+    id: z.string().uuid('Invalid Transaction ID'),
+  }),
+  body: z.object({
+    cashReceived: z.number().nonnegative('Cash received must be 0 or greater'),
+    paymentMethod: z.string(),
+  }),
+});
+
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>['body'];
 export type GetTransactionsQuery = z.infer<typeof getTransactionsSchema>['query'];
+export type PayTransactionInput = z.infer<typeof payTransactionSchema>['body'];

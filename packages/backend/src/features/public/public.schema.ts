@@ -22,6 +22,7 @@ export const publicCheckoutSchema = z.object({
       )
       .min(1, 'At least one item is required'),
     tableId: z.string().uuid('Invalid Table ID').optional(),
+    paymentMethod: z.string().optional(),
   }),
 });
 

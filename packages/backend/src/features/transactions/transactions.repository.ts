@@ -16,6 +16,10 @@ export type TransactionWithDetails = Transaction & {
     email: string;
     name: string;
   } | null;
+  table: {
+    code: string;
+    number: string;
+  } | null;
 };
 
 export class TransactionsRepository {
@@ -43,6 +47,12 @@ export class TransactionsRepository {
           select: {
             email: true,
             name: true,
+          },
+        },
+        table: {
+          select: {
+            code: true,
+            number: true,
           },
         },
       },
@@ -108,6 +118,12 @@ export class TransactionsRepository {
             select: {
               email: true,
               name: true,
+            },
+          },
+          table: {
+            select: {
+              code: true,
+              number: true,
             },
           },
         },

@@ -28,6 +28,7 @@ export const SalesView: React.FC = () => {
   const [customerId, setCustomerId] = useState<string | undefined>(undefined);
   const [cashReceived, setCashReceived] = useState<number>(0);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS'>('CASH');
 
   // Member phone search states
   const [phoneSearch, setPhoneSearch] = useState('');
@@ -153,7 +154,7 @@ export const SalesView: React.FC = () => {
     }
 
     const total = cart.getTotalAmount();
-    if (cashReceived < total) {
+    if (paymentMethod === 'CASH' && cashReceived < total) {
       message.error('Uang diterima kurang dari total tagihan!');
       return;
     }
@@ -167,7 +168,8 @@ export const SalesView: React.FC = () => {
           productId: item.product.id,
           quantity: item.quantity,
         })),
-        cashReceived,
+        cashReceived: paymentMethod === 'QRIS' ? total : cashReceived,
+        paymentMethod,
       };
 
       const response = await SalesService.createTransaction(payload);
@@ -202,6 +204,7 @@ export const SalesView: React.FC = () => {
   const resetSalesView = () => {
     cart.clearCart();
     setCashReceived(0);
+    setPaymentMethod('CASH');
     setCustomerName('Guest');
     setCustomerId(undefined);
     setCustomerType('guest');
@@ -283,6 +286,7 @@ export const SalesView: React.FC = () => {
             <strong>Tgl:</strong> ${dateStr}<br/>
             <strong>Kasir:</strong> ${tx.cashier?.fullName || 'System'}<br/>
             <strong>Pelanggan:</strong> ${tx.customerName || 'Tamu'}<br/>
+            <strong>Pembayaran:</strong> ${tx.paymentMethod}<br/>
           </div>
           <div class="divider"></div>
           <table>
@@ -296,6 +300,7 @@ export const SalesView: React.FC = () => {
               <td>Total Tagihan</td>
               <td style="text-align: right;">${formatter.format(Number(tx.totalAmount))}</td>
             </tr>
+            ${tx.paymentMethod === 'CASH' ? `
             <tr>
               <td>Uang Diterima</td>
               <td style="text-align: right;">${formatter.format(Number(tx.cashReceived))}</td>
@@ -304,6 +309,7 @@ export const SalesView: React.FC = () => {
               <td>Kembalian</td>
               <td style="text-align: right;">${formatter.format(Number(tx.cashReturn || tx.cashReceived - tx.totalAmount))}</td>
             </tr>
+            ` : ''}
           </table>
           <div class="divider"></div>
           <div class="text-center" style="font-size: 11px; margin-top: 15px;">
@@ -620,24 +626,50 @@ export const SalesView: React.FC = () => {
                 <Text strong style={{ fontSize: '20px', color: '#C2410C' }}>{formatter.format(totalAmount)}</Text>
               </div>
 
+              {/* Payment Method Selector */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <Text style={{ fontSize: '14px' }}>Uang Diterima</Text>
-                <InputNumber
-                  style={{ width: '160px', height: '42px', display: 'flex', alignItems: 'center' }}
-                  min={0}
-                  value={cashReceived}
-                  onChange={(val) => setCashReceived(val || 0)}
-                  formatter={(value) => `Rp ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={(value) => value!.replace(/Rp\s?|(,*)/g, '') as any}
-                />
+                <Text style={{ fontSize: '14px', fontWeight: 600, color: '#57534E', fontFamily: "'Inter', sans-serif" }}>Metode Pembayaran</Text>
+                <Radio.Group
+                  value={paymentMethod}
+                  onChange={(e) => {
+                    const method = e.target.value;
+                    setPaymentMethod(method);
+                    if (method === 'QRIS') {
+                      setCashReceived(totalAmount);
+                    } else {
+                      setCashReceived(0);
+                    }
+                  }}
+                  optionType="button"
+                  buttonStyle="solid"
+                >
+                  <Radio.Button value="CASH">TUNAI</Radio.Button>
+                  <Radio.Button value="QRIS">QRIS</Radio.Button>
+                </Radio.Group>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <Text style={{ fontSize: '14px' }}>Kembalian</Text>
-                <Text strong style={{ fontSize: '16px', color: changeAmount > 0 ? '#166534' : '#1C1917' }}>
-                  {formatter.format(changeAmount)}
-                </Text>
-              </div>
+              {paymentMethod === 'CASH' && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                    <Text style={{ fontSize: '14px' }}>Uang Diterima</Text>
+                    <InputNumber
+                      style={{ width: '160px', height: '42px', display: 'flex', alignItems: 'center' }}
+                      min={0}
+                      value={cashReceived}
+                      onChange={(val) => setCashReceived(val || 0)}
+                      formatter={(value) => `Rp ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={(value) => value!.replace(/Rp\s?|(,*)/g, '') as any}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                    <Text style={{ fontSize: '14px' }}>Kembalian</Text>
+                    <Text strong style={{ fontSize: '16px', color: changeAmount > 0 ? '#166534' : '#1C1917' }}>
+                      {formatter.format(changeAmount)}
+                    </Text>
+                  </div>
+                </>
+              )}
 
               <Button
                 type="primary"
@@ -645,15 +677,15 @@ export const SalesView: React.FC = () => {
                 size="large"
                 loading={checkoutLoading}
                 onClick={handleCheckout}
-                disabled={cart.items.length === 0 || cashReceived < totalAmount}
+                disabled={cart.items.length === 0 || (paymentMethod === 'CASH' && cashReceived < totalAmount)}
                 style={{
-                  backgroundColor: (cart.items.length === 0 || cashReceived < totalAmount) ? '#E7E5E4' : '#C2410C',
-                  borderColor: (cart.items.length === 0 || cashReceived < totalAmount) ? '#D6D3D1' : '#C2410C',
-                  color: (cart.items.length === 0 || cashReceived < totalAmount) ? '#A8A29E' : '#FFFFFF',
+                  backgroundColor: (cart.items.length === 0 || (paymentMethod === 'CASH' && cashReceived < totalAmount)) ? '#E7E5E4' : '#C2410C',
+                  borderColor: (cart.items.length === 0 || (paymentMethod === 'CASH' && cashReceived < totalAmount)) ? '#D6D3D1' : '#C2410C',
+                  color: (cart.items.length === 0 || (paymentMethod === 'CASH' && cashReceived < totalAmount)) ? '#A8A29E' : '#FFFFFF',
                   height: '50px',
                   borderRadius: '4px',
                   fontWeight: 'bold',
-                  cursor: (cart.items.length === 0 || cashReceived < totalAmount) ? 'not-allowed' : 'pointer'
+                  cursor: (cart.items.length === 0 || (paymentMethod === 'CASH' && cashReceived < totalAmount)) ? 'not-allowed' : 'pointer'
                 }}
               >
                 Proses Transaksi
@@ -665,12 +697,12 @@ export const SalesView: React.FC = () => {
 
       {/* Printable Receipt Modal */}
       <Modal
-        title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>Preview Struk</span>}
+        title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, color: '#C2410C' }}>Struk Penjualan</span>}
         open={receiptModalOpen}
         onCancel={resetSalesView}
         footer={[
           <Button key="close" onClick={resetSalesView}>
-            Transaksi Baru
+            Tutup
           </Button>,
           <Button
             key="print"
@@ -683,7 +715,7 @@ export const SalesView: React.FC = () => {
             Cetak Struk
           </Button>,
         ]}
-        width={380}
+        width={350}
         destroyOnClose
       >
         {checkoutResult && (
@@ -708,6 +740,7 @@ export const SalesView: React.FC = () => {
               <strong>Tgl:</strong> {new Date(checkoutResult.transactionDate).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}<br />
               <strong>Kasir:</strong> {checkoutResult.cashier?.fullName || 'System'}<br />
               <strong>Pelanggan:</strong> {checkoutResult.customerName || 'Tamu'}<br />
+              <strong>Pembayaran:</strong> {checkoutResult.paymentMethod}<br />
             </div>
             <div style={{ borderTop: '1px dashed #D6D3D1', margin: '8px 0' }} />
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -732,14 +765,18 @@ export const SalesView: React.FC = () => {
                   <td>Total Tagihan</td>
                   <td style={{ textAlign: 'right' }}>{formatter.format(Number(checkoutResult.totalAmount))}</td>
                 </tr>
-                <tr>
-                  <td style={{ fontWeight: 'normal', color: '#57534E' }}>Uang Diterima</td>
-                  <td style={{ textAlign: 'right', fontWeight: 'normal' }}>{formatter.format(Number(checkoutResult.cashReceived))}</td>
-                </tr>
-                <tr>
-                  <td>Kembalian</td>
-                  <td style={{ textAlign: 'right' }}>{formatter.format(Number(checkoutResult.cashReturn || checkoutResult.cashReceived - checkoutResult.totalAmount))}</td>
-                </tr>
+                {checkoutResult.paymentMethod === 'CASH' && (
+                  <>
+                    <tr>
+                      <td style={{ fontWeight: 'normal', color: '#57534E' }}>Uang Diterima</td>
+                      <td style={{ textAlign: 'right', fontWeight: 'normal' }}>{formatter.format(Number(checkoutResult.cashReceived))}</td>
+                    </tr>
+                    <tr>
+                      <td>Kembalian</td>
+                      <td style={{ textAlign: 'right' }}>{formatter.format(Number(checkoutResult.cashReturn || checkoutResult.cashReceived - checkoutResult.totalAmount))}</td>
+                    </tr>
+                  </>
+                )}
               </tbody>
             </table>
             <div style={{ borderTop: '1px dashed #D6D3D1', margin: '16px 0 8px 0' }} />

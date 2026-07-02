@@ -8,6 +8,8 @@ export interface CreateTransactionPayload {
     quantity: number;
   }[];
   cashReceived: number;
+  paymentMethod?: string;
+  status?: string;
 }
 
 export class SalesService {
@@ -34,6 +36,11 @@ export class SalesService {
 
   static async getTransactionById(id: string) {
     const response = await api.get(`/transactions/${id}`);
+    return response.data;
+  }
+
+  static async payPendingTransaction(id: string, payload: { cashReceived: number; paymentMethod: string }) {
+    const response = await api.put(`/transactions/${id}/pay`, payload);
     return response.data;
   }
 }
