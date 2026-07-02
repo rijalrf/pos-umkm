@@ -363,17 +363,20 @@ export const TransactionListView: React.FC = () => {
                     <span style={{ fontSize: '12px', color: '#878685', display: 'block' }}>Kasir yang Bertugas</span>
                     <span style={{ fontSize: '14px', color: '#1C1917', fontWeight: 600 }}>{selectedTx.cashier?.fullName || 'System'}</span>
                   </div>
-                  <div>
+                  <div style={{ marginBottom: selectedTx.tableNumber ? '8px' : '0' }}>
                     <span style={{ fontSize: '12px', color: '#878685', display: 'block' }}>Pelanggan</span>
                     <span style={{ fontSize: '14px', color: '#1C1917', fontWeight: 600 }}>
                       {selectedTx.customerName || 'Tamu'}
-                      {selectedTx.tableNumber && (
-                        <span style={{ marginLeft: '8px', color: '#C2410C' }}>
-                          ({selectedTx.tableNumber})
-                        </span>
-                      )}
                     </span>
                   </div>
+                  {selectedTx.tableNumber && (
+                    <div>
+                      <span style={{ fontSize: '12px', color: '#878685', display: 'block' }}>Nomor Meja</span>
+                      <span style={{ fontSize: '14px', color: '#C2410C', fontWeight: 600 }}>
+                        {selectedTx.tableNumber} {selectedTx.table?.code ? `(${selectedTx.table.code})` : ''}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
 
