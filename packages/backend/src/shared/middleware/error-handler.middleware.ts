@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { env } from '../../config/env.config';
 import { logger } from '../utils/logger.util';
 
 export const errorHandler = (
@@ -20,6 +21,6 @@ export const errorHandler = (
   res.status(statusCode).json({
     success: false,
     message,
-    ...(process.env.NODE_ENV === 'development' ? { stack: err.stack } : {}),
+    ...(env.nodeEnv === 'development' ? { stack: err.stack } : {}),
   });
 };

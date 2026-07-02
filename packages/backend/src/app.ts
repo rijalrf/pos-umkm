@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -11,6 +12,7 @@ import customersRoutes from './features/customers/customers.routes';
 import publicRoutes from './features/public/public.routes';
 import usersRoutes from './features/users/users.routes';
 import tablesRoutes from './features/tables/tables.routes';
+import { env } from './config/env.config';
 import { errorHandler } from './shared/middleware/error-handler.middleware';
 import { logger } from './shared/utils/logger.util';
 
@@ -21,14 +23,13 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: env.frontendUrl,
   credentials: true,
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve local uploaded files static directory
-import path from 'path';
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Request logging middleware

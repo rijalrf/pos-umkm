@@ -85,6 +85,13 @@ export class ProductsRepository {
     });
   }
 
+  async updateImageUrl(id: string, imageUrl: string): Promise<Product> {
+    return prisma.product.update({
+      where: { id },
+      data: { imageUrl },
+    });
+  }
+
   async delete(id: string): Promise<Product> {
     return prisma.product.delete({
       where: { id },

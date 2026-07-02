@@ -4,6 +4,8 @@ export const createTransactionSchema = z.object({
   body: z.object({
     customerId: z.string().uuid().optional(),
     customerName: z.string().optional(),
+    tableId: z.string().uuid().optional(),
+    tableNumber: z.string().optional(),
     items: z
       .array(
         z.object({

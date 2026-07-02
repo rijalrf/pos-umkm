@@ -6,6 +6,7 @@ import { hashPassword, comparePassword } from '../../shared/utils/bcrypt.util';
 import { signToken } from '../../shared/utils/jwt.util';
 import { EmailService } from '../../shared/services/email.service';
 import { BadRequestError, UnauthorizedError, NotFoundError } from '../../shared/utils/errors.util';
+import { logger } from '../../shared/utils/logger.util';
 
 export class CustomersService {
   private repository = new CustomersRepository();
@@ -34,7 +35,7 @@ export class CustomersService {
     // Send verification email in background (don't block the API response, but log any error)
     this.emailService.sendVerificationEmail(customer.email, customer.name, emailVerifyToken)
       .catch(err => {
-        console.error(`Failed to send verification email to ${customer.email}:`, err);
+        logger.error(`Failed to send verification email to ${customer.email}:`, err);
       });
 
     return {

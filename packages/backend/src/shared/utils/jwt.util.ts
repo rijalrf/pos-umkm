@@ -1,13 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../../config/env.config';
-
-export interface JWTPayload {
-  id: string;
-  username?: string;
-  email?: string;
-  fullName: string;
-  role: 'ADMIN' | 'CASHIER' | 'CUSTOMER';
-}
+import { JWTPayload } from '../types/common.types';
 
 export const signToken = (payload: JWTPayload): string => {
   return jwt.sign(payload, env.jwtSecret, {

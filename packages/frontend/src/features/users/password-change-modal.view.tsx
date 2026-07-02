@@ -1,12 +1,7 @@
 import React from 'react';
 import { Modal, Form, Input, Button, message } from 'antd';
 import { UsersPresenter } from './users.presenter';
-
-interface PasswordChangeModalViewProps {
-  visible: boolean;
-  onCancel: () => void;
-  onSuccess: () => void;
-}
+import { PasswordChangeModalViewProps } from './users.types';
 
 export const PasswordChangeModalView: React.FC<PasswordChangeModalViewProps> = ({
   visible,
@@ -30,9 +25,10 @@ export const PasswordChangeModalView: React.FC<PasswordChangeModalViewProps> = (
       message.success('Password changed successfully!');
       form.resetFields();
       onSuccess();
-    } catch (err: any) {
-      if (err.errorFields) return; // Validation error
-      message.error(err.message || 'Failed to change password');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'errorFields' in err) return; // Validation error
+      const errorMsg = err instanceof Error ? err.message : 'Failed to change password';
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -42,7 +38,7 @@ export const PasswordChangeModalView: React.FC<PasswordChangeModalViewProps> = (
     <Modal
       open={visible}
       title={
-        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '20px', color: '#C2410C' }}>
+        <span style={{ fontFamily: "var(--font-headline)", fontSize: '20px', color: 'var(--color-primary)' }}>
           Change Password
         </span>
       }
@@ -57,8 +53,8 @@ export const PasswordChangeModalView: React.FC<PasswordChangeModalViewProps> = (
           loading={loading}
           onClick={handleSubmit}
           style={{
-            backgroundColor: '#C2410C',
-            borderColor: '#C2410C',
+            backgroundColor: 'var(--color-primary)',
+            borderColor: 'var(--color-primary)',
             borderRadius: '4px',
           }}
         >

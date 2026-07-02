@@ -1,3 +1,4 @@
+import path from 'path';
 import { SettingsRepository } from './settings.repository';
 import {
   authorizeGoogleDrive,
@@ -5,10 +6,10 @@ import {
   testConnection,
   uploadToDrive,
 } from '../../shared/services/gdrive.service';
+import { env } from '../../config/env.config';
 import { GDriveConfigStatus } from './settings.types';
 import { StoreSetting } from '@prisma/client';
 import { UpdateStoreSettingsInput } from './settings.schema';
-import path from 'path';
 import { logger } from '../../shared/utils/logger.util';
 
 export class SettingsService {
@@ -16,8 +17,8 @@ export class SettingsService {
 
   async getGDriveStatus(): Promise<GDriveConfigStatus> {
     const config = await this.repository.getGDriveConfig();
-    const hasEnvConfig = !!process.env.GDRIVE_CLIENT_ID && !!process.env.GDRIVE_CLIENT_SECRET;
-    const isConnectedEnv = hasEnvConfig && !!process.env.GDRIVE_REFRESH_TOKEN;
+    const hasEnvConfig = !!env.gdriveClientId && !!env.gdriveClientSecret;
+    const isConnectedEnv = hasEnvConfig && !!env.gdriveRefreshToken;
     const isConnectedDb = config ? config.isConnected : false;
 
     return {

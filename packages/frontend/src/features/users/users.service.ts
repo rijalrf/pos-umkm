@@ -1,17 +1,5 @@
 import { api } from '../../libs/api.lib';
-
-export interface UserPayload {
-  username: string;
-  password?: string;
-  fullName: string;
-  role: 'ADMIN' | 'CASHIER';
-  isActive?: boolean;
-}
-
-export interface ChangePasswordPayload {
-  currentPassword?: string;
-  newPassword?: string;
-}
+import { UserPayload, ChangePasswordPayload } from './users.types';
 
 export class UsersService {
   static async getAll() {
@@ -41,6 +29,11 @@ export class UsersService {
 
   static async changePassword(payload: ChangePasswordPayload) {
     const response = await api.post('/users/change-password', payload);
+    return response.data;
+  }
+
+  static async updateProfile(payload: { fullName: string }) {
+    const response = await api.put('/users/profile', payload);
     return response.data;
   }
 }

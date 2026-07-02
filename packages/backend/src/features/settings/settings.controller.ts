@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { SettingsService } from './settings.service';
+import { env } from '../../config/env.config';
+import { BadRequestError } from '../../shared/utils/errors.util';
 import { logger } from '../../shared/utils/logger.util';
 
 export class SettingsController {
@@ -19,11 +21,11 @@ export class SettingsController {
 
   authorize = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const clientId = process.env.GDRIVE_CLIENT_ID || req.body?.clientId;
-      const clientSecret = process.env.GDRIVE_CLIENT_SECRET || req.body?.clientSecret;
+      const clientId = env.gdriveClientId || req.body?.clientId;
+      const clientSecret = env.gdriveClientSecret || req.body?.clientSecret;
 
       if (!clientId || !clientSecret) {
-        throw new Error('Google Drive credentials (GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET) not configured in .env');
+        throw new BadRequestError('Google Drive credentials (GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET) not configured in .env');
       }
 
       const authUrl = await this.settingsService.getAuthorizeUrl(clientId, clientSecret);
@@ -40,18 +42,19 @@ export class SettingsController {
     try {
       const code = req.query.code as string;
       if (!code) {
-        throw new Error('OAuth code is missing');
+        throw new BadRequestError('OAuth code is missing');
       }
 
       await this.settingsService.handleCallback(code);
 
       logger.info('Google Drive authorized successfully via OAuth callback');
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const frontendUrl = env.frontendUrl || 'http://localhost:5173';
       res.redirect(`${frontendUrl}/settings?gdrive=success`);
-    } catch (error: any) {
-      logger.error('Failed to handle Google Drive OAuth callback', { error: error.message });
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-      res.redirect(`${frontendUrl}/settings?gdrive=error&message=${encodeURIComponent(error.message)}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Failed to handle Google Drive OAuth callback', { error: message });
+      const frontendUrl = env.frontendUrl || 'http://localhost:5173';
+      res.redirect(`${frontendUrl}/settings?gdrive=error&message=${encodeURIComponent(message)}`);
     }
   };
 

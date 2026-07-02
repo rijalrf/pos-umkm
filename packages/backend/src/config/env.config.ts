@@ -22,4 +22,6 @@ export const env = {
   emailSmtpPort: parseInt(process.env.EMAIL_SMTP_PORT || '587', 10),
   emailSmtpUser: process.env.EMAIL_SMTP_USER || '',
   emailSmtpPass: process.env.EMAIL_SMTP_PASS || '',
+  gdriveRefreshToken: process.env.GDRIVE_REFRESH_TOKEN || '',
+  backendUrl: process.env.BACKEND_URL || '',
 };

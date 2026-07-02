@@ -261,3 +261,123 @@ POS UMKM is a clean, modern, and versatile design system suitable for restaurant
 - **Don't** crop product images to strict squares if they are naturally tall or wide; respect original aspect ratios.
 - **Don't** use nested Card components (e.g., Card inside another Card); use clean div wrappers with borders for layout panels instead.
 
+---
+
+## 8. Backend Code Rules (Strict — Hasil Code Review)
+
+> [!CAUTION]
+> Aturan ini **WAJIB** diikuti untuk semua perubahan backend. Pelanggaran = tidak lolos review.
+
+### 8.1 Error Handling
+- **DILARANG** membuat error dengan `new Error('...')` + `(err as any).statusCode = xxx`.
+- **WAJIB** gunakan shared error classes dari `shared/utils/errors.util.ts`: `NotFoundError`, `BadRequestError`, `UnauthorizedError`, `ForbiddenError`, `ConflictError`.
+- Jika butuh status code baru, **tambahkan class baru** di `errors.util.ts`, jangan buat inline.
+
+### 8.2 Penempatan Type/Interface
+- Type yang **spesifik 1 feature** → `[feature].types.ts`.
+- Type yang **dipakai lintas feature** → `shared/types/`.
+- Type yang **di-derive dari Zod schema** → export dari `.schema.ts` saja, **JANGAN duplikasi** di `.types.ts`.
+- **DILARANG** mendefinisikan type/interface di file `.repository.ts`, `.service.ts`, `.controller.ts`, atau `.util.ts` — kecuali type internal `private` yang tidak di-export.
+
+### 8.3 Service TIDAK Boleh Akses Prisma Langsung
+- Service **HANYA** boleh memanggil method dari repository.
+- Jika butuh data dari domain lain, panggil **repository domain tersebut** atau **service domain tersebut** — BUKAN `prisma.xxx` langsung.
+- Setiap feature **WAJIB** punya file `.repository.ts`.
+
+### 8.4 Service Hanya Business Logic
+- **DILARANG** menaruh HTML template, CSV generation, atau formatting presentasi di service layer.
+- Pindahkan ke `shared/utils/` sebagai utility terpisah (contoh: `receipt-template.util.ts`, `report-template.util.ts`).
+
+### 8.5 Satu Sumber Konfigurasi
+- **DILARANG** akses `process.env` langsung di file mana pun selain `config/env.config.ts`.
+- Semua file **WAJIB** import konfigurasi dari `env.config.ts`.
+
+### 8.6 Tidak Ada Duplikasi Pola (DRY)
+- Jika pola kode yang sama muncul **≥2 kali** (bahkan dalam 1 file), **WAJIB** diekstrak ke:
+  - Private method (jika dalam 1 class).
+  - Shared utility (jika lintas file).
+- Contoh pola yang harus diekstrak: date parsing, entity-to-payload mapping, check-exist-then-throw.
+
+### 8.7 Logging Konsisten
+- **DILARANG** pakai `console.log`, `console.error`, `console.warn`.
+- **WAJIB** pakai Winston logger dari `shared/utils/logger.util.ts`.
+
+### 8.8 Import Order
+- Semua `import` statement **WAJIB** di bagian atas file, sebelum kode apa pun.
+- Urutan: (1) Node built-in → (2) External packages → (3) Internal/relative imports.
+
+---
+
+## 9. Frontend Code Rules (Strict — Hasil Code Review)
+
+> [!CAUTION]
+> Aturan ini **WAJIB** diikuti untuk semua perubahan frontend. Pelanggaran = tidak lolos review.
+
+### 9.1 View Hanya UI — Wajib Pakai Presenter
+- **DILARANG** menaruh business logic, API calls, atau data fetching langsung di file `.view.tsx`.
+- View **HANYA** boleh berisi: layout JSX, Ant Design composition, event handler yang memanggil presenter, dan conditional rendering.
+- Setiap feature yang memiliki logic (fetch, CRUD, computed state) **WAJIB** punya file `.presenter.ts` atau `.presenter.tsx`.
+- **DILARANG** import service (`.service.ts`) langsung dari view — harus melalui presenter.
+- **DILARANG** memanggil `api.get/post/put/delete` langsung dari view file.
+
+### 9.2 Penempatan Type/Interface
+- Type yang **spesifik 1 feature** → `[feature].types.ts` (buat file ini jika belum ada).
+- Type yang **dipakai lintas feature** → `shared/types/` atau `libs/types.lib.ts`.
+- **DILARANG** mendefinisikan type/interface di file `.service.ts`, `.presenter.ts`, atau `.view.tsx`.
+- Jika ada type yang diimport cross-feature (misal `ProductItem` dipakai di `customer-cart.store.ts`), pindahkan ke shared types.
+
+### 9.3 Shared Utilities — Tidak Ada Duplikasi (DRY)
+- **DILARANG** menduplikasi pola yang sama di ≥2 file. Harus diekstrak ke shared utility:
+  - **Currency formatter** (`Intl.NumberFormat` IDR) → buat satu di `libs/format.lib.ts` atau `shared/utils/`
+  - **Print receipt** → buat satu di `libs/receipt-printer.lib.ts` atau `shared/utils/`
+  - **Category filter chips** → buat shared component jika pola UI sama
+- Jika store info (nama toko, logo, dll) dibutuhkan di ≥2 tempat, simpan di **Zustand store** — bukan state lokal per view.
+
+### 9.4 Dilarang Pakai `any`
+- **DILARANG** menggunakan `any` di mana pun — baik di `useState<any>`, parameter fungsi, maupun `catch (err: any)`.
+- Untuk state, buat **interface/type yang tepat** di `.types.ts`.
+- Untuk error catch, gunakan `unknown` dan narrow dengan type guard, atau gunakan `AxiosError` dari axios.
+- Contoh:
+  ```typescript
+  // ❌ DILARANG
+  const [data, setData] = useState<any[]>([]);
+  catch (err: any) { message.error(err.message) }
+  
+  // ✅ BENAR
+  const [data, setData] = useState<ProductItem[]>([]);
+  catch (err: unknown) {
+    const msg = err instanceof AxiosError ? err.response?.data?.message : 'Terjadi kesalahan';
+    message.error(msg);
+  }
+  ```
+
+### 9.5 Gunakan CSS Variables — Bukan Hardcoded Warna
+- **DILARANG** menulis warna hex langsung di inline style jika sudah tersedia di CSS variables `index.css`.
+- Gunakan `var(--color-primary)` bukan `'#C2410C'`, `var(--color-border)` bukan `'#E7E5E4'`, dst.
+- Jika terpaksa pakai inline style, **wajib** referensi CSS variable.
+- Lebih baik buat CSS class di `index.css` atau file `.css` per feature jika styling kompleks.
+
+### 9.6 Error Handling Konsisten
+- Pilih **satu pola** error handling dan terapkan konsisten:
+  - **Service** menangani HTTP request dan throw error.
+  - **Presenter** catch error dari service dan tampilkan `message.error()`.
+  - **View** tidak boleh punya try-catch sendiri untuk API calls.
+- **DILARANG** double try-catch (service throw → presenter catch & re-throw → view catch lagi).
+- **DILARANG** pakai `console.error` untuk error handling di production code. Gunakan `message.error()` dari Ant Design untuk menampilkan error ke user.
+
+### 9.7 Naming Conventions
+- File **WAJIB** menggunakan **plural** yang konsisten dengan nama folder fitur:
+  - Folder `tables/` → `tables.presenter.ts`, `tables.service.ts` (bukan `table.*`)
+  - Folder `sales/` → `sales.presenter.ts` (bukan `transactions.presenter.ts`)
+- Konvensi file:
+  - `[component-name].view.tsx` — UI view files
+  - `[feature].presenter.ts` — State & logic management
+  - `[feature].service.ts` — HTTP request layer
+  - `[feature].types.ts` — TypeScript interfaces/types
+  - `[feature].store.ts` — Zustand stores (jika perlu)
+
+### 9.8 Batas Ukuran File View
+- Jika file `.view.tsx` melebihi **300 baris**, itu indikasi kuat bahwa logic harus dipecah:
+  - Pindahkan state & logic ke `.presenter.ts`
+  - Pecah UI ke sub-komponen `.view.tsx` yang lebih kecil
+- **Target:** View file idealnya ≤300 baris, fokus hanya pada rendering.

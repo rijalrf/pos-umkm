@@ -1,13 +1,7 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input, Select, Switch, Button, message } from 'antd';
 import { UsersPresenter } from './users.presenter';
-
-interface UserFormViewProps {
-  visible: boolean;
-  onCancel: () => void;
-  onSuccess: () => void;
-  userId: string | null; // null for create, string for edit
-}
+import { UserFormViewProps, UserPayload } from './users.types';
 
 export const UserFormView: React.FC<UserFormViewProps> = ({
   visible,
@@ -60,7 +54,7 @@ export const UserFormView: React.FC<UserFormViewProps> = ({
 
       if (isEdit && userId) {
         // Update user
-        const updateData: any = {
+        const updateData: Partial<UserPayload> = {
           username: values.username,
           fullName: values.fullName,
           role: values.role,
@@ -83,9 +77,10 @@ export const UserFormView: React.FC<UserFormViewProps> = ({
         message.success('User created successfully');
       }
       onSuccess();
-    } catch (err: any) {
-      if (err.errorFields) return; // Validation error
-      message.error(err.message || 'Failed to save user');
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'errorFields' in err) return; // Validation error
+      const errorMsg = err instanceof Error ? err.message : 'Failed to save user';
+      message.error(errorMsg);
     } finally {
       setConfirmLoading(false);
     }
@@ -95,7 +90,7 @@ export const UserFormView: React.FC<UserFormViewProps> = ({
     <Modal
       open={visible}
       title={
-        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: '20px', color: '#C2410C' }}>
+        <span style={{ fontFamily: "var(--font-headline)", fontSize: '20px', color: 'var(--color-primary)' }}>
           {isEdit ? 'Edit User' : 'Add New User'}
         </span>
       }
@@ -114,8 +109,8 @@ export const UserFormView: React.FC<UserFormViewProps> = ({
           loading={confirmLoading}
           onClick={handleSubmit}
           style={{
-            backgroundColor: '#C2410C',
-            borderColor: '#C2410C',
+            backgroundColor: 'var(--color-primary)',
+            borderColor: 'var(--color-primary)',
             borderRadius: '4px',
           }}
         >

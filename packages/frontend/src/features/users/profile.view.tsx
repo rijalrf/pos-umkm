@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Card, Form, Input, Button, Typography, Space, message } from 'antd';
 import { UserOutlined, LockOutlined, SaveOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../../stores/auth.store';
-import { api } from '../../libs/api.lib';
+import { UsersPresenter } from './users.presenter';
 import { PasswordChangeModalView } from './password-change-modal.view';
 
 const { Title, Paragraph } = Typography;
+const presenter = new UsersPresenter();
 
 export const ProfileView: React.FC = () => {
   const { user, token, setAuth } = useAuthStore();
@@ -18,26 +19,20 @@ export const ProfileView: React.FC = () => {
       const values = await form.validateFields();
       setLoading(true);
 
-      const response = await api.put('/users/profile', {
+      const updatedUser = await presenter.updateProfile({
         fullName: values.fullName,
       });
 
-      if (response.data && response.data.success) {
-        // Update user context in auth store
-        const updatedUser = response.data.data;
-        if (user && token) {
-          setAuth(token, {
-            ...user,
-            fullName: updatedUser.fullName,
-          });
-        }
-        message.success('Profil berhasil diperbarui!');
-      } else {
-        message.error(response.data.message || 'Gagal memperbarui profil');
+      if (user && token) {
+        setAuth(token, {
+          ...user,
+          fullName: updatedUser.fullName,
+        });
       }
-    } catch (err: any) {
-      console.error(err);
-      message.error(err.response?.data?.message || 'Terjadi kesalahan saat menyimpan profil');
+      message.success('Profil berhasil diperbarui!');
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Terjadi kesalahan saat menyimpan profil';
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -46,19 +41,19 @@ export const ProfileView: React.FC = () => {
   return (
     <div style={{ maxWidth: '600px', width: '100%' }}>
       <div style={{ marginBottom: '24px' }}>
-        <Title level={2} style={{ fontFamily: "'Inter', sans-serif", color: '#C2410C', margin: 0 }}>
+        <Title level={2} style={{ fontFamily: "var(--font-headline)", color: 'var(--color-primary)', margin: 0 }}>
           Profil Saya
         </Title>
-        <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#57534E', marginTop: '4px', marginBottom: 0 }}>
+        <Paragraph style={{ fontFamily: "var(--font-body)", color: '#57534E', marginTop: '4px', marginBottom: 0 }}>
           Kelola informasi profil akun Anda dan ubah kata sandi.
         </Paragraph>
       </div>
 
       <Card
         style={{
-          border: '1px solid #E7E5E4',
+          border: 'var(--border-subtle)',
           borderRadius: '8px',
-          backgroundColor: '#FFFFFF',
+          backgroundColor: 'var(--color-surface)',
         }}
         bodyStyle={{ padding: '24px' }}
       >
@@ -74,14 +69,14 @@ export const ProfileView: React.FC = () => {
         >
           <Form.Item
             name="username"
-            label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Username</span>}
+            label={<span style={{ fontFamily: "var(--font-body)", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Username</span>}
           >
             <Input disabled prefix={<UserOutlined style={{ color: '#A8A29E' }} />} style={{ height: '42px', borderRadius: '4px' }} />
           </Form.Item>
 
           <Form.Item
             name="fullName"
-            label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Nama Lengkap</span>}
+            label={<span style={{ fontFamily: "var(--font-body)", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Nama Lengkap</span>}
             rules={[{ required: true, message: 'Nama lengkap wajib diisi!' }]}
           >
             <Input prefix={<UserOutlined style={{ color: '#A8A29E' }} />} style={{ height: '42px', borderRadius: '4px' }} />
@@ -89,12 +84,12 @@ export const ProfileView: React.FC = () => {
 
           <Form.Item
             name="role"
-            label={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Peran (Role)</span>}
+            label={<span style={{ fontFamily: "var(--font-body)", fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Peran (Role)</span>}
           >
             <Input disabled style={{ height: '42px', borderRadius: '4px' }} />
           </Form.Item>
 
-          <div style={{ borderTop: '1px solid #E7E5E4', margin: '24px 0' }} />
+          <div style={{ borderTop: 'var(--border-subtle)', margin: '24px 0' }} />
 
           <Space style={{ display: 'flex', justifyContent: 'space-between' }}>
             <Button
@@ -110,7 +105,7 @@ export const ProfileView: React.FC = () => {
               icon={<SaveOutlined />}
               htmlType="submit"
               loading={loading}
-              style={{ height: '42px', backgroundColor: '#C2410C', borderColor: '#C2410C', borderRadius: '4px', fontWeight: 600 }}
+              style={{ height: '42px', backgroundColor: 'var(--color-primary)', borderColor: 'var(--color-primary)', borderRadius: '4px', fontWeight: 600 }}
             >
               Simpan Profil
             </Button>

@@ -1,7 +1,8 @@
 import crypto from 'crypto';
+import { env } from '../../config/env.config';
 
 const ALGORITHM = 'aes-256-cbc';
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'fallback-key-32-chars-long!!!!!!';
+const ENCRYPTION_KEY = env.encryptionKey;
 const IV_LENGTH = 16;
 
 export const encrypt = (text: string): string => {
