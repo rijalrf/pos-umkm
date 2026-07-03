@@ -1,28 +1,7 @@
 import { api } from '../../libs/api.lib';
-
-export interface CustomerRegisterPayload {
-  email: string;
-  passwordHash?: string; // wait, raw password from UI is mapped to 'password' on backend, let's send 'password'
-  password?: string;
-  name: string;
-  phone?: string;
-  address?: string;
-}
-
-export interface CustomerLoginPayload {
-  email: string;
-  password?: string;
-}
-
-export interface CatalogQuery {
-  page?: number;
-  limit?: number;
-  search?: string;
-  categoryId?: string;
-}
+import { CustomerRegisterPayload, CustomerLoginPayload, CatalogQuery } from './customer-frontend.types';
 
 export class CustomerService {
-  // Auth API
   static async register(payload: CustomerRegisterPayload) {
     const response = await api.post('/customer/register', payload);
     return response.data;
@@ -48,7 +27,6 @@ export class CustomerService {
     return response.data;
   }
 
-  // Public Catalog API
   static async getPublicProducts(query?: CatalogQuery) {
     const response = await api.get('/public/products', { params: query });
     return response.data;

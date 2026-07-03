@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Result, Button, Spin, Typography } from 'antd';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useCustomerPresenter } from './customer.presenter';
+import { useCustomerPresenter } from './customer-frontend.presenter';
 
 const { Title, Paragraph } = Typography;
 

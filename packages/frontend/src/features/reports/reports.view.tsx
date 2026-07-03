@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Col, Row, Statistic, Table, DatePicker, Button, Space, Tabs, Spin, Typography, Select, Input, Empty, message } from 'antd';
 import { DownloadOutlined, PrinterOutlined, CalendarOutlined, LineChartOutlined, GiftOutlined, UserOutlined, ShopOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { useReportsPresenter } from './reports.presenter';
-import { UsersService } from '../users/users.service';
+import { UsersPresenter } from '../users/users.presenter';
+import { SalesByCashierData, TopProductData } from './reports.types';
 
 const { RangePicker } = DatePicker;
 const { Title, Paragraph, Text } = Typography;
@@ -18,22 +19,21 @@ export const ReportsView: React.FC = () => {
     downloadPDF,
   } = useReportsPresenter();
 
+  const usersPresenter = new UsersPresenter();
+
   const [hasSearched, setHasSearched] = useState(false);
   const [dates, setDates] = useState<[string, string] | null>(null);
   const [selectedCashier, setSelectedCashier] = useState<string | undefined>(undefined);
   const [keyword, setKeyword] = useState<string>('');
-  const [cashiers, setCashiers] = useState<any[]>([]);
+  const [cashiers, setCashiers] = useState<{ id: string; fullName: string; username: string }[]>([]);
 
-  // Fetch cashiers for the filter list
   useEffect(() => {
     async function loadCashiers() {
       try {
-        const res = await UsersService.getAll();
-        if (res.success) {
-          setCashiers(res.data);
-        }
-      } catch (e) {
-        console.error('Failed to load cashiers for report filters:', e);
+        const data = await usersPresenter.getAllUsers();
+        setCashiers(data);
+      } catch {
+        message.error('Gagal memuat data kasir');
       }
     }
     loadCashiers();
@@ -45,7 +45,7 @@ export const ReportsView: React.FC = () => {
     minimumFractionDigits: 0,
   });
 
-  const handleRangeChange = (val: any, dateStrings: [string, string]) => {
+  const handleRangeChange = (val: unknown, dateStrings: [string, string]) => {
     if (val) {
       setDates(dateStrings);
     } else {
@@ -71,10 +71,9 @@ export const ReportsView: React.FC = () => {
     setHasSearched(false);
   };
 
-  // Client-side filtering of cashier data and metrics
   const displayedMetrics = useMemo(() => {
     if (!reportData) return { totalSales: 0, transactionCount: 0, averageTransactionValue: 0, uniqueCustomersCount: 0 };
-    
+
     if (selectedCashier) {
       const cashierData = reportData.salesByCashier.find(c => c.cashierId === selectedCashier);
       if (cashierData) {
@@ -115,44 +114,30 @@ export const ReportsView: React.FC = () => {
     return list;
   }, [reportData, keyword]);
 
-  // Columns for Tables
   const productColumns = [
     {
       title: 'Nama Produk',
       dataIndex: 'name',
       key: 'name',
-      render: (text: string) => <span style={{ fontWeight: 500 }}>{text}</span>,
+      render: (text: string) => <span className="text-semibold">{text}</span>,
     },
     {
       title: 'SKU',
       dataIndex: 'sku',
       key: 'sku',
-      render: (text: string) => <span>{text}</span>,
     },
     {
       title: 'Kategori',
       dataIndex: 'categoryName',
       key: 'categoryName',
-      render: (text: string) => (
-        <span style={{
-          background: '#FFFBF5',
-          border: '1px solid #D6D3D1',
-          padding: '2px 8px',
-          borderRadius: '4px',
-          fontSize: '12px',
-          color: '#365314',
-          fontWeight: 600,
-        }}>
-          {text}
-        </span>
-      ),
+      render: (text: string) => <span className="badge-category">{text}</span>,
     },
     {
       title: 'Terjual',
       dataIndex: 'quantitySold',
       key: 'quantitySold',
       align: 'right' as const,
-      sorter: (a: any, b: any) => a.quantitySold - b.quantitySold,
+      sorter: (a: TopProductData, b: TopProductData) => a.quantitySold - b.quantitySold,
       render: (text: number) => <strong>{text} pcs</strong>,
     },
     {
@@ -160,7 +145,7 @@ export const ReportsView: React.FC = () => {
       dataIndex: 'totalRevenue',
       key: 'totalRevenue',
       align: 'right' as const,
-      sorter: (a: any, b: any) => a.totalRevenue - b.totalRevenue,
+      sorter: (a: TopProductData, b: TopProductData) => a.totalRevenue - b.totalRevenue,
       render: (val: number) => formatter.format(val),
     },
   ];
@@ -170,7 +155,7 @@ export const ReportsView: React.FC = () => {
       title: 'Nama Lengkap',
       dataIndex: 'fullName',
       key: 'fullName',
-      render: (text: string) => <span style={{ fontWeight: 500 }}>{text}</span>,
+      render: (text: string) => <span className="text-semibold">{text}</span>,
     },
     {
       title: 'Username',
@@ -183,7 +168,7 @@ export const ReportsView: React.FC = () => {
       dataIndex: 'transactionCount',
       key: 'transactionCount',
       align: 'right' as const,
-      sorter: (a: any, b: any) => a.transactionCount - b.transactionCount,
+      sorter: (a: SalesByCashierData, b: SalesByCashierData) => a.transactionCount - b.transactionCount,
       render: (text: number) => <strong>{text} kali</strong>,
     },
     {
@@ -191,7 +176,7 @@ export const ReportsView: React.FC = () => {
       dataIndex: 'totalSales',
       key: 'totalSales',
       align: 'right' as const,
-      sorter: (a: any, b: any) => a.totalSales - b.totalSales,
+      sorter: (a: SalesByCashierData, b: SalesByCashierData) => a.totalSales - b.totalSales,
       render: (val: number) => formatter.format(val),
     },
   ];
@@ -199,29 +184,25 @@ export const ReportsView: React.FC = () => {
   const tabItems = [
     {
       key: 'products',
-      label: <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Produk Terlaris</span>,
+      label: <span className="text-semibold">Produk Terlaris</span>,
       children: (
         <Table
           dataSource={displayedProducts}
           columns={productColumns}
           rowKey="productId"
           pagination={{ pageSize: 5 }}
-          bordered={false}
-          style={{ background: '#FFFFFF' }}
         />
       ),
     },
     {
       key: 'cashiers',
-      label: <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Kinerja Kasir</span>,
+      label: <span className="text-semibold">Kinerja Kasir</span>,
       children: (
         <Table
           dataSource={displayedCashierSales}
           columns={cashierColumns}
           rowKey="cashierId"
           pagination={{ pageSize: 5 }}
-          bordered={false}
-          style={{ background: '#FFFFFF' }}
         />
       ),
     },
@@ -229,57 +210,40 @@ export const ReportsView: React.FC = () => {
 
   return (
     <div>
-      {/* Header section */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+      <div className="page-header">
         <div>
-          <Title level={2} style={{ margin: 0, fontFamily: "'Inter', sans-serif", color: '#C2410C' }}>Laporan</Title>
-          <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#57534E', fontSize: '15px' }}>
+          <Title level={2} className="page-title">Laporan</Title>
+          <Paragraph className="page-subtitle">
             Tentukan kriteria filter pencarian untuk memuat dan mengekspor laporan transaksi kasir UMKM Anda.
           </Paragraph>
         </div>
       </div>
 
-      {/* Main Content Card wrapping both filters and results */}
-      <Card
-        style={{
-          border: '1px solid #E7E5E4',
-          borderRadius: '8px',
-          backgroundColor: '#FFFFFF',
-        }}
-        bodyStyle={{ padding: '24px' }}
-      >
-        {/* Complex Filter Toolbar */}
-        <div style={{ marginBottom: '24px' }}>
+      <Card className="card-filter">
+        <div className="filter-toolbar">
           <Row gutter={[16, 16]} align="bottom">
             <Col xs={24} sm={12} md={7}>
-              <div style={{ marginBottom: '8px', fontWeight: 600, color: '#1C1917' }}>
-                <SearchOutlined /> Cari:
-              </div>
+              <div className="filter-label"><SearchOutlined /> Cari:</div>
               <Input
                 placeholder="Cari nama produk, SKU, atau nama kasir..."
-                style={{ width: '100%', height: '42px' }}
                 onChange={(e) => setKeyword(e.target.value)}
                 value={keyword}
               />
             </Col>
             <Col xs={24} sm={12} md={6}>
-              <div style={{ marginBottom: '8px', fontWeight: 600, color: '#1C1917' }}>
-                <CalendarOutlined /> Rentang Waktu:
-              </div>
+              <div className="filter-label"><CalendarOutlined /> Rentang Waktu:</div>
               <RangePicker
                 onChange={handleRangeChange}
                 placeholder={['Mulai Tanggal', 'Selesai Tanggal']}
-                style={{ borderColor: '#D6D3D1', width: '100%', height: '42px' }}
+                className="w-full"
               />
             </Col>
             <Col xs={24} sm={12} md={6}>
-              <div style={{ marginBottom: '8px', fontWeight: 600, color: '#1C1917' }}>
-                <UserOutlined /> Kasir:
-              </div>
+              <div className="filter-label"><UserOutlined /> Kasir:</div>
               <Select
                 placeholder="Pilih Staf Kasir"
                 allowClear
-                style={{ width: '100%', height: '42px' }}
+                className="w-full"
                 onChange={(val) => setSelectedCashier(val)}
                 value={selectedCashier}
               >
@@ -291,31 +255,11 @@ export const ReportsView: React.FC = () => {
               </Select>
             </Col>
             <Col xs={24} md={5}>
-              <Space style={{ width: '100%' }}>
-                <Button
-                  type="primary"
-                  onClick={handleSearch}
-                  style={{
-                    backgroundColor: '#C2410C',
-                    borderColor: '#C2410C',
-                    fontFamily: "'Inter', sans-serif",
-                    fontWeight: 600,
-                    borderRadius: '4px',
-                    height: '42px',
-                    width: '100%'
-                  }}
-                >
+              <Space className="w-full">
+                <Button type="primary" onClick={handleSearch} className="btn-primary-terracotta w-full">
                   Cari
                 </Button>
-                <Button
-                  type="default"
-                  onClick={handleReset}
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    borderRadius: '4px',
-                    height: '42px'
-                  }}
-                >
+                <Button type="default" onClick={handleReset}>
                   Reset
                 </Button>
               </Space>
@@ -323,105 +267,74 @@ export const ReportsView: React.FC = () => {
           </Row>
         </div>
 
-        {/* Divider line separating filters and results */}
-        <div style={{ height: '1px', background: '#E7E5E4', marginBottom: '24px' }} />
+        <div className="divider-horizontal" />
 
         <Spin spinning={loading}>
           {!hasSearched ? (
-            <div style={{ padding: '60px 0', textAlign: 'center' }}>
+            <div className="empty-state">
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description={
-                  <span style={{ color: '#A8A29E', fontFamily: "'Inter', sans-serif" }}>
-                    Silakan masukkan filter rentang waktu dan klik <strong>Cari</strong> untuk memuat data.
-                  </span>
-                }
+                description={<span className="text-secondary-muted">Silakan masukkan filter rentang waktu dan klik <strong>Cari</strong> untuk memuat data.</span>}
               />
             </div>
           ) : (
             <div>
-              {/* Export Actions */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+              <div className="export-actions">
                 <Space>
-                  <InfoCircleOutlined style={{ color: '#C2410C' }} />
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                  <InfoCircleOutlined className="text-primary-color" />
+                  <Text type="secondary" className="caption-text">
                     * Ekspor data mencakup seluruh transaksi dalam rentang tanggal yang dipilih.
                   </Text>
                 </Space>
                 <Space>
-                  <Button
-                    type="default"
-                    icon={<DownloadOutlined />}
-                    onClick={downloadCSV}
-                    style={{
-                      borderColor: '#C2410C',
-                      color: '#C2410C',
-                      fontFamily: "'Inter', sans-serif",
-                      fontWeight: 600,
-                      borderRadius: '4px',
-                    }}
-                  >
+                  <Button icon={<DownloadOutlined />} onClick={downloadCSV} className="btn-secondary-outline">
                     Ekspor Excel (CSV)
                   </Button>
-                  <Button
-                    type="primary"
-                    icon={<PrinterOutlined />}
-                    onClick={downloadPDF}
-                    style={{
-                      backgroundColor: '#C2410C',
-                      borderColor: '#C2410C',
-                      fontFamily: "'Inter', sans-serif",
-                      fontWeight: 600,
-                      borderRadius: '4px',
-                    }}
-                  >
+                  <Button type="primary" icon={<PrinterOutlined />} onClick={downloadPDF} className="btn-primary-terracotta">
                     Cetak PDF
                   </Button>
                 </Space>
               </div>
 
-              {/* Metrics Row (Borderless, side borders only) */}
-              <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
-                <Col xs={24} sm={12} lg={6} style={{ borderLeft: '4px solid #C2410C', paddingLeft: '16px' }}>
+              <Row gutter={[24, 24]} className="metrics-row">
+                <Col xs={24} sm={12} lg={6} className="metric-col metric-col-primary">
                   <Statistic
-                    title={<span style={{ color: '#57534E', fontWeight: 600 }}>Total Pendapatan</span>}
+                    title={<span className="metric-title">Total Pendapatan</span>}
                     value={displayedMetrics.totalSales}
                     formatter={(val) => formatter.format(val as number)}
                     valueStyle={{ color: '#C2410C', fontWeight: 'bold', fontSize: '22px' }}
-                    prefix={<LineChartOutlined style={{ color: '#C2410C' }} />}
+                    prefix={<LineChartOutlined />}
                   />
                 </Col>
-                <Col xs={24} sm={12} lg={6} style={{ borderLeft: '4px solid #365314', paddingLeft: '16px' }}>
+                <Col xs={24} sm={12} lg={6} className="metric-col metric-col-tertiary">
                   <Statistic
-                    title={<span style={{ color: '#57534E', fontWeight: 600 }}>Jumlah Transaksi</span>}
+                    title={<span className="metric-title">Jumlah Transaksi</span>}
                     value={displayedMetrics.transactionCount}
                     valueStyle={{ color: '#365314', fontWeight: 'bold', fontSize: '22px' }}
-                    prefix={<ShopOutlined style={{ color: '#365314' }} />}
+                    prefix={<ShopOutlined />}
                   />
                 </Col>
-                <Col xs={24} sm={12} lg={6} style={{ borderLeft: '4px solid #D4A373', paddingLeft: '16px' }}>
+                <Col xs={24} sm={12} lg={6} className="metric-col metric-col-secondary">
                   <Statistic
-                    title={<span style={{ color: '#57534E', fontWeight: 600 }}>Rata-rata Transaksi</span>}
+                    title={<span className="metric-title">Rata-rata Transaksi</span>}
                     value={displayedMetrics.averageTransactionValue}
                     formatter={(val) => formatter.format(val as number)}
                     valueStyle={{ color: '#9A3412', fontWeight: 'bold', fontSize: '22px' }}
-                    prefix={<GiftOutlined style={{ color: '#D4A373' }} />}
+                    prefix={<GiftOutlined />}
                   />
                 </Col>
-                <Col xs={24} sm={12} lg={6} style={{ borderLeft: '4px solid #57534E', paddingLeft: '16px' }}>
+                <Col xs={24} sm={12} lg={6} className="metric-col metric-col-neutral">
                   <Statistic
-                    title={<span style={{ color: '#57534E', fontWeight: 600 }}>Pelanggan Unik (Member)</span>}
+                    title={<span className="metric-title">Pelanggan Unik (Member)</span>}
                     value={displayedMetrics.uniqueCustomersCount}
                     valueStyle={{ color: '#1C1917', fontWeight: 'bold', fontSize: '22px' }}
-                    prefix={<UserOutlined style={{ color: '#57534E' }} />}
+                    prefix={<UserOutlined />}
                   />
                 </Col>
               </Row>
 
-              {/* Divider line */}
-              <div style={{ height: '1px', background: '#E7E5E4', marginBottom: '24px' }} />
+              <div className="divider-horizontal" />
 
-              {/* Detailed Data Tabs */}
               <Tabs defaultActiveKey="products" items={tabItems} />
             </div>
           )}

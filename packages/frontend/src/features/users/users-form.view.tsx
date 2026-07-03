@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, Select, Switch, Button, message } from 'antd';
+import { Form, Input, Select, Switch, message } from 'antd';
 import { UsersPresenter } from './users.presenter';
+import { FormModal } from '../../components/common/form-modal.component';
 import { UserFormViewProps, UserPayload } from './users.types';
 
 export const UserFormView: React.FC<UserFormViewProps> = ({
@@ -87,70 +88,47 @@ export const UserFormView: React.FC<UserFormViewProps> = ({
   };
 
   return (
-    <Modal
+    <FormModal
+      title={isEdit ? 'Edit User' : 'Add New User'}
       open={visible}
-      title={
-        <span style={{ fontFamily: "var(--font-headline)", fontSize: '20px', color: 'var(--color-primary)' }}>
-          {isEdit ? 'Edit User' : 'Add New User'}
-        </span>
-      }
-      okText={isEdit ? 'Save Changes' : 'Create User'}
-      cancelText="Cancel"
       onCancel={onCancel}
-      confirmLoading={confirmLoading}
-      loading={fetchingUser}
-      footer={[
-        <Button key="cancel" onClick={onCancel} style={{ borderRadius: '4px' }}>
-          Cancel
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          loading={confirmLoading}
-          onClick={handleSubmit}
-          style={{
-            backgroundColor: 'var(--color-primary)',
-            borderColor: 'var(--color-primary)',
-            borderRadius: '4px',
-          }}
-        >
-          {isEdit ? 'Save Changes' : 'Create User'}
-        </Button>,
-      ]}
-      style={{ borderRadius: '8px', overflow: 'hidden' }}
-      styles={{
-        body: { padding: '8px 0' },
-      }}
+      onSubmit={handleSubmit}
+      loading={confirmLoading}
+      fetchLoading={fetchingUser}
+      submitText={isEdit ? 'Save Changes' : 'Create User'}
+      cancelText="Cancel"
+      width={480}
     >
       <Form form={form} layout="vertical" requiredMark={false}>
         <Form.Item
           name="username"
-          label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Username</span>}
+          label={<span className="form-label-bold">Username</span>}
           rules={[
             { required: true, message: 'Please enter username' },
             { min: 3, message: 'Username must be at least 3 characters' },
           ]}
         >
-          <Input placeholder="Enter username (e.g. kasir2)" disabled={isEdit} />
+          <Input placeholder="Enter username (e.g. kasir2)" disabled={isEdit} className="input-medium" />
         </Form.Item>
 
         <Form.Item
           name="fullName"
-          label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Full Name</span>}
+          label={<span className="form-label-bold">Full Name</span>}
           rules={[{ required: true, message: 'Please enter full name' }]}
         >
-          <Input placeholder="Enter full name" />
+          <Input placeholder="Enter full name" className="input-medium" />
         </Form.Item>
 
         <Form.Item
           name="password"
-          label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Password</span>}
+          label={<span className="form-label-bold">Password</span>}
           rules={[
             { required: !isEdit, message: 'Please enter password' },
             { min: 6, message: 'Password must be at least 6 characters' },
           ]}
         >
           <Input.Password
+            className="input-medium"
             placeholder={
               isEdit
                 ? 'Leave blank to keep current password'
@@ -159,13 +137,13 @@ export const UserFormView: React.FC<UserFormViewProps> = ({
           />
         </Form.Item>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="form-row-grid">
           <Form.Item
             name="role"
-            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Role</span>}
+            label={<span className="form-label-bold">Role</span>}
             rules={[{ required: true, message: 'Please select role' }]}
           >
-            <Select>
+            <Select className="input-medium">
               <Select.Option value="ADMIN">Admin</Select.Option>
               <Select.Option value="CASHIER">Kasir</Select.Option>
             </Select>
@@ -173,15 +151,15 @@ export const UserFormView: React.FC<UserFormViewProps> = ({
 
           <Form.Item
             name="isActive"
-            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Status</span>}
+            label={<span className="form-label-bold">Status</span>}
             valuePropName="checked"
           >
-            <div style={{ display: 'flex', alignItems: 'center', height: '32px' }}>
+            <div className="switch-container">
               <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
             </div>
           </Form.Item>
         </div>
       </Form>
-    </Modal>
+    </FormModal>
   );
 };

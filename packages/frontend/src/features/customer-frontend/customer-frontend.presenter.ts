@@ -1,16 +1,25 @@
 import { useState, useCallback } from 'react';
-import { CustomerService, CustomerRegisterPayload, CustomerLoginPayload, CatalogQuery } from './customer.service';
+import { CustomerService } from './customer-frontend.service';
+import { CustomerRegisterPayload, CustomerLoginPayload, CatalogQuery, CustomerProductItem } from './customer-frontend.types';
 import { useCustomerStore } from '../../stores/customer.store';
 import { message } from 'antd';
+import { AxiosError } from 'axios';
+
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
 
 export function useCustomerPresenter() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [products, setProducts] = useState<any[]>([]);
-  const [pagination, setPagination] = useState<any>(null);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [product, setProduct] = useState<any | null>(null);
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [products, setProducts] = useState<CustomerProductItem[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo | null>(null);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [product, setProduct] = useState<CustomerProductItem | null>(null);
+  const [transactions, setTransactions] = useState<unknown[]>([]);
 
   const { setAuth } = useCustomerStore();
 
@@ -23,9 +32,10 @@ export function useCustomerPresenter() {
         setProducts(res.data.products);
         setPagination(res.data.pagination);
       }
-    } catch (err: any) {
-      console.error(err);
-      setError(err?.response?.data?.message || 'Gagal memuat katalog produk');
+    } catch (err: unknown) {
+      const msg = err instanceof AxiosError ? err.response?.data?.message : 'Gagal memuat katalog produk';
+      setError(msg);
+      message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -39,9 +49,10 @@ export function useCustomerPresenter() {
       if (res.success) {
         setProduct(res.data);
       }
-    } catch (err: any) {
-      console.error(err);
-      setError(err?.response?.data?.message || 'Gagal memuat detail produk');
+    } catch (err: unknown) {
+      const msg = err instanceof AxiosError ? err.response?.data?.message : 'Gagal memuat detail produk';
+      setError(msg);
+      message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -53,8 +64,9 @@ export function useCustomerPresenter() {
       if (res.success) {
         setCategories(res.data);
       }
-    } catch (err) {
-      console.error('Failed to fetch categories:', err);
+    } catch (err: unknown) {
+      const msg = err instanceof AxiosError ? err.response?.data?.message : 'Gagal memuat kategori';
+      message.error(msg);
     }
   }, []);
 
@@ -66,9 +78,10 @@ export function useCustomerPresenter() {
       if (res.success) {
         setTransactions(res.data);
       }
-    } catch (err: any) {
-      console.error(err);
-      setError(err?.response?.data?.message || 'Gagal memuat riwayat transaksi');
+    } catch (err: unknown) {
+      const msg = err instanceof AxiosError ? err.response?.data?.message : 'Gagal memuat riwayat transaksi';
+      setError(msg);
+      message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -84,9 +97,9 @@ export function useCustomerPresenter() {
         return true;
       }
       return false;
-    } catch (err: any) {
-      console.error(err);
-      message.error(err?.response?.data?.message || 'Gagal masuk. Silakan periksa email/password.');
+    } catch (err: unknown) {
+      const msg = err instanceof AxiosError ? err.response?.data?.message : 'Gagal masuk. Silakan periksa email/password.';
+      message.error(msg);
       return false;
     } finally {
       setLoading(false);
@@ -102,9 +115,9 @@ export function useCustomerPresenter() {
         return true;
       }
       return false;
-    } catch (err: any) {
-      console.error(err);
-      message.error(err?.response?.data?.message || 'Pendaftaran gagal');
+    } catch (err: unknown) {
+      const msg = err instanceof AxiosError ? err.response?.data?.message : 'Pendaftaran gagal';
+      message.error(msg);
       return false;
     } finally {
       setLoading(false);
@@ -121,9 +134,10 @@ export function useCustomerPresenter() {
         return true;
       }
       return false;
-    } catch (err: any) {
-      console.error(err);
-      setError(err?.response?.data?.message || 'Tautan verifikasi tidak valid atau kedaluwarsa');
+    } catch (err: unknown) {
+      const msg = err instanceof AxiosError ? err.response?.data?.message : 'Tautan verifikasi tidak valid atau kedaluwarsa';
+      setError(msg);
+      message.error(msg);
       return false;
     } finally {
       setLoading(false);
@@ -145,8 +159,9 @@ export function useCustomerPresenter() {
         return res.data;
       }
       return null;
-    } catch (err: any) {
-      console.error(err);
+    } catch (err: unknown) {
+      const msg = err instanceof AxiosError ? err.response?.data?.message : 'Gagal memproses checkout';
+      message.error(msg);
       throw err;
     } finally {
       setLoading(false);

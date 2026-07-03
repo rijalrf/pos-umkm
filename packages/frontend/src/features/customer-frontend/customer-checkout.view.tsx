@@ -13,8 +13,8 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
-import { useCustomerPresenter } from './customer.presenter';
-import { CustomerService } from './customer.service';
+import { useCustomerPresenter } from './customer-frontend.presenter';
+import { CustomerService } from './customer-frontend.service';
 
 const { Title, Text, Paragraph } = Typography;
 

@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Col, Row, Input, Button, Spin, Empty, Typography } from 'antd';
 import { SearchOutlined, ShoppingOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { useCustomerPresenter } from './customer.presenter';
+import { useCustomerPresenter } from './customer-frontend.presenter';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
-import { CustomerService } from './customer.service';
+import { CustomerService } from './customer-frontend.service';
 
 const { Text } = Typography;
 

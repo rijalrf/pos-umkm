@@ -1,21 +1,5 @@
 import { api } from '../../libs/api.lib';
-
-export interface ProductPayload {
-  name: string;
-  sku: string;
-  categoryId: string;
-  price: number;
-  stock: number;
-  description?: string;
-  stockAlertThreshold?: number;
-}
-
-export interface ProductsQuery {
-  page?: number;
-  limit?: number;
-  search?: string;
-  categoryId?: string;
-}
+import { ProductPayload, ProductsQuery } from './products.types';
 
 export class ProductsService {
   static async getAll(query?: ProductsQuery) {

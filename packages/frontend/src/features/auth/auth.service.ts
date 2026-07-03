@@ -1,9 +1,5 @@
 import { api } from '../../libs/api.lib';
-
-export interface LoginParams {
-  username: string;
-  password: string;
-}
+import { LoginParams } from './auth.types';
 
 export class AuthService {
   static async login(params: LoginParams) {

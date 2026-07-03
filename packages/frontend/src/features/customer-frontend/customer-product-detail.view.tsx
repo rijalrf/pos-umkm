@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Card, Col, Row, Button, Spin, Typography } from 'antd';
 import { ShoppingOutlined, MinusOutlined, PlusOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
-import { useCustomerPresenter } from './customer.presenter';
+import { useCustomerPresenter } from './customer-frontend.presenter';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
 
 const { Title, Paragraph, Text } = Typography;

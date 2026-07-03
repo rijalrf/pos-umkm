@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Card, Table, Typography, Spin, Empty, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { useCustomerPresenter } from './customer.presenter';
+import { useCustomerPresenter } from './customer-frontend.presenter';
 
 const { Title, Paragraph } = Typography;
 
@@ -107,12 +107,19 @@ export const TransactionHistoryView: React.FC = () => {
               pagination={{ pageSize: 10 }}
               bordered={false}
               expandable={{
-                expandedRowRender: (record) => (
+                expandedRowRender: (record: unknown) => {
+                  const tx = record as {
+                    items: { product: { name: string }; quantity: number; priceAtPurchase: number }[];
+                    totalAmount: number;
+                    cashReceived: number;
+                    cashReturn: number;
+                  };
+                  return (
                   <div style={{ padding: '8px 24px', background: '#FFFBF5', borderRadius: '4px', borderLeft: '3px solid #C2410C' }}>
                     <Title level={5} style={{ fontFamily: "'Playfair Display', serif", margin: '0 0 12px 0' }}>Rincian Pembayaran</Title>
                     <table style={{ width: '100%', maxWidth: '400px', borderCollapse: 'collapse', fontSize: '13px' }}>
                       <tbody>
-                        {record.items.map((item: any, idx: number) => (
+                        {tx.items.map((item, idx: number) => (
                           <tr key={idx} style={{ borderBottom: '1px solid #E7E5E4' }}>
                             <td style={{ padding: '6px 0', color: '#57534E' }}>{item.product.name} (x{item.quantity})</td>
                             <td style={{ padding: '6px 0', textAlign: 'right', fontWeight: 500 }}>
@@ -123,25 +130,26 @@ export const TransactionHistoryView: React.FC = () => {
                         <tr>
                           <td style={{ padding: '12px 0 6px 0', fontWeight: 'bold' }}>Total Bayar</td>
                           <td style={{ padding: '12px 0 6px 0', textAlign: 'right', fontWeight: 'bold', color: '#C2410C' }}>
-                            {formatter.format(Number(record.totalAmount))}
+                            {formatter.format(Number(tx.totalAmount))}
                           </td>
                         </tr>
                         <tr>
                           <td style={{ padding: '6px 0', color: '#57534E' }}>Uang Diterima</td>
                           <td style={{ padding: '6px 0', textAlign: 'right', color: '#57534E' }}>
-                            {formatter.format(Number(record.cashReceived))}
+                            {formatter.format(Number(tx.cashReceived))}
                           </td>
                         </tr>
                         <tr>
                           <td style={{ padding: '6px 0', color: '#365314', fontWeight: 600 }}>Kembalian</td>
                           <td style={{ padding: '6px 0', textAlign: 'right', color: '#365314', fontWeight: 600 }}>
-                            {formatter.format(Number(record.cashReturn))}
+                            {formatter.format(Number(tx.cashReturn))}
                           </td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
-                ),
+                  );
+                },
                 rowExpandable: () => true,
               }}
             />

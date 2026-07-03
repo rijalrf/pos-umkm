@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Typography, Card, Dropdown, Tag } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined, QrcodeOutlined, PrinterOutlined } from '@ant-design/icons';
-import { useTablePresenter, TableItem } from './table.presenter';
+import { useTablesPresenter } from './tables.presenter';
+import { TableItem } from './tables.types';
 import { ConfirmModal } from '../../components/common/confirm-modal.component';
+import { FormModal } from '../../components/common/form-modal.component';
 import { QRCodeSVG } from 'qrcode.react';
 
 const { Title, Paragraph, Text } = Typography;
 
 export const TableListView: React.FC = () => {
-  const presenter = useTablePresenter();
+  const presenter = useTablesPresenter();
   const [form] = Form.useForm();
   const [deleteConfirmOpen, setDeleteConfirmOpen] = React.useState(false);
   const [tableIdToDelete, setTableIdToDelete] = React.useState<string | null>(null);
@@ -224,18 +226,12 @@ export const TableListView: React.FC = () => {
       </Card>
 
       {/* Modal Tambah / Edit Meja */}
-      <Modal
+      <FormModal
         title={presenter.editingId ? 'Edit Meja' : 'Tambah Meja Baru'}
         open={presenter.isModalOpen}
         onCancel={presenter.handleCloseModal}
-        footer={null}
         width={420}
-        destroyOnClose
-        centered
-        styles={{
-          header: { borderBottom: '1px solid #E7E5E4', paddingBottom: '12px' },
-          body: { paddingTop: '16px' }
-        }}
+        hideFooter
       >
         <Form
           form={form}
@@ -252,7 +248,7 @@ export const TableListView: React.FC = () => {
               { max: 50, message: 'Nama meja terlalu panjang (maksimal 50 karakter)' }
             ]}
           >
-            <Input placeholder="Contoh: Meja 01, Meja Lesehan A" style={{ height: '40px', borderRadius: '4px' }} />
+            <Input placeholder="Contoh: Meja 01, Meja Lesehan A" className="input-medium" />
           </Form.Item>
 
           <Form.Item
@@ -261,16 +257,12 @@ export const TableListView: React.FC = () => {
             rules={[{ required: true }]}
           >
             <Input.Search
-              style={{ display: 'none' }} // dummy
+              style={{ display: 'none' }}
             />
-            {/* Menggunakan select bawaan antd agar lebih user friendly */}
-            <select 
+            <select
               name="status"
-              className="ant-input" 
-              style={{ 
-                height: '40px', 
-                borderRadius: '4px', 
-                width: '100%',
+              className="ant-input input-medium"
+              style={{
                 padding: '0 11px',
                 border: '1.5px solid #D6D3D1',
                 backgroundColor: '#FFFFFF'
@@ -283,27 +275,12 @@ export const TableListView: React.FC = () => {
             </select>
           </Form.Item>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '24px', borderTop: '1px solid #E7E5E4', paddingTop: '16px' }}>
-            <Button onClick={presenter.handleCloseModal} style={{ borderRadius: '4px', height: '38px' }}>
-              Batal
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={presenter.submitLoading}
-              style={{
-                backgroundColor: '#C2410C',
-                borderColor: '#C2410C',
-                borderRadius: '4px',
-                fontWeight: 600,
-                height: '38px',
-              }}
-            >
-              Simpan
-            </Button>
+          <div className="form-modal-footer" style={{ borderTop: '1px solid #E7E5E4', paddingTop: '16px', marginTop: '24px' }}>
+            <Button onClick={presenter.handleCloseModal} className="btn-cancel">Batal</Button>
+            <Button type="primary" htmlType="submit" loading={presenter.submitLoading} className="btn-primary-terracotta">Simpan</Button>
           </div>
         </Form>
-      </Modal>
+      </FormModal>
 
       {/* Modal Cetak/Tampilkan QR Code */}
       <Modal

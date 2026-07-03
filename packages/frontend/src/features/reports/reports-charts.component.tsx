@@ -1,5 +1,5 @@
 import React from 'react';
-import { SalesOverTimeData, TopProductData } from './reports.service';
+import { SalesOverTimeData, TopProductData } from './reports.types';
 
 interface ChartsProps {
   salesData: SalesOverTimeData[];

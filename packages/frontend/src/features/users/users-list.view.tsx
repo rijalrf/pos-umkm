@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Space, Tag, message, Typography, Card, Dropdown } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, KeyOutlined, MoreOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
 import { UsersPresenter } from './users.presenter';
-import { UserFormView } from './user-form.view';
-import { PasswordChangeModalView } from './password-change-modal.view';
+import { UserFormView } from './users-form.view';
 import { ConfirmModal } from '../../components/common/confirm-modal.component';
 
 const { Title, Paragraph } = Typography;
@@ -17,8 +16,6 @@ export const UserListView: React.FC = () => {
   // Modal states
   const [formVisible, setFormVisible] = useState<boolean>(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [pwVisible, setPwVisible] = useState<boolean>(false);
-
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [userIdToDelete, setUserIdToDelete] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -179,19 +176,6 @@ export const UserListView: React.FC = () => {
         </div>
         <Space>
           <Button
-            type="default"
-            icon={<KeyOutlined />}
-            onClick={() => setPwVisible(true)}
-            style={{
-              border: '1.5px solid #C2410C',
-              color: '#C2410C',
-              height: '42px',
-              borderRadius: '4px',
-            }}
-          >
-            Ubah Password Saya
-          </Button>
-          <Button
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAdd}
@@ -235,11 +219,6 @@ export const UserListView: React.FC = () => {
         }}
       />
 
-      <PasswordChangeModalView
-        visible={pwVisible}
-        onCancel={() => setPwVisible(false)}
-        onSuccess={() => setPwVisible(false)}
-      />
       <ConfirmModal
         open={deleteConfirmOpen}
         title="Hapus Pengguna"

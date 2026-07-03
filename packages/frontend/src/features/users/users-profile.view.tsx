@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Card, Form, Input, Button, Typography, Space, message } from 'antd';
+import { Card, Form, Input, Button, Typography, Space, message, Modal } from 'antd';
 import { UserOutlined, LockOutlined, SaveOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../../stores/auth.store';
 import { UsersPresenter } from './users.presenter';
-import { PasswordChangeModalView } from './password-change-modal.view';
 
 const { Title, Paragraph } = Typography;
 const presenter = new UsersPresenter();
@@ -13,6 +12,8 @@ export const ProfileView: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [passwordForm] = Form.useForm();
+  const [pwLoading, setPwLoading] = useState(false);
 
   const handleSaveProfile = async () => {
     try {
@@ -35,6 +36,28 @@ export const ProfileView: React.FC = () => {
       message.error(errorMsg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    try {
+      const values = await passwordForm.validateFields();
+      setPwLoading(true);
+
+      await presenter.changePassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+      });
+
+      message.success('Password changed successfully!');
+      passwordForm.resetFields();
+      setPasswordModalVisible(false);
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'errorFields' in err) return;
+      const errorMsg = err instanceof Error ? err.message : 'Failed to change password';
+      message.error(errorMsg);
+    } finally {
+      setPwLoading(false);
     }
   };
 
@@ -113,11 +136,80 @@ export const ProfileView: React.FC = () => {
         </Form>
       </Card>
 
-      <PasswordChangeModalView
-        visible={passwordModalVisible}
-        onCancel={() => setPasswordModalVisible(false)}
-        onSuccess={() => setPasswordModalVisible(false)}
-      />
+      <Modal
+        open={passwordModalVisible}
+        title={
+          <span style={{ fontFamily: "var(--font-headline)", fontSize: '20px', color: 'var(--color-primary)' }}>
+            Change Password
+          </span>
+        }
+        onCancel={() => {
+          setPasswordModalVisible(false);
+          passwordForm.resetFields();
+        }}
+        footer={[
+          <Button key="cancel" onClick={() => {
+            setPasswordModalVisible(false);
+            passwordForm.resetFields();
+          }} style={{ borderRadius: '4px' }}>
+            Cancel
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={pwLoading}
+            onClick={handleChangePassword}
+            style={{
+              backgroundColor: 'var(--color-primary)',
+              borderColor: 'var(--color-primary)',
+              borderRadius: '4px',
+            }}
+          >
+            Change Password
+          </Button>,
+        ]}
+        style={{ borderRadius: '8px', overflow: 'hidden' }}
+      >
+        <Form form={passwordForm} layout="vertical" requiredMark={false} style={{ marginTop: '16px' }}>
+          <Form.Item
+            name="currentPassword"
+            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Current Password</span>}
+            rules={[{ required: true, message: 'Please enter your current password' }]}
+          >
+            <Input.Password placeholder="Enter current password" />
+          </Form.Item>
+
+          <Form.Item
+            name="newPassword"
+            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>New Password</span>}
+            rules={[
+              { required: true, message: 'Please enter new password' },
+              { min: 6, message: 'Password must be at least 6 characters' },
+            ]}
+          >
+            <Input.Password placeholder="Enter new password (min 6 characters)" />
+          </Form.Item>
+
+          <Form.Item
+            name="confirmPassword"
+            label={<span style={{ fontWeight: 600, fontSize: '13px', color: '#1C1917' }}>Confirm New Password</span>}
+            dependencies={['newPassword']}
+            rules={[
+              { required: true, message: 'Please confirm your new password' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('newPassword') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('The two passwords that you entered do not match!'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Confirm new password" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

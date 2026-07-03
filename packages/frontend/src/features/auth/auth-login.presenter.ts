@@ -1,16 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthService, LoginParams } from './auth.service';
+import { AuthService } from './auth.service';
+import { LoginParams, StoreInfo } from './auth.types';
 import { useAuthStore } from '../../stores/auth.store';
-import { CustomerService } from '../customer-frontend/customer.service';
+import { CustomerService } from '../customer-frontend/customer-frontend.service';
 import { message } from 'antd';
-
-interface StoreInfo {
-  storeName: string;
-  logoUrl: string | null;
-  address: string;
-  phone: string;
-}
+import { AxiosError } from 'axios';
 
 export const useLoginPresenter = () => {
   const [loading, setLoading] = useState(false);
@@ -30,8 +25,9 @@ export const useLoginPresenter = () => {
             phone: response.data.phone,
           });
         }
-      } catch (error) {
-        console.error('Failed to fetch store info:', error);
+      } catch (error: unknown) {
+        const msg = error instanceof AxiosError ? error.response?.data?.message : 'Failed to fetch store info';
+        message.error(msg);
       }
     };
     fetchStoreInfo();
@@ -49,8 +45,8 @@ export const useLoginPresenter = () => {
       } else {
         message.error(response.message || 'Login failed');
       }
-    } catch (error: any) {
-      const errMsg = error.response?.data?.message || 'Something went wrong. Please check your credentials.';
+    } catch (error: unknown) {
+      const errMsg = error instanceof AxiosError ? error.response?.data?.message : 'Something went wrong. Please check your credentials.';
       message.error(errMsg);
     } finally {
       setLoading(false);

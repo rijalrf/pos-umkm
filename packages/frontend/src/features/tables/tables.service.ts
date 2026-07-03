@@ -1,11 +1,7 @@
 import { api } from '../../libs/api.lib';
+import { TablePayload } from './tables.types';
 
-export interface TablePayload {
-  number: string;
-  status?: 'ACTIVE' | 'INACTIVE';
-}
-
-export class TableService {
+export class TablesService {
   static async getAll(params?: { status?: string; search?: string }) {
     const response = await api.get('/tables', { params });
     return response.data;

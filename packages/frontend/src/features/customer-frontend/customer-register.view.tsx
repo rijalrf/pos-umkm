@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Form, Input, Button, Typography, Space } from 'antd';
 import { UserOutlined, MailOutlined, LockOutlined, PhoneOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useCustomerPresenter } from './customer.presenter';
+import { useCustomerPresenter } from './customer-frontend.presenter';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;

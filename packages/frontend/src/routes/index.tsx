@@ -1,28 +1,28 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { LoginView } from '../features/auth/login.view';
+import { LoginView } from '../features/auth/auth-login.view';
 import { DashboardView } from '../features/dashboard/dashboard.view';
-import { ProductListView } from '../features/products/product-list.view';
-import { CategoryListView } from '../features/categories/category-list.view';
+import { ProductListView } from '../features/products/products-list.view';
+import { CategoryListView } from '../features/categories/categories-list.view';
 import { SalesView } from '../features/sales/sales.view';
-import { TransactionListView } from '../features/sales/transaction-list.view';
-import { SettingsView } from '../features/settings/store-settings.view';
+import { TransactionListView } from '../features/sales/sales-list.view';
+import { SettingsView } from '../features/settings/settings.view';
 import { ReportsView } from '../features/reports/reports.view';
-import { UserListView } from '../features/users/user-list.view';
-import { ProfileView } from '../features/users/profile.view';
-import { CustomerListView } from '../features/customers/customer-list.view';
-import { TableListView } from '../features/tables/table-list.view';
+import { UserListView } from '../features/users/users-list.view';
+import { ProfileView } from '../features/users/users-profile.view';
+import { CustomerListView } from '../features/customers/customers-list.view';
+import { TableListView } from '../features/tables/tables-list.view';
 import { BackofficeLayout } from '../components/layout/backoffice-layout';
 import { ProtectedRoute } from '../components/common/protected-route.component';
 
 // Customer feature routes
 import { CustomerLayout } from '../components/layout/customer-layout';
-import { CatalogView } from '../features/customer-frontend/catalog.view';
-import { ProductDetailView } from '../features/customer-frontend/product-detail.view';
-import { VerifyEmailView } from '../features/customer-frontend/verify-email.view';
-import { TransactionHistoryView } from '../features/customer-frontend/transaction-history.view';
-import { CheckoutView } from '../features/customer-frontend/checkout.view';
-import { TableEntryView } from '../features/customer-frontend/table-entry.view';
+import { CatalogView } from '../features/customer-frontend/customer-catalog.view';
+import { ProductDetailView } from '../features/customer-frontend/customer-product-detail.view';
+import { VerifyEmailView } from '../features/customer-frontend/customer-verify-email.view';
+import { TransactionHistoryView } from '../features/customer-frontend/customer-transaction-history.view';
+import { CheckoutView } from '../features/customer-frontend/customer-checkout.view';
+import { TableEntryView } from '../features/customer-frontend/customer-table-entry.view';
 import { CustomerProtectedRoute } from '../components/common/customer-protected-route.component';
 
 export const AppRoutes: React.FC = () => {

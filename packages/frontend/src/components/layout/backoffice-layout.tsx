@@ -20,7 +20,7 @@ import { useAuthStore } from '../../stores/auth.store';
 import { message } from 'antd';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Breadcrumbs } from '../common/breadcrumb.component';
-import { api } from '../../libs/api.lib';
+import { SettingsService } from '../../features/settings/settings.service';
 
 const { Header, Sider, Content } = Layout;
 const { Text, Title } = Typography;
@@ -47,13 +47,13 @@ export const BackofficeLayout: React.FC = () => {
   useEffect(() => {
     async function loadStoreSettings() {
       try {
-        const response = await api.get('/settings/store');
-        if (response.data && response.data.success) {
-          setStoreName(response.data.data.storeName || 'POS UMKM');
-          setLogoUrl(response.data.data.logoUrl || null);
+        const response = await SettingsService.getStoreSetting();
+        if (response.success) {
+          setStoreName(response.data.storeName || 'POS UMKM');
+          setLogoUrl(response.data.logoUrl || null);
         }
-      } catch (error) {
-        console.error('Failed to load store settings in layout:', error);
+      } catch {
+        // Store settings may not be available yet, use defaults
       }
     }
     loadStoreSettings();

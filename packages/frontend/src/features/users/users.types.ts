@@ -11,12 +11,6 @@ export interface ChangePasswordPayload {
   newPassword?: string;
 }
 
-export interface PasswordChangeModalViewProps {
-  visible: boolean;
-  onCancel: () => void;
-  onSuccess: () => void;
-}
-
 export interface UserFormViewProps {
   visible: boolean;
   onCancel: () => void;

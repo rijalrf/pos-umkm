@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
 import { SalesService } from './sales.service';
 import { message } from 'antd';
+import { TransactionItem } from './sales.types';
 
-export function useTransactionsPresenter() {
-  const [transactions, setTransactions] = useState<any[]>([]);
+export function useSalesPresenter() {
+  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState({
@@ -28,9 +29,9 @@ export function useTransactionsPresenter() {
         setTransactions(res.data.transactions);
         setTotal(res.data.total);
       }
-    } catch (err: any) {
-      console.error(err);
-      message.error(err?.response?.data?.message || 'Failed to fetch transactions');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? (err as any).response?.data?.message || err.message : 'Failed to fetch transactions';
+      message.error(msg);
     } finally {
       setLoading(false);
     }

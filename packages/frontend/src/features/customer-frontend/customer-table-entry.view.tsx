@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Spin, Result, Button } from 'antd';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
-import { CustomerService } from './customer.service';
+import { CustomerService } from './customer-frontend.service';
 
 export const TableEntryView: React.FC = () => {
   const { tableId } = useParams<{ tableId: string }>();

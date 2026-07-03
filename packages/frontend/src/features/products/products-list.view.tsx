@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Table, Button, Input, Select, Space, Typography, Card, Modal, Dropdown } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined, WarningOutlined, EyeOutlined, MoreOutlined } from '@ant-design/icons';
-import { useProductsPresenter, ProductItem } from './products.presenter';
-import { ProductFormModal } from './product-form.view';
+import { useProductsPresenter } from './products.presenter';
+import { ProductItem } from './products.types';
+import { ProductFormModal } from './products-form.view';
 import { ConfirmModal } from '../../components/common/confirm-modal.component';
 
 const { Title, Paragraph } = Typography;

@@ -351,11 +351,31 @@ POS UMKM is a clean, modern, and versatile design system suitable for restaurant
   }
   ```
 
-### 9.5 Gunakan CSS Variables — Bukan Hardcoded Warna
-- **DILARANG** menulis warna hex langsung di inline style jika sudah tersedia di CSS variables `index.css`.
-- Gunakan `var(--color-primary)` bukan `'#C2410C'`, `var(--color-border)` bukan `'#E7E5E4'`, dst.
-- Jika terpaksa pakai inline style, **wajib** referensi CSS variable.
-- Lebih baik buat CSS class di `index.css` atau file `.css` per feature jika styling kompleks.
+### 9.5 DILARANG Keras Menggunakan Inline CSS (style={...})
+- **DILARANG KERAS** menggunakan inline CSS (`style={{ ... }}`) pada elemen HTML maupun komponen React/Ant Design, kecuali untuk dynamic styling yang nilainya dihitung saat runtime (seperti penentuan posisi dinamis atau progress persentase).
+- Semua styling statis harus didefinisikan menggunakan **CSS class** (baik di global `index.css` atau modul CSS per feature/komponen) atau memanfaatkan properti bawaan dari komponen **Ant Design** (seperti `<Flex gap="middle">`, `<Space>`, `<Col span={...}>`, dsb).
+- Jika ada warna yang perlu digunakan dalam file CSS, **WAJIB** merujuk ke CSS variables yang ada di `index.css` (misalnya `var(--color-primary)`), bukan menuliskan kode hex langsung (`#C2410C`).
+- Base CSS dari proyek ini **BUKAN Bootstrap CSS**, melainkan **Ant Design (antd)** dan **Custom Design System (Vanilla CSS + CSS Variables)** yang didesain khusus agar memberikan kesan hangat, natural, dan khas wirausaha lokal (sesuai spesifikasi di `DESIGN.md`).
+- **Contoh Do's & Don'ts:**
+  ```typescript
+  // ❌ DILARANG: Menggunakan inline style statis dan hardcoded warna
+  <div style={{ display: 'flex', gap: '16px', padding: '12px', backgroundColor: '#FFFBF5', border: '1px solid #D6D3D1' }}>
+    <span style={{ color: '#C2410C', fontWeight: 'bold' }}>Nama Toko</span>
+  </div>
+
+  // ❌ DILARANG: Menggunakan inline style meskipun memakai CSS variables
+  <div style={{ display: 'flex', gap: '16px', padding: '12px', backgroundColor: 'var(--color-background)', border: 'var(--border-medium)' }}>
+    <span style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>Nama Toko</span>
+  </div>
+
+  // ✅ BENAR: Menggunakan komponen layout Ant Design & class CSS kustom
+  // Di file CSS (misal: index.css):
+  // .merchant-container { padding: 12px; background-color: var(--color-background); border: var(--border-medium); }
+  // .merchant-title { color: var(--color-primary); font-weight: bold; }
+  <Flex gap="middle" className="merchant-container">
+    <span className="merchant-title">Nama Toko</span>
+  </Flex>
+  ```
 
 ### 9.6 Error Handling Konsisten
 - Pilih **satu pola** error handling dan terapkan konsisten:

@@ -1,17 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { TableService, TablePayload } from './table.service';
+import { TablesService } from './tables.service';
+import { TablePayload } from './tables.types';
 import { message } from 'antd';
+import { TableItem } from './tables.types';
 
-export interface TableItem {
-  id: string;
-  code: string;
-  number: string;
-  status: 'ACTIVE' | 'INACTIVE';
-  createdAt: string;
-  updatedAt: string;
-}
-
-export function useTablePresenter() {
+export function useTablesPresenter() {
   const [tables, setTables] = useState<TableItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -26,7 +19,7 @@ export function useTablePresenter() {
   const fetchTables = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await TableService.getAll({
+      const response = await TablesService.getAll({
         search: search || undefined,
         status: statusFilter || undefined,
       });
@@ -50,7 +43,7 @@ export function useTablePresenter() {
   const handleCreate = async (values: TablePayload) => {
     setSubmitLoading(true);
     try {
-      const response = await TableService.create(values);
+      const response = await TablesService.create(values);
       if (response.success) {
         message.success('Meja berhasil ditambahkan');
         setIsModalOpen(false);
@@ -70,7 +63,7 @@ export function useTablePresenter() {
   const handleUpdate = async (id: string, values: TablePayload) => {
     setSubmitLoading(true);
     try {
-      const response = await TableService.update(id, values);
+      const response = await TablesService.update(id, values);
       if (response.success) {
         message.success('Meja berhasil diperbarui');
         setIsModalOpen(false);
@@ -91,7 +84,7 @@ export function useTablePresenter() {
   const handleDelete = async (id: string) => {
     setDeleteLoading(true);
     try {
-      const response = await TableService.delete(id);
+      const response = await TablesService.delete(id);
       if (response.success) {
         message.success('Meja berhasil dihapus');
         fetchTables();

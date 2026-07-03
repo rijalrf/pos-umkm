@@ -1,16 +1,5 @@
 import { api } from '../../libs/api.lib';
-
-export interface CreateTransactionPayload {
-  customerId?: string;
-  customerName?: string;
-  items: {
-    productId: string;
-    quantity: number;
-  }[];
-  cashReceived: number;
-  paymentMethod?: string;
-  status?: string;
-}
+import { CreateTransactionPayload } from './sales.types';
 
 export class SalesService {
   static async createTransaction(payload: CreateTransactionPayload) {

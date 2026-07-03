@@ -5,7 +5,7 @@ import { useCartStore } from '../../stores/cart.store';
 import { ProductsService } from '../products/products.service';
 import { CategoriesService } from '../categories/categories.service';
 import { SalesService } from './sales.service';
-import { ProductItem } from '../products/products.presenter';
+import { ProductItem } from '../products/products.types';
 
 const { Title, Text, Paragraph } = Typography;
 
