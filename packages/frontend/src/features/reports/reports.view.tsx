@@ -4,20 +4,14 @@ import { DownloadOutlined, PrinterOutlined, CalendarOutlined, LineChartOutlined,
 import { useReportsPresenter } from './reports.presenter';
 import { UsersPresenter } from '../users/users.presenter';
 import { SalesByCashierData, TopProductData } from './reports.types';
+import { createClientPagination } from '../../libs/pagination.lib';
+
 
 const { RangePicker } = DatePicker;
 const { Title, Paragraph, Text } = Typography;
 
 export const ReportsView: React.FC = () => {
-  const {
-    loading,
-    reportData,
-    setStartDate,
-    setEndDate,
-    fetchReport,
-    downloadCSV,
-    downloadPDF,
-  } = useReportsPresenter();
+  const presenter = useReportsPresenter();
 
   const usersPresenter = new UsersPresenter();
 
@@ -58,9 +52,9 @@ export const ReportsView: React.FC = () => {
       message.warning('Silakan pilih rentang tanggal laporan terlebih dahulu!');
       return;
     }
-    setStartDate(dates[0]);
-    setEndDate(dates[1]);
-    fetchReport({ startDate: dates[0], endDate: dates[1] });
+    presenter.setStartDate(dates[0]);
+    presenter.setEndDate(dates[1]);
+    presenter.fetchReport({ startDate: dates[0], endDate: dates[1] });
     setHasSearched(true);
   };
 
@@ -72,26 +66,26 @@ export const ReportsView: React.FC = () => {
   };
 
   const displayedMetrics = useMemo(() => {
-    if (!reportData) return { totalSales: 0, transactionCount: 0, averageTransactionValue: 0, uniqueCustomersCount: 0 };
+    if (!presenter.reportData) return { totalSales: 0, transactionCount: 0, averageTransactionValue: 0, uniqueCustomersCount: 0 };
 
     if (selectedCashier) {
-      const cashierData = reportData.salesByCashier.find(c => c.cashierId === selectedCashier);
+      const cashierData = presenter.reportData.salesByCashier.find(c => c.cashierId === selectedCashier);
       if (cashierData) {
         return {
           totalSales: cashierData.totalSales,
           transactionCount: cashierData.transactionCount,
           averageTransactionValue: cashierData.transactionCount > 0 ? cashierData.totalSales / cashierData.transactionCount : 0,
-          uniqueCustomersCount: reportData.metrics.uniqueCustomersCount
+          uniqueCustomersCount: presenter.reportData.metrics.uniqueCustomersCount
         };
       }
       return { totalSales: 0, transactionCount: 0, averageTransactionValue: 0, uniqueCustomersCount: 0 };
     }
-    return reportData.metrics;
-  }, [reportData, selectedCashier]);
+    return presenter.reportData.metrics;
+  }, [presenter.reportData, selectedCashier]);
 
   const displayedCashierSales = useMemo(() => {
-    if (!reportData) return [];
-    let list = reportData.salesByCashier;
+    if (!presenter.reportData) return [];
+    let list = presenter.reportData.salesByCashier;
 
     if (selectedCashier) {
       list = list.filter(c => c.cashierId === selectedCashier);
@@ -101,18 +95,18 @@ export const ReportsView: React.FC = () => {
       list = list.filter(c => c.fullName.toLowerCase().includes(kw) || c.username.toLowerCase().includes(kw));
     }
     return list;
-  }, [reportData, selectedCashier, keyword]);
+  }, [presenter.reportData, selectedCashier, keyword]);
 
   const displayedProducts = useMemo(() => {
-    if (!reportData) return [];
-    let list = reportData.topProducts;
+    if (!presenter.reportData) return [];
+    let list = presenter.reportData.topProducts;
 
     if (keyword) {
       const kw = keyword.toLowerCase();
       list = list.filter(p => p.name.toLowerCase().includes(kw) || p.sku.toLowerCase().includes(kw));
     }
     return list;
-  }, [reportData, keyword]);
+  }, [presenter.reportData, keyword]);
 
   const productColumns = [
     {
@@ -190,7 +184,7 @@ export const ReportsView: React.FC = () => {
           dataSource={displayedProducts}
           columns={productColumns}
           rowKey="productId"
-          pagination={{ pageSize: 5 }}
+          pagination={createClientPagination(5)}
         />
       ),
     },
@@ -202,7 +196,7 @@ export const ReportsView: React.FC = () => {
           dataSource={displayedCashierSales}
           columns={cashierColumns}
           rowKey="cashierId"
-          pagination={{ pageSize: 5 }}
+          pagination={createClientPagination(5)}
         />
       ),
     },
@@ -269,7 +263,7 @@ export const ReportsView: React.FC = () => {
 
         <div className="divider-horizontal" />
 
-        <Spin spinning={loading}>
+        <Spin spinning={presenter.loading}>
           {!hasSearched ? (
             <div className="empty-state">
               <Empty
@@ -287,10 +281,10 @@ export const ReportsView: React.FC = () => {
                   </Text>
                 </Space>
                 <Space>
-                  <Button icon={<DownloadOutlined />} onClick={downloadCSV} className="btn-secondary-outline">
+                  <Button icon={<DownloadOutlined />} onClick={presenter.downloadCSV} className="btn-secondary-outline">
                     Ekspor Excel (CSV)
                   </Button>
-                  <Button type="primary" icon={<PrinterOutlined />} onClick={downloadPDF} className="btn-primary-terracotta">
+                  <Button type="primary" icon={<PrinterOutlined />} onClick={presenter.downloadPDF} className="btn-primary-terracotta">
                     Cetak PDF
                   </Button>
                 </Space>

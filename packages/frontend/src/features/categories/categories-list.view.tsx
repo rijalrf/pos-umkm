@@ -1,68 +1,21 @@
 import React from 'react';
-import { Table, Button, Space, Form, Input, Typography, Card, Dropdown } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Form, Input, Typography, Card } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { useCategoriesPresenter } from './categories.presenter';
+import { useCategoryColumns } from './categories-list.columns';
 import { ConfirmModal } from '../../components/common/confirm-modal.component';
 import { FormModal } from '../../components/common/form-modal.component';
-import { CategoryItem } from './categories.types';
+import { DEFAULT_PAGINATION } from '../../libs/pagination.lib';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 export const CategoryListView: React.FC = () => {
   const presenter = useCategoriesPresenter();
 
-  const columns = [
-    {
-      title: 'Nama Kategori',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text: string) => <Text className="text-semibold">{text}</Text>,
-    },
-    {
-      title: 'Deskripsi',
-      dataIndex: 'description',
-      key: 'description',
-      render: (text: string | null) => text || <Text className="text-secondary-muted">Tidak ada deskripsi</Text>,
-    },
-    {
-      title: 'Aksi',
-      key: 'actions',
-      width: 100,
-      align: 'center' as const,
-      render: (_: any, record: CategoryItem) => {
-        const actionMenu = {
-          items: [
-            {
-              key: 'edit',
-              label: 'Edit',
-              icon: <EditOutlined className="text-primary-color" />,
-              onClick: () => presenter.handleOpenEditModal(record)
-            },
-            {
-              type: 'divider' as const,
-            },
-            {
-              key: 'delete',
-              label: 'Hapus',
-              icon: <DeleteOutlined />,
-              danger: true,
-              onClick: () => presenter.handleDeleteClick(record.id)
-            }
-          ]
-        };
-
-        return (
-          <Dropdown menu={actionMenu} trigger={['click']} placement="bottomRight">
-            <Button
-              type="text"
-              icon={<MoreOutlined className="text-action-more" />}
-              className="p-0"
-            />
-          </Dropdown>
-        );
-      }
-    },
-  ];
+  const columns = useCategoryColumns({
+    onEdit: presenter.handleOpenEditModal,
+    onDelete: presenter.handleDeleteClick,
+  });
 
   return (
     <div>
@@ -89,7 +42,7 @@ export const CategoryListView: React.FC = () => {
           dataSource={presenter.categories}
           rowKey="id"
           loading={presenter.loading}
-          pagination={{ pageSize: 10 }}
+          pagination={DEFAULT_PAGINATION}
         />
       </Card>
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthService } from './auth.service';
 import { LoginParams, StoreInfo } from './auth.types';
 import { useAuthStore } from '../../stores/auth.store';
-import { CustomerService } from '../customer-frontend/customer-frontend.service';
+import { CustomerCatalogService } from '../customer-catalog/customer-catalog.service';
 import { message } from 'antd';
 import { AxiosError } from 'axios';
 
@@ -16,7 +16,7 @@ export const useLoginPresenter = () => {
   useEffect(() => {
     const fetchStoreInfo = async () => {
       try {
-        const response = await CustomerService.getPublicStoreInfo();
+        const response = await CustomerCatalogService.getPublicStoreInfo();
         if (response.success && response.data) {
           setStoreInfo({
             storeName: response.data.storeName,

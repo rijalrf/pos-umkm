@@ -2,36 +2,25 @@ import React from 'react';
 import { Card, Form, Input, Button, Typography, Space } from 'antd';
 import { MailOutlined, LockOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useCustomerPresenter } from './customer-frontend.presenter';
+import { useCustomerAuthPresenter } from './customer-auth.presenter';
+import type { CustomerLoginPayload } from './customer-auth.types';
 
 const { Title, Text, Paragraph } = Typography;
 
 export const CustomerLoginView: React.FC = () => {
   const navigate = useNavigate();
-  const { loading, loginCustomer } = useCustomerPresenter();
+  const presenter = useCustomerAuthPresenter();
 
-  const onFinish = async (values: any) => {
-    const success = await loginCustomer({
-      email: values.email,
-      password: values.password,
-    });
+  const onFinish = async (values: CustomerLoginPayload) => {
+    const success = await presenter.loginCustomer(values);
     if (success) {
       navigate('/customer/catalog');
     }
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 'calc(100vh - 240px)', padding: '24px 0' }}>
-      <Card
-        style={{
-          width: '100%',
-          maxWidth: '420px',
-          borderColor: '#D6D3D1',
-          borderRadius: '8px',
-          background: '#FFFFFF',
-        }}
-        styles={{ body: { padding: '32px' } }}
-      >
+    <div className="customer-centered">
+      <Card className="w-full" style={{ maxWidth: '420px' }}>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <Button
             type="link"
@@ -41,10 +30,10 @@ export const CustomerLoginView: React.FC = () => {
           >
             Kembali ke Katalog
           </Button>
-          <Title level={2} style={{ fontFamily: "'Playfair Display', serif", color: '#C2410C', margin: '0 0 8px 0' }}>
+          <Title level={2} className="headline-text" style={{ color: 'var(--color-primary)', margin: '0 0 8px 0' }}>
             Masuk Member
           </Title>
-          <Paragraph style={{ fontFamily: "'Inter', sans-serif", color: '#57534E', fontSize: '14px' }}>
+          <Paragraph className="body-text" style={{ color: '#57534E', fontSize: '14px' }}>
             Masuk untuk melihat riwayat belanja Anda.
           </Paragraph>
         </div>
@@ -58,7 +47,7 @@ export const CustomerLoginView: React.FC = () => {
               { type: 'email', message: 'Format email tidak valid!' },
             ]}
           >
-            <Input prefix={<MailOutlined style={{ color: '#A8A29E' }} />} placeholder="nama@email.com" />
+            <Input prefix={<MailOutlined className="login-input-prefix" />} placeholder="nama@email.com" className="input-medium" />
           </Form.Item>
 
           <Form.Item
@@ -66,23 +55,11 @@ export const CustomerLoginView: React.FC = () => {
             name="password"
             rules={[{ required: true, message: 'Password wajib diisi!' }]}
           >
-            <Input.Password prefix={<LockOutlined style={{ color: '#A8A29E' }} />} placeholder="Password Anda" />
+            <Input.Password prefix={<LockOutlined className="login-input-prefix" />} placeholder="Password Anda" className="input-medium" />
           </Form.Item>
 
           <Form.Item style={{ marginTop: '24px' }}>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              block
-              style={{
-                backgroundColor: '#C2410C',
-                borderColor: '#C2410C',
-                fontWeight: 600,
-                height: '42px',
-                borderRadius: '4px',
-              }}
-            >
+            <Button type="primary" htmlType="submit" loading={presenter.loading} block className="btn-primary-terracotta">
               Masuk Sekarang
             </Button>
           </Form.Item>
@@ -91,11 +68,7 @@ export const CustomerLoginView: React.FC = () => {
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
           <Space>
             <Text type="secondary">Belum terdaftar?</Text>
-            <Button
-              type="link"
-              onClick={() => navigate('/customer/register')}
-              style={{ color: '#C2410C', fontWeight: 600, padding: 0 }}
-            >
+            <Button type="link" onClick={() => navigate('/customer/register')} className="text-primary-color" style={{ fontWeight: 600, padding: 0 }}>
               Daftar Member Baru
             </Button>
           </Space>

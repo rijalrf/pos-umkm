@@ -4,6 +4,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, MoreOutlined } from '@ant-d
 import { UsersPresenter } from './users.presenter';
 import { UserFormView } from './users-form.view';
 import { ConfirmModal } from '../../components/common/confirm-modal.component';
+import { DEFAULT_PAGINATION } from '../../libs/pagination.lib';
 
 const { Title, Paragraph } = Typography;
 
@@ -204,7 +205,7 @@ export const UserListView: React.FC = () => {
           columns={columns}
           rowKey="id"
           loading={loading}
-          pagination={{ pageSize: 10 }}
+          pagination={DEFAULT_PAGINATION}
           style={{ fontFamily: "'Inter', sans-serif" }}
         />
       </Card>

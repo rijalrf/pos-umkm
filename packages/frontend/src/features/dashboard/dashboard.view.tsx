@@ -10,11 +10,11 @@ const { Title, Paragraph } = Typography;
 
 export const DashboardView: React.FC = () => {
   const { user } = useAuthStore();
-  const { loading, reportData, fetchDashboardData } = useDashboardPresenter();
+  const presenter = useDashboardPresenter();
 
   useEffect(() => {
-    fetchDashboardData(user?.role === 'ADMIN');
-  }, [user, fetchDashboardData]);
+    presenter.fetchDashboardData(user?.role === 'ADMIN');
+  }, [user, presenter.fetchDashboardData]);
 
   const formatter = new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -56,13 +56,13 @@ export const DashboardView: React.FC = () => {
       </div>
 
       {user?.role === 'ADMIN' ? (
-        <Spin spinning={loading}>
+        <Spin spinning={presenter.loading}>
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={8}>
               <Card bordered className="card-stat card-stat-primary">
                 <Statistic
                   title={<span className="metric-title">Total Pendapatan</span>}
-                  value={reportData?.metrics.totalSales || 0}
+                  value={presenter.reportData?.metrics.totalSales || 0}
                   formatter={(val) => formatter.format(val as number)}
                   valueStyle={{ color: '#C2410C', fontWeight: 'bold' }}
                   prefix={<LineChartOutlined />}
@@ -73,7 +73,7 @@ export const DashboardView: React.FC = () => {
               <Card bordered className="card-stat card-stat-tertiary">
                 <Statistic
                   title={<span className="metric-title">Total Penjualan</span>}
-                  value={reportData?.metrics.transactionCount || 0}
+                  value={presenter.reportData?.metrics.transactionCount || 0}
                   suffix="transaksi"
                   valueStyle={{ color: '#365314', fontWeight: 'bold' }}
                   prefix={<ShopOutlined />}
@@ -84,7 +84,7 @@ export const DashboardView: React.FC = () => {
               <Card bordered className="card-stat card-stat-secondary">
                 <Statistic
                   title={<span className="metric-title">Pelanggan Member</span>}
-                  value={reportData?.metrics.uniqueCustomersCount || 0}
+                  value={presenter.reportData?.metrics.uniqueCustomersCount || 0}
                   suffix="orang"
                   valueStyle={{ color: '#D4A373', fontWeight: 'bold' }}
                   prefix={<UserOutlined />}
@@ -95,8 +95,8 @@ export const DashboardView: React.FC = () => {
 
           <div className="section-spacing">
             <ReportsCharts
-              salesData={reportData?.salesOverTime || []}
-              topProducts={reportData?.topProducts || []}
+              salesData={presenter.reportData?.salesOverTime || []}
+              topProducts={presenter.reportData?.topProducts || []}
             />
           </div>
 
@@ -104,7 +104,7 @@ export const DashboardView: React.FC = () => {
             <Col xs={24} md={12}>
               <Card className="card-full-height" title={<span><ShoppingOutlined className="text-primary-color" /> 5 Produk Terlaris</span>}>
                 <Table
-                  dataSource={reportData?.topProducts.slice(0, 5) || []}
+                  dataSource={presenter.reportData?.topProducts.slice(0, 5) || []}
                   columns={topProductColumns}
                   rowKey={(record: TopProductData) => record.productId}
                   pagination={false}

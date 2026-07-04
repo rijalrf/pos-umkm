@@ -6,6 +6,7 @@ import { TableItem } from './tables.types';
 import { ConfirmModal } from '../../components/common/confirm-modal.component';
 import { FormModal } from '../../components/common/form-modal.component';
 import { QRCodeSVG } from 'qrcode.react';
+import { DEFAULT_PAGINATION } from '../../libs/pagination.lib';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -219,7 +220,7 @@ export const TableListView: React.FC = () => {
           dataSource={presenter.tables}
           rowKey="id"
           loading={presenter.loading}
-          pagination={{ pageSize: 10 }}
+          pagination={DEFAULT_PAGINATION}
           bordered
           style={{ background: '#FFFFFF' }}
         />

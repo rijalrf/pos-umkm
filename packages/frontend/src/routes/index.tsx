@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { LoginView } from '../features/auth/auth-login.view';
+import { LoginView } from '../features/auth/auth.view';
 import { DashboardView } from '../features/dashboard/dashboard.view';
 import { ProductListView } from '../features/products/products-list.view';
 import { CategoryListView } from '../features/categories/categories-list.view';
@@ -17,12 +17,12 @@ import { ProtectedRoute } from '../components/common/protected-route.component';
 
 // Customer feature routes
 import { CustomerLayout } from '../components/layout/customer-layout';
-import { CatalogView } from '../features/customer-frontend/customer-catalog.view';
-import { ProductDetailView } from '../features/customer-frontend/customer-product-detail.view';
-import { VerifyEmailView } from '../features/customer-frontend/customer-verify-email.view';
-import { TransactionHistoryView } from '../features/customer-frontend/customer-transaction-history.view';
-import { CheckoutView } from '../features/customer-frontend/customer-checkout.view';
-import { TableEntryView } from '../features/customer-frontend/customer-table-entry.view';
+import { CatalogView } from '../features/customer-catalog/customer-catalog.view';
+import { ProductDetailView } from '../features/customer-catalog/customer-product-detail.view';
+import { VerifyEmailView } from '../features/customer-auth/customer-verify-email.view';
+import { TransactionHistoryView } from '../features/customer-transactions/customer-transaction-history.view';
+import { CheckoutView } from '../features/customer-checkout/customer-checkout.view';
+import { TableEntryView } from '../features/customer-catalog/customer-table-entry.view';
 import { CustomerProtectedRoute } from '../components/common/customer-protected-route.component';
 
 export const AppRoutes: React.FC = () => {

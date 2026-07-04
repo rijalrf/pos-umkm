@@ -30,3 +30,9 @@ export interface ProductsQuery {
   search?: string;
   categoryId?: string;
 }
+
+export interface ColumnActions {
+  onDetail: (record: ProductItem) => void;
+  onEdit: (record: ProductItem) => void;
+  onDelete: (id: string) => void;
+}

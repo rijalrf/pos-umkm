@@ -23,7 +23,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   categories,
 }) => {
   const [form] = Form.useForm();
-  const { confirmLoading, handleSubmit } = useProductFormPresenter();
+  const presenter = useProductFormPresenter();
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<RcFile | null>(null);
@@ -97,7 +97,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         stockAlertThreshold: values.stockAlertThreshold,
         description: values.description,
       };
-      await handleSubmit(payload, editingProduct, selectedFile, onSuccess);
+      await presenter.handleSubmit(payload, editingProduct, selectedFile, onSuccess);
     } catch {
       // Validation error - do nothing
     }
@@ -109,7 +109,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       open={open}
       onCancel={onCancel}
       onSubmit={handleOk}
-      loading={confirmLoading}
+      loading={presenter.confirmLoading}
       submitText={editingProduct ? 'Simpan Perubahan' : 'Buat Baru'}
       width={850}
     >

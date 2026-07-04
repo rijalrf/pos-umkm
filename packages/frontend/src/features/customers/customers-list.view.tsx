@@ -2,14 +2,15 @@ import React, { useEffect, useMemo } from 'react';
 import { Card, Table, Input, Typography, Spin } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { useCustomersPresenter } from './customers.presenter';
+import { DEFAULT_PAGINATION } from '../../libs/pagination.lib';
 
 const { Title, Paragraph } = Typography;
 
 export const CustomerListView: React.FC = () => {
-  const { loading, customers, search, setSearch, fetchCustomers } = useCustomersPresenter();
+  const presenter = useCustomersPresenter();
 
   useEffect(() => {
-    fetchCustomers();
+    presenter.fetchCustomers();
   }, []);
 
   const maskPhone = (phone?: string) => {
@@ -21,15 +22,15 @@ export const CustomerListView: React.FC = () => {
   };
 
   const filteredCustomers = useMemo(() => {
-    if (!search.trim()) return customers;
-    const q = search.toLowerCase();
-    return customers.filter(
+    if (!presenter.search.trim()) return presenter.customers;
+    const q = presenter.search.toLowerCase();
+    return presenter.customers.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
         (c.phone && c.phone.toLowerCase().includes(q)) ||
         (c.address && c.address.toLowerCase().includes(q))
     );
-  }, [customers, search]);
+  }, [presenter.customers, presenter.search]);
 
   const columns = [
     {
@@ -78,19 +79,19 @@ export const CustomerListView: React.FC = () => {
           <Input
             placeholder="Cari berdasarkan nama, nomor HP, atau alamat..."
             prefix={<SearchOutlined />}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={presenter.search}
+            onChange={(e) => presenter.setSearch(e.target.value)}
             className="input-search"
             allowClear
           />
         </div>
 
-        <Spin spinning={loading}>
+        <Spin spinning={presenter.loading}>
           <Table
             dataSource={filteredCustomers}
             columns={columns}
             rowKey="id"
-            pagination={{ pageSize: 10 }}
+            pagination={DEFAULT_PAGINATION}
           />
         </Spin>
       </Card>

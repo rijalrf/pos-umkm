@@ -6,6 +6,7 @@ import { SalesService } from './sales.service';
 import { SettingsService } from '../settings/settings.service';
 import { AxiosError } from 'axios';
 import { TransactionItem } from './sales.types';
+import { createServerPagination } from '../../libs/pagination.lib';
 
 const { Title, Paragraph, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -17,16 +18,7 @@ interface StoreSettingData {
 }
 
 export const TransactionListView: React.FC = () => {
-  const {
-    transactions,
-    total,
-    loading,
-    query,
-    fetchTransactions,
-    handleSearch,
-    handleDateFilter,
-    handlePageChange,
-  } = useSalesPresenter();
+  const presenter = useSalesPresenter();
 
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedTx, setSelectedTx] = useState<TransactionItem | null>(null);
@@ -64,7 +56,7 @@ export const TransactionListView: React.FC = () => {
         message.success('Pembayaran berhasil diproses!');
         setPayModalOpen(false);
         setPayingTx(null);
-        fetchTransactions();
+        presenter.fetchTransactions();
         printReceipt(res.data.transaction);
       } else {
         message.error(res.message || 'Gagal memproses pembayaran');
@@ -78,7 +70,7 @@ export const TransactionListView: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchTransactions();
+    presenter.fetchTransactions();
     const loadSettings = async () => {
       try {
         const res = await SettingsService.getStoreSetting();
@@ -100,9 +92,9 @@ export const TransactionListView: React.FC = () => {
 
   const handleRangeChange = (dates: unknown, dateStrings: [string, string]) => {
     if (dates) {
-      handleDateFilter(dateStrings[0], dateStrings[1]);
+      presenter.handleDateFilter(dateStrings[0], dateStrings[1]);
     } else {
-      handleDateFilter(undefined, undefined);
+      presenter.handleDateFilter(undefined, undefined);
     }
   };
 
@@ -310,7 +302,7 @@ export const TransactionListView: React.FC = () => {
               placeholder="Cari berdasarkan Kode atau Nama Pelanggan..."
               allowClear
               enterButton={<SearchOutlined />}
-              onSearch={handleSearch}
+              onSearch={presenter.handleSearch}
               style={{ width: 320 }}
             />
 
@@ -328,16 +320,15 @@ export const TransactionListView: React.FC = () => {
 
         <Table
           columns={columns}
-          dataSource={transactions}
+          dataSource={presenter.transactions}
           rowKey="id"
-          loading={loading}
-          pagination={{
-            current: query.page,
-            pageSize: query.limit,
-            total: total,
-            onChange: handlePageChange,
-            showSizeChanger: true,
-          }}
+          loading={presenter.loading}
+          pagination={createServerPagination({
+            current: presenter.query.page,
+            pageSize: presenter.query.limit,
+            total: presenter.total,
+            onChange: presenter.handlePageChange,
+          })}
         />
       </Card>
 
