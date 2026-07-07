@@ -1,16 +1,5 @@
 import { api } from '../../libs/api.lib';
-
-export interface CreateTransactionPayload {
-  customerId?: string;
-  customerName?: string;
-  items: {
-    productId: string;
-    quantity: number;
-  }[];
-  cashReceived: number;
-  paymentMethod?: string;
-  status?: string;
-}
+import { CreateTransactionPayload } from './sales.types';
 
 export class SalesService {
   static async createTransaction(payload: CreateTransactionPayload) {
@@ -24,6 +13,7 @@ export class SalesService {
     search?: string;
     startDate?: string;
     endDate?: string;
+    tableCode?: string;
   }) {
     const response = await api.get('/transactions', { params });
     return response.data;
@@ -41,6 +31,11 @@ export class SalesService {
 
   static async payPendingTransaction(id: string, payload: { cashReceived: number; paymentMethod: string }) {
     const response = await api.put(`/transactions/${id}/pay`, payload);
+    return response.data;
+  }
+
+  static async updateOrderStatus(id: string, orderStatus: string) {
+    const response = await api.put(`/transactions/${id}/order-status`, { orderStatus });
     return response.data;
   }
 }

@@ -5,7 +5,8 @@ import { useCartStore } from '../../stores/cart.store';
 import { ProductsService } from '../products/products.service';
 import { CategoriesService } from '../categories/categories.service';
 import { SalesService } from './sales.service';
-import { ProductItem } from '../products/products.presenter';
+import { ProductItem } from '../products/products.types';
+import { formatPaymentMethod } from '../../libs/format.lib';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -28,7 +29,7 @@ export const SalesView: React.FC = () => {
   const [customerId, setCustomerId] = useState<string | undefined>(undefined);
   const [cashReceived, setCashReceived] = useState<number>(0);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS'>('CASH');
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS' | 'DEBIT' | 'TRANSFER'>('CASH');
 
   // Member phone search states
   const [phoneSearch, setPhoneSearch] = useState('');
@@ -168,7 +169,7 @@ export const SalesView: React.FC = () => {
           productId: item.product.id,
           quantity: item.quantity,
         })),
-        cashReceived: paymentMethod === 'QRIS' ? total : cashReceived,
+        cashReceived: paymentMethod === 'CASH' ? cashReceived : total,
         paymentMethod,
       };
 
@@ -286,7 +287,7 @@ export const SalesView: React.FC = () => {
             <strong>Tgl:</strong> ${dateStr}<br/>
             <strong>Kasir:</strong> ${tx.cashier?.fullName || 'System'}<br/>
             <strong>Pelanggan:</strong> ${tx.customerName || 'Tamu'}<br/>
-            <strong>Pembayaran:</strong> ${tx.paymentMethod}<br/>
+            <strong>Pembayaran:</strong> ${formatPaymentMethod(tx.paymentMethod)}<br/>
           </div>
           <div class="divider"></div>
           <table>
@@ -634,10 +635,10 @@ export const SalesView: React.FC = () => {
                   onChange={(e) => {
                     const method = e.target.value;
                     setPaymentMethod(method);
-                    if (method === 'QRIS') {
-                      setCashReceived(totalAmount);
-                    } else {
+                    if (method === 'CASH') {
                       setCashReceived(0);
+                    } else {
+                      setCashReceived(totalAmount);
                     }
                   }}
                   optionType="button"
@@ -645,6 +646,8 @@ export const SalesView: React.FC = () => {
                 >
                   <Radio.Button value="CASH">TUNAI</Radio.Button>
                   <Radio.Button value="QRIS">QRIS</Radio.Button>
+                  <Radio.Button value="DEBIT">DEBIT</Radio.Button>
+                  <Radio.Button value="TRANSFER">TRANSFER</Radio.Button>
                 </Radio.Group>
               </div>
 
@@ -701,7 +704,7 @@ export const SalesView: React.FC = () => {
         open={receiptModalOpen}
         onCancel={resetSalesView}
         footer={[
-          <Button key="close" onClick={resetSalesView}>
+          <Button key="close" className="btn-secondary-default" onClick={resetSalesView}>
             Tutup
           </Button>,
           <Button
@@ -709,7 +712,7 @@ export const SalesView: React.FC = () => {
             type="primary"
             icon={<PrinterOutlined />}
             onClick={() => printReceipt(checkoutResult)}
-            style={{ backgroundColor: '#C2410C', borderColor: '#C2410C' }}
+            className="btn-primary-terracotta"
             disabled={!checkoutResult}
           >
             Cetak Struk
@@ -740,7 +743,7 @@ export const SalesView: React.FC = () => {
               <strong>Tgl:</strong> {new Date(checkoutResult.transactionDate).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}<br />
               <strong>Kasir:</strong> {checkoutResult.cashier?.fullName || 'System'}<br />
               <strong>Pelanggan:</strong> {checkoutResult.customerName || 'Tamu'}<br />
-              <strong>Pembayaran:</strong> {checkoutResult.paymentMethod}<br />
+              <strong>Pembayaran:</strong> {formatPaymentMethod(checkoutResult.paymentMethod)}<br />
             </div>
             <div style={{ borderTop: '1px dashed #D6D3D1', margin: '8px 0' }} />
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>

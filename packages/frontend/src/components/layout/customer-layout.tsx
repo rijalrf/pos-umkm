@@ -75,7 +75,7 @@ export const CustomerLayout: React.FC = () => {
               height: '38px',
             }}
           >
-            Lanjut
+            Lihat Pesanan
           </Button>
         </div>
       )}

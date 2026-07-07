@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ProductItem } from '../features/products/products.presenter';
+import { ProductItem } from '../features/products/products.types';
 
 export interface CartItem {
   product: ProductItem;

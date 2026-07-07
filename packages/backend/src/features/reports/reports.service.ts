@@ -1,5 +1,5 @@
 import { ReportsRepository } from './reports.repository';
-import { ReportData, ReportSummaryMetrics, SalesOverTimeData, TopProductData, SalesByCashierData } from './reports.types';
+import { ReportData, ReportSummaryMetrics, SalesOverTimeData, TopProductData, SalesByCashierData, TopTableData } from './reports.types';
 
 export class ReportsService {
   private repository = new ReportsRepository();
@@ -137,11 +137,44 @@ export class ReportsService {
       }))
       .sort((a, b) => b.totalSales - a.totalSales); // Sort descending by totalSales
 
+    // 5. Top Tables
+    const topTablesMap = new Map<string, {
+      tableCode: string;
+      tableNumber: string;
+      useCount: number;
+    }>();
+
+    for (const tx of transactions as any) {
+      if (tx.tableId && tx.table) {
+        const current = topTablesMap.get(tx.tableId) || {
+          tableCode: tx.table.code,
+          tableNumber: tx.table.number,
+          useCount: 0,
+        };
+
+        topTablesMap.set(tx.tableId, {
+          ...current,
+          useCount: current.useCount + 1,
+        });
+      }
+    }
+
+    const topTables: TopTableData[] = Array.from(topTablesMap.entries())
+      .map(([tableId, data]) => ({
+        tableId,
+        tableCode: data.tableCode,
+        tableNumber: data.tableNumber,
+        useCount: data.useCount,
+      }))
+      .sort((a, b) => b.useCount - a.useCount)
+      .slice(0, 5);
+
     return {
       metrics,
       salesOverTime,
       topProducts,
       salesByCashier,
+      topTables,
     };
   }
 

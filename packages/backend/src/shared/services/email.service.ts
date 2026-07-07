@@ -1,14 +1,15 @@
 import nodemailer from 'nodemailer';
+import { env } from '../../config/env.config';
 import { logger } from '../utils/logger.util';
 
 export class EmailService {
   private transporter;
 
   constructor() {
-    const host = process.env.EMAIL_SMTP_HOST || 'smtp.mailtrap.io';
-    const port = parseInt(process.env.EMAIL_SMTP_PORT || '2525', 10);
-    const user = process.env.EMAIL_SMTP_USER || '';
-    const pass = process.env.EMAIL_SMTP_PASS || '';
+    const host = env.emailSmtpHost || 'smtp.mailtrap.io';
+    const port = env.emailSmtpPort || 2525;
+    const user = env.emailSmtpUser || '';
+    const pass = env.emailSmtpPass || '';
 
     const auth = user && pass ? { user, pass } : undefined;
 
@@ -24,8 +25,8 @@ export class EmailService {
   }
 
   async sendVerificationEmail(to: string, name: string, token: string) {
-    const from = process.env.EMAIL_FROM || 'noreply@pos-umkm.com';
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const from = env.emailFrom || 'noreply@pos-umkm.com';
+    const frontendUrl = env.frontendUrl || 'http://localhost:5173';
     const verificationUrl = `${frontendUrl}/verify-email?token=${token}`;
 
     const mailOptions = {

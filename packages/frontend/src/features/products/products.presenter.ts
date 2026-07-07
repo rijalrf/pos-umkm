@@ -1,23 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ProductsService, ProductsQuery } from './products.service';
+import { ProductsService } from './products.service';
+import { ProductItem, ProductsQuery } from './products.types';
 import { CategoriesService } from '../categories/categories.service';
 import { message } from 'antd';
-
-export interface ProductItem {
-  id: string;
-  name: string;
-  sku: string;
-  categoryId: string;
-  price: string;
-  stock: number;
-  description: string | null;
-  imageUrl: string | null;
-  stockAlertThreshold: number;
-  category: {
-    id: string;
-    name: string;
-  };
-}
+import { AxiosError } from 'axios';
 
 export const useProductsPresenter = () => {
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -37,8 +23,9 @@ export const useProductsPresenter = () => {
       if (response.success) {
         setCategories(response.data);
       }
-    } catch (error) {
-      console.error('Error fetching categories for selector', error);
+    } catch (error: unknown) {
+      const msg = error instanceof AxiosError ? error.response?.data?.message : 'Gagal memuat kategori';
+      message.error(msg);
     }
   };
 
@@ -52,8 +39,9 @@ export const useProductsPresenter = () => {
       } else {
         message.error(response.message || 'Failed to fetch products');
       }
-    } catch (error) {
-      message.error('Error fetching products list');
+    } catch (error: unknown) {
+      const msg = error instanceof AxiosError ? error.response?.data?.message : 'Error fetching products list';
+      message.error(msg);
     } finally {
       setLoading(false);
     }
@@ -91,8 +79,9 @@ export const useProductsPresenter = () => {
       } else {
         message.error(response.message || 'Failed to delete product');
       }
-    } catch (error: any) {
-      message.error(error.response?.data?.message || 'Error deleting product');
+    } catch (error: unknown) {
+      const msg = error instanceof AxiosError ? error.response?.data?.message : 'Error deleting product';
+      message.error(msg);
     }
   };
 

@@ -1,13 +1,14 @@
-import { google } from 'googleapis';
-import { Readable } from 'stream';
-import { prisma } from '../../config/database.config';
-import { logger } from '../utils/logger.util';
-import { decrypt, encrypt } from '../utils/encryption.util';
-import { env } from '../../config/env.config';
 import fs from 'fs';
 import path from 'path';
+import { Readable } from 'stream';
+import { google } from 'googleapis';
+import { env } from '../../config/env.config';
+import { SettingsRepository } from '../../features/settings/settings.repository';
+import { decrypt, encrypt } from '../utils/encryption.util';
+import { logger } from '../utils/logger.util';
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
+const settingsRepository = new SettingsRepository();
 
 const saveFileLocally = async (fileName: string, buffer: Buffer): Promise<string> => {
   const uploadsDir = path.join(__dirname, '../../../uploads');
@@ -20,7 +21,7 @@ const saveFileLocally = async (fileName: string, buffer: Buffer): Promise<string
   const filePath = path.join(uploadsDir, fileName);
   await fs.promises.writeFile(filePath, buffer);
 
-  const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 3000}`;
+  const backendUrl = env.backendUrl || `http://localhost:${env.port || 3000}`;
   const fileUrl = `${backendUrl}/uploads/${fileName}`;
 
   logger.info('File saved locally to server', {
@@ -33,20 +34,20 @@ const saveFileLocally = async (fileName: string, buffer: Buffer): Promise<string
 };
 
 export const getOAuth2Client = async () => {
-  const config = await prisma.gDriveConfig.findFirst();
+  const config = await settingsRepository.getGDriveConfig();
 
-  const clientId = process.env.GDRIVE_CLIENT_ID || (config?.clientId ? decrypt(config.clientId) : '');
-  const clientSecret = process.env.GDRIVE_CLIENT_SECRET || (config?.clientSecret ? decrypt(config.clientSecret) : '');
-  const redirectUri = process.env.GDRIVE_REDIRECT_URI || '';
+  const clientId = env.gdriveClientId || (config?.clientId ? decrypt(config.clientId) : '');
+  const clientSecret = env.gdriveClientSecret || (config?.clientSecret ? decrypt(config.clientSecret) : '');
+  const redirectUri = env.gdriveRedirectUri || '';
 
   if (!clientId || !clientSecret) {
     throw new Error('Google Drive credentials (GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET) not configured');
   }
 
-  const refreshToken = process.env.GDRIVE_REFRESH_TOKEN || (config?.refreshToken ? decrypt(config.refreshToken) : '');
+  const refreshToken = env.gdriveRefreshToken || (config?.refreshToken ? decrypt(config.refreshToken) : '');
   const accessToken = config?.accessToken ? decrypt(config.accessToken) : undefined;
 
-  const isConnectedEnv = !!process.env.GDRIVE_CLIENT_ID && !!process.env.GDRIVE_CLIENT_SECRET && !!process.env.GDRIVE_REFRESH_TOKEN;
+  const isConnectedEnv = !!env.gdriveClientId && !!env.gdriveClientSecret && !!env.gdriveRefreshToken;
   const isConnectedDb = config ? config.isConnected : false;
 
   if (!isConnectedEnv && !isConnectedDb) {
@@ -85,9 +86,9 @@ export const uploadToDrive = async (
   // Check if Google Drive is configured
   let isGDriveConfigured = false;
   try {
-    const config = await prisma.gDriveConfig.findFirst();
-    const hasEnvConfig = !!process.env.GDRIVE_CLIENT_ID && !!process.env.GDRIVE_CLIENT_SECRET;
-    const isConnectedEnv = hasEnvConfig && !!process.env.GDRIVE_REFRESH_TOKEN;
+    const config = await settingsRepository.getGDriveConfig();
+    const hasEnvConfig = !!env.gdriveClientId && !!env.gdriveClientSecret;
+    const isConnectedEnv = hasEnvConfig && !!env.gdriveRefreshToken;
     const isConnectedDb = config ? config.isConnected : false;
     isGDriveConfigured = isConnectedEnv || isConnectedDb;
   } catch (err) {
@@ -159,7 +160,7 @@ export const authorizeGoogleDrive = async (
   const oauth2Client = new google.auth.OAuth2(
     clientId,
     clientSecret,
-    process.env.GDRIVE_REDIRECT_URI
+    env.gdriveRedirectUri
   );
 
   const authUrl = oauth2Client.generateAuthUrl({
@@ -169,31 +170,24 @@ export const authorizeGoogleDrive = async (
   });
 
   // Save encrypted credentials
-  await prisma.gDriveConfig.upsert({
-    where: { id: 'default' },
-    update: {
-      clientId: encrypt(clientId),
-      clientSecret: encrypt(clientSecret),
-      isConnected: false,
-    },
-    create: {
-      id: 'default',
-      clientId: encrypt(clientId),
-      clientSecret: encrypt(clientSecret),
-      refreshToken: '',
-      accessToken: '',
-      isConnected: false,
-    },
+  await settingsRepository.saveGDriveConfig({
+    id: 'default',
+    clientId: encrypt(clientId),
+    clientSecret: encrypt(clientSecret),
+    refreshToken: '',
+    accessToken: '',
+    tokenExpiry: null,
+    isConnected: false,
   });
 
   return authUrl;
 };
 
 export const handleOAuthCallback = async (code: string): Promise<void> => {
-  const config = await prisma.gDriveConfig.findFirst();
+  const config = await settingsRepository.getGDriveConfig();
 
-  const clientId = process.env.GDRIVE_CLIENT_ID || (config?.clientId ? decrypt(config.clientId) : '');
-  const clientSecret = process.env.GDRIVE_CLIENT_SECRET || (config?.clientSecret ? decrypt(config.clientSecret) : '');
+  const clientId = env.gdriveClientId || (config?.clientId ? decrypt(config.clientId) : '');
+  const clientSecret = env.gdriveClientSecret || (config?.clientSecret ? decrypt(config.clientSecret) : '');
 
   if (!clientId || !clientSecret) {
     throw new Error('Google Drive credentials (GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET) not configured');
@@ -202,7 +196,7 @@ export const handleOAuthCallback = async (code: string): Promise<void> => {
   const oauth2Client = new google.auth.OAuth2(
     clientId,
     clientSecret,
-    process.env.GDRIVE_REDIRECT_URI
+    env.gdriveRedirectUri
   );
 
   const { tokens } = await oauth2Client.getToken(code);
@@ -211,25 +205,14 @@ export const handleOAuthCallback = async (code: string): Promise<void> => {
     throw new Error('Failed to get tokens from Google');
   }
 
-  await prisma.gDriveConfig.upsert({
-    where: { id: config?.id || 'default' },
-    update: {
-      clientId: encrypt(clientId),
-      clientSecret: encrypt(clientSecret),
-      refreshToken: encrypt(tokens.refresh_token),
-      accessToken: encrypt(tokens.access_token),
-      tokenExpiry: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
-      isConnected: true,
-    },
-    create: {
-      id: 'default',
-      clientId: encrypt(clientId),
-      clientSecret: encrypt(clientSecret),
-      refreshToken: encrypt(tokens.refresh_token),
-      accessToken: encrypt(tokens.access_token),
-      tokenExpiry: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
-      isConnected: true,
-    },
+  await settingsRepository.saveGDriveConfig({
+    id: config?.id || 'default',
+    clientId: encrypt(clientId),
+    clientSecret: encrypt(clientSecret),
+    refreshToken: encrypt(tokens.refresh_token),
+    accessToken: encrypt(tokens.access_token),
+    tokenExpiry: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+    isConnected: true,
   });
 
   logger.info('Google Drive connected successfully');

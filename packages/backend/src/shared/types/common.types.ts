@@ -1,5 +1,12 @@
 import { Request } from 'express';
-import { JWTPayload } from '../utils/jwt.util';
+
+export interface JWTPayload {
+  id: string;
+  username?: string;
+  email?: string;
+  fullName: string;
+  role: 'ADMIN' | 'CASHIER' | 'CUSTOMER';
+}
 
 export interface AuthenticatedRequest extends Request {
   user?: JWTPayload;

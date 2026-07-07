@@ -88,4 +88,17 @@ export class PublicController {
       next(error);
     }
   };
+
+  getTransactionById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const data = await this.service.getTransactionById(id);
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

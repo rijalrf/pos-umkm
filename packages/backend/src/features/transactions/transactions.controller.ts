@@ -33,8 +33,11 @@ export class TransactionsController {
       const search = req.query.search as string | undefined;
       const startDate = req.query.startDate as string | undefined;
       const endDate = req.query.endDate as string | undefined;
+      const tableCode = req.query.tableCode as string | undefined;
+      const orderStatus = req.query.orderStatus as string | undefined;
+      const paymentStatus = req.query.paymentStatus as string | undefined;
 
-      const data = await this.service.getAllTransactions({ page, limit, search, startDate, endDate });
+      const data = await this.service.getAllTransactions({ page, limit, search, startDate, endDate, tableCode, orderStatus, paymentStatus });
       
       res.status(200).json({
         success: true,
@@ -62,6 +65,25 @@ export class TransactionsController {
       const html = await this.service.getReceiptHtml(req.params.id);
       res.setHeader('Content-Type', 'text/html');
       res.status(200).send(html);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateOrderStatus = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const transaction = await this.service.updateOrderStatus(req.params.id, req.body.orderStatus);
+
+      logger.info('Order status updated', {
+        transactionId: transaction.id,
+        code: transaction.transactionCode,
+        orderStatus: req.body.orderStatus,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: { transaction },
+      });
     } catch (error) {
       next(error);
     }

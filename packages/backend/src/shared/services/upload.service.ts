@@ -1,18 +1,19 @@
+import { ProductsRepository } from '../../features/products/products.repository';
 import { generateDriveFileName } from '../utils/file-naming.util';
-import { uploadToDrive } from './gdrive.service';
-import { prisma } from '../../config/database.config';
+import { NotFoundError } from '../utils/errors.util';
 import { logger } from '../utils/logger.util';
+import { uploadToDrive } from './gdrive.service';
+
+const productsRepository = new ProductsRepository();
 
 export const uploadProductImage = async (
   productId: string,
   file: Express.Multer.File
 ): Promise<string> => {
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-  });
+  const product = await productsRepository.findById(productId);
 
   if (!product) {
-    throw new Error('Product not found');
+    throw new NotFoundError('Product not found');
   }
 
   const fileName = generateDriveFileName(product.sku, file.originalname);
@@ -25,10 +26,7 @@ export const uploadProductImage = async (
 
   const imageUrl = await uploadToDrive(fileName, file.mimetype, file.buffer);
 
-  await prisma.product.update({
-    where: { id: productId },
-    data: { imageUrl },
-  });
+  await productsRepository.updateImageUrl(productId, imageUrl);
 
   logger.info('Product image uploaded successfully', {
     productId,

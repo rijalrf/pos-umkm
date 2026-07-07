@@ -1,26 +1,8 @@
 import { prisma } from '../../config/database.config';
-import { Transaction, TransactionItem } from '@prisma/client';
-
-export type TransactionWithDetails = Transaction & {
-  items: (TransactionItem & {
-    product: {
-      name: string;
-      sku: string;
-    };
-  })[];
-  cashier: {
-    username: string;
-    fullName: string;
-  };
-  customer: {
-    email: string;
-    name: string;
-  } | null;
-  table: {
-    code: string;
-    number: string;
-  } | null;
-};
+import { Prisma } from '@prisma/client';
+import { TransactionWithDetails } from './transactions.types';
+import { CreateTransactionInput } from './transactions.schema';
+import { NotFoundError, BadRequestError } from '../../shared/utils/errors.util';
 
 export class TransactionsRepository {
   async findById(id: string): Promise<TransactionWithDetails | null> {
@@ -65,6 +47,9 @@ export class TransactionsRepository {
     search?: string;
     startDate?: string;
     endDate?: string;
+    tableCode?: string;
+    orderStatus?: string;
+    paymentStatus?: string;
   }): Promise<{ transactions: TransactionWithDetails[]; total: number }> {
     const page = options.page || 1;
     const limit = options.limit || 10;
@@ -77,6 +62,23 @@ export class TransactionsRepository {
         { transactionCode: { contains: options.search, mode: 'insensitive' } },
         { customerName: { contains: options.search, mode: 'insensitive' } },
       ];
+    }
+
+    if (options.tableCode) {
+      where.table = {
+        code: {
+          contains: options.tableCode,
+          mode: 'insensitive',
+        },
+      };
+    }
+
+    if (options.orderStatus) {
+      where.orderStatus = options.orderStatus;
+    }
+
+    if (options.paymentStatus) {
+      where.paymentStatus = options.paymentStatus;
     }
 
     if (options.startDate || options.endDate) {
@@ -135,5 +137,216 @@ export class TransactionsRepository {
       transactions: transactions as TransactionWithDetails[],
       total,
     };
+  }
+
+  async createTransaction(
+    cashierId: string,
+    transactionCode: string,
+    customerName: string | null,
+    data: CreateTransactionInput
+  ): Promise<TransactionWithDetails> {
+    return prisma.$transaction(async (tx) => {
+      let totalAmount = 0;
+      const itemsToCreate = [];
+
+      for (const item of data.items) {
+        // Lock product row to prevent concurrent stock issues
+        const product = await tx.product.findUnique({
+          where: { id: item.productId },
+        });
+
+        if (!product) {
+          throw new NotFoundError(`Product not found: ${item.productId}`);
+        }
+
+        if (product.stock < item.quantity) {
+          throw new BadRequestError(
+            `Insufficient stock for product '${product.name}'. Available: ${product.stock}, Requested: ${item.quantity}`
+          );
+        }
+
+        // Calculate pricing
+        const price = Number(product.price);
+        const subtotal = price * item.quantity;
+        totalAmount += subtotal;
+
+        // Deduct stock
+        await tx.product.update({
+          where: { id: product.id },
+          data: {
+            stock: product.stock - item.quantity,
+          },
+        });
+
+        itemsToCreate.push({
+          productId: product.id,
+          quantity: item.quantity,
+          priceAtPurchase: new Prisma.Decimal(price),
+          subtotal: new Prisma.Decimal(subtotal),
+        });
+      }
+
+      let cashReceivedVal = data.cashReceived;
+      let cashReturnVal = 0;
+      const paymentStatus = data.paymentStatus || 'UNPAID';
+
+      if (paymentStatus === 'UNPAID') {
+        cashReceivedVal = 0;
+        cashReturnVal = 0;
+      } else {
+        if (data.cashReceived < totalAmount) {
+          throw new BadRequestError(
+            `Insufficient cash received. Total: Rp ${totalAmount}, Received: Rp ${data.cashReceived}`
+          );
+        }
+        cashReturnVal = data.cashReceived - totalAmount;
+      }
+
+      // Create transaction
+      const createdTx = await tx.transaction.create({
+        data: {
+          transactionCode,
+          customerId: data.customerId || null,
+          customerName,
+          cashierId,
+          tableId: data.tableId || null,
+          tableNumber: data.tableNumber || null,
+          paymentMethod: data.paymentMethod || 'CASH',
+          paymentStatus,
+          orderStatus: data.orderStatus || 'PENDING',
+          totalAmount: new Prisma.Decimal(totalAmount),
+          cashReceived: new Prisma.Decimal(cashReceivedVal),
+          cashReturn: new Prisma.Decimal(cashReturnVal),
+          items: {
+            create: itemsToCreate,
+          },
+        },
+        include: {
+          items: {
+            include: {
+              product: {
+                select: {
+                  name: true,
+                  sku: true,
+                },
+              },
+            },
+          },
+          cashier: {
+            select: {
+              username: true,
+              fullName: true,
+            },
+          },
+          customer: {
+            select: {
+              email: true,
+              name: true,
+            },
+          },
+          table: {
+            select: {
+              code: true,
+              number: true,
+            },
+          },
+        },
+      });
+
+      return createdTx as TransactionWithDetails;
+    });
+  }
+
+  async updateTransactionStatus(
+    id: string,
+    cashierId: string,
+    paymentMethod: string,
+    cashReceived: number,
+    cashReturn: number
+  ): Promise<TransactionWithDetails> {
+    const updated = await prisma.transaction.update({
+      where: { id },
+      data: {
+        paymentStatus: 'PAID',
+        cashierId,
+        paymentMethod,
+        cashReceived: new Prisma.Decimal(cashReceived),
+        cashReturn: new Prisma.Decimal(cashReturn),
+      },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                sku: true,
+              },
+            },
+          },
+        },
+        cashier: {
+          select: {
+            username: true,
+            fullName: true,
+          },
+        },
+        customer: {
+          select: {
+            email: true,
+            name: true,
+          },
+        },
+        table: {
+          select: {
+            code: true,
+            number: true,
+          },
+        },
+      },
+    });
+
+    return updated as TransactionWithDetails;
+  }
+
+  async updateOrderStatus(
+    id: string,
+    orderStatus: string
+  ): Promise<TransactionWithDetails> {
+    const updated = await prisma.transaction.update({
+      where: { id },
+      data: { orderStatus },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                sku: true,
+              },
+            },
+          },
+        },
+        cashier: {
+          select: {
+            username: true,
+            fullName: true,
+          },
+        },
+        customer: {
+          select: {
+            email: true,
+            name: true,
+          },
+        },
+        table: {
+          select: {
+            code: true,
+            number: true,
+          },
+        },
+      },
+    });
+
+    return updated as TransactionWithDetails;
   }
 }

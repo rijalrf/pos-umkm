@@ -1,263 +1,64 @@
-# AI Coding Agent Guidelines - POS UMKM
+# AGENTS.md — POS UMKM
 
-Welcome! To maintain code quality, consistency, and structural integrity across the POS UMKM project, all AI agents (and human developers) must adhere to the following rules and standards.
+Monorepo dua paket mandiri (tanpa root package.json). Semua komunikasi dalam **Bahasa Indonesia**.
 
----
+## Perintah Penting
 
-## 1. Project Architecture (Feature-Driven)
+| Package | Dev | Build | Test | Lain |
+|---|---|---|---|---|
+| `packages/backend` | `npm run dev` (ts-node-dev) | `npm run build` (tsc) | `npm test` (Jest+supertest) | `npm run seed`, `npm run prisma:generate`, `npm run prisma:migrate` |
+| `packages/frontend` | `npm run dev` (Vite) | `npm run build` (tsc && vite build) | — | — |
 
-This project uses a **Feature-Driven Architecture** instead of a layer-first structure. All files related to a single domain/feature must live in the same folder.
+- Backend entry: `packages/backend/src/server.ts` → `app.ts`
+- Frontend entry: `packages/frontend/src/main.tsx`
+- Tidak ada ESLint/Prettier. Type-check: `npx tsc --noEmit` (di masing-masing paket).
 
-### 1.1 Backend Feature Module Structure
-Every feature module in `packages/backend/src/features/<feature>/` should contain:
-- `*.routes.ts`: Router configuration & endpoints.
-- `*.controller.ts`: Request/response handling, input mapping.
-- `*.service.ts`: Core business logic, transactional operations.
-- `*.repository.ts`: Database interactions via Prisma.
-- `*.schema.ts`: Request payload validation via Zod.
-- `*.types.ts`: TypeScript interfaces/types specific to the feature.
+## Arsitektur
 
-*Example structure:*
+**Feature-driven** — semua file satu domain di satu folder:
+
 ```
-src/features/auth/
-├── auth.routes.ts
-├── auth.controller.ts
-├── auth.service.ts
-├── auth.repository.ts
-├── auth.schema.ts
-└── auth.types.ts
-```
+packages/backend/src/features/<feature>/
+├── *.routes.ts       # Router + middleware auth/role
+├── *.controller.ts   # instance class, panggil service
+├── *.service.ts      # instance class, business logic
+├── *.repository.ts   # instance class, Prisma queries
+├── *.schema.ts       # Zod validation + derived types
+└── *.types.ts        # feature-specific types
 
-### 1.2 Frontend Feature Module Structure
-Every feature module in `packages/frontend/src/features/<feature>/` should contain:
-- `*.view.tsx`: Pure or thin UI views using Ant Design components.
-- `*.presenter.ts`: State management and business logic for the views.
-- `*.service.ts`: HTTP request client interactions (Axios).
-- `*.store.ts` (if needed): Zustand state stores.
-
-*Example structure:*
-```
-src/features/products/
-├── product-list.view.tsx
-├── product-form.view.tsx
-├── products.presenter.ts
-└── products.service.ts
+packages/frontend/src/features/<feature>/
+├── *.view.tsx        # UI only (Ant Design + CSS class)
+├── *.presenter.ts    # state management + panggil service
+├── *.service.ts      # static methods, Axios via api.lib
+├── *.columns.tsx     # TableColumnsType<T> (jika perlu)
+└── *.types.ts        # feature-specific types
 ```
 
----
+Backend routes terdaftar di `app.ts:42-51` dengan prefix `/api/...`.
 
-## 2. Naming Conventions (Dot Notation)
+## Aturan Kode (Frontend)
 
-Files must be named using camelCase or kebab-case combined with the layer type, separated by dots:
-- **Backend:** `[feature].[layer].ts` (e.g., `auth.controller.ts`, `products.routes.ts`)
-- **Frontend Views:** `[component-name].view.tsx` (e.g., `product-list.view.tsx`, `login.view.tsx`)
-- **Frontend Presenters:** `[feature].presenter.ts` (e.g., `products.presenter.ts`)
-- **Frontend Services:** `[feature].service.ts`
-- **Hooks:** `use-[name].hook.ts` (e.g., `use-auth.hook.ts`)
-- **Zustand Stores:** `[feature].store.ts` (e.g., `auth.store.ts`)
-- **Shared Utilities:** `[name].util.ts` or `[name].lib.ts`
+- **Presenter → Object pattern WAJIB** `const presenter = useXPresenter()` lalu `presenter.loading`, bukan destructuring.
+- **View DILARANG import service** langsung. Semua lewat presenter.
+- **DILARANG inline CSS** (`style={{}}`). Pakai CSS class + CSS variables dari `index.css`.
+- **DILARANG `any`**. Untuk error: `catch (err: unknown)` + `instanceof AxiosError`.
+- **Table columns**: `TableColumnsType<T>` dari antd, render kompleks ekstrak ke komponen terpisah.
+- **Pagination**: pakai `DEFAULT_PAGINATION` dari `libs/pagination.lib`.
+- **Design system**: lihat `DESIGN.md` dan `App.tsx` (ConfigProvider token).
 
----
+## Aturan Kode (Backend)
 
-## 3. Strict TypeScript & Code Quality Rules
+- **DILARANG `new Error()` + `statusCode`**. WAJIB `NotFoundError`, `BadRequestError`, dll dari `shared/utils/errors.util.ts`.
+- **Service DILARANG akses Prisma langsung**. Harus lewat Repository.
+- **DILARANG `console.log`**. WAJIB `logger` dari `shared/utils/logger.util.ts`.
+- **DILARANG `process.env` langsung**. WAJIB `env` dari `config/env.config.ts`.
+- **Zod validation** untuk semua request body/params/query via `validate` middleware.
+- **Response format**: `{ success: true, data }` atau `{ success: false, message }`.
 
-1. **Strict Type Safety:**
-   - Strict mode is enabled (`strict: true`).
-   - Do **NOT** use `any`. Use custom types, interfaces, `unknown`, or generic parameters.
-   - Run type checks (`tsc --noEmit`) before completing any major feature.
+## Catatan Penting
 
-2. **Zod Validation:**
-   - Every request body, query parameter, or route parameter on the Backend must be validated using Zod schemas via the custom `validate` middleware.
-   - Use Zod schemas to infer TypeScript types where applicable (e.g. `type LoginInput = z.infer<typeof loginSchema>['body']`).
-
-3. **Error Handling & Response Format:**
-   - Backend APIs must return responses in a standard JSON format:
-     - Success: `{ success: true, data: ... }` or `{ success: true, message: "..." }`
-     - Failure: `{ success: false, message: "...", errors?: [...] }`
-   - Use Express error-handling middleware (`error-handler.middleware.ts`) to catch unhandled errors and format them safely.
-   - Do **NOT** expose database error stack traces in production. Use the Winston logger to log details on the server, and return generic messages to the client.
-
-4. **Winston Logging:**
-   - Use the custom Winston logger (`logger.util.ts`) for all application logs.
-   - Use descriptive log levels: `error` for system failures, `warn` for validation issues/client errors, `info` for startup/connections, and `debug` for temporary troubleshooting.
-
-5. **DRY (Don't Repeat Yourself) Principle:**
-   - **CRITICAL:** Do **NOT** duplicate code, styles, or configuration. AI agents and developers must strictly reuse existing utility functions, component helpers, types, and configurations instead of rewriting them.
-   - If a similar utility, service, helper function, or state store already exists in the project, you **MUST** import and reuse it.
-   - Consolidate repeating patterns into shared components (under `src/components/common/`) or helper utilities when you notice duplicated code structure.
-
----
-
-## 4. UI/UX and Styling (Frontend)
-
-1. **Design System Source of Truth:**
-   - **CRITICAL:** Always read and refer to `DESIGN.md` in the project root as the absolute source of truth for all design decisions, colors, typography, spacing, borders, elevation, component specs, and styling rules. All UI elements must strictly align with `DESIGN.md`.
-2. **Aesthetic Excellence:**
-   - Leverage **Ant Design (antd)** components as the foundational UI kit.
-   - Use high-quality CSS for transitions, card styling, gradients, and custom components.
-   - Ensure layouts are fully responsive (handling Desktop & Mobile gracefully).
-3. **State & Logic Separation:**
-   - Keep views (`*.view.tsx`) focused on layout, Ant Design composition, and styling.
-   - Move state management, API interaction logic, and events into `*.presenter.ts` files or Zustand stores.
-4. **No Placeholders:**
-   - Do not use placeholders for final elements. If visual assets are needed, generate or implement clean SVG/CSS graphics.
-
----
-
-## 5. Collaboration and Rules of Engagement
-
-- **Ask Before Destructive Operations:** Always seek user confirmation before deleting databases, tables, major files, or running heavy system scripts.
-- **Maintain Comments:** Preserve existing comments and docstrings unless they are outdated or explicitly requested to be removed.
-- **Testing:** Ensure mock data or seed scripts are updated whenever DB schema changes.
-- **Language Constraint:** AI agents must always respond, explain, and converse in Indonesian (Bahasa Indonesia).
-- **Ask and Confirm Ambiguous Choices:** If there is any ambiguity or choices regarding requirements, design, structure, or implementation, AI agents **MUST** and **ARE OBLIGATED** to ask the user for confirmation (e.g. using `ask_question` tool) before proceeding.
-
----
-
-## 6. Automated Testing Guidelines (Local Verification & CI/CD)
-
-To detect errors immediately without manual browser E2E testing, developers and AI agents must write automated tests for all developed features.
-
-### 6.1 Testing Architecture
-1. **Backend Unit Testing:**
-   - Focus on testing Service layers (`*.service.ts`) containing the core business logic.
-   - Mock all external dependencies (e.g., Prisma repository/client database queries, bcrypt/bcryptjs helpers, JWT helpers, Winston logger).
-2. **Backend Integration Testing:**
-   - Test entire route endpoints (`*.routes.ts` via Express App) using `supertest`.
-   - Use a dedicated test database (or transaction rollback) to keep the development database clean.
-3. **Frontend Testing:**
-   - Test Zustand stores (`*.store.ts`) and presenter logic (`*.presenter.ts`) using Jest.
-   - Mock Axios API calls to return mock response data.
-
-### 6.2 Test File Naming & Placement
-- Keep test files next to the files they test inside the feature-driven folder.
-- Name tests using the format: `[feature].[layer].spec.ts` (e.g., `auth.service.spec.ts`, `products.service.spec.ts`).
-
-### 6.3 Rules of Engagement
-- > [!CAUTION]
-  > **AI AGENTS MUST NEVER RUN `npm test` OR `npm run test`.**
-  > Running tests on the environment causes the Windows host CPU, memory, and disk to spike to 100%, causing the system and chat to hang. AI agents must verify code correctness statically (e.g. `npx tsc --noEmit` or manual inspection) and never execute test commands.
-- **Test Before Push (Human Developers Only):** Human developers may execute test suites locally before pushing code.
-- **Coverage Target:** Aim for at least 70% line coverage on services and controllers.
-- **Clean Mocking:** Do not perform actual network requests or write dirty state to production/dev databases during unit tests. Always mock database calls using jest mock utilities.
-
-### 6.4 Resource Optimization on Windows (CPU, Memory, & Disk)
-To prevent local test execution (especially on Windows) from draining CPU, memory, and disk resources, human developers must adhere to these guidelines:
-1. **Limit Worker Threads:** By default, Jest runs one worker per CPU core. On Windows, process spawning has high overhead, causing heavy CPU and memory spikes.
-   - Use the `--runInBand` (or `-i`) flag to run tests serially in the same process, or restrict workers (e.g. `--maxWorkers=50%` or `--maxWorkers=2`).
-   - Run tests locally with: `npm run test -- --runInBand` or `npx jest --runInBand`.
-2. **Minimize Disk/File System I/O:**
-   - Mock all repository and database operations. Never write/read from a physical database file (e.g., SQLite, local containers) in unit tests.
-   - Mock Node's `fs` module or use in-memory streams rather than writing temporary files to the physical disk.
-3. **Mute/Restrict Console Logging:**
-   - Set the Winston logger to `error` level or silence it completely during test execution. Printing large amounts of log output to Windows terminals (stdout) causes heavy I/O and blocks thread execution.
-4. **Prevent Memory Leaks:**
-   - Clean up event listeners, timers, and database connections in hooks (`afterEach` / `afterAll`).
-   - Call `jest.clearAllMocks()` or `jest.resetAllMocks()` between tests to prevent accumulated memory overhead.
-5. **Optimize File Watching:**
-   - Ensure Jest configurations explicitly ignore `node_modules`, `.git`, `.next`, `dist`, and coverage directories to prevent the file watcher from overloading disk I/O.
-
----
-
-## 7. POS UMKM Design System (Modern & General Wirausaha Style)
-
-> [!IMPORTANT]
-> The absolute source of truth for the design system is [DESIGN.md](file:///home/rijal/projects/pos-umkm/DESIGN.md) in the project root. Refer to it for color codes, sizing, spacing, typography, and styling components.
-
-POS UMKM is a clean, modern, and versatile design system suitable for restaurants, cafes, warungs, fashion stores, and other retail businesses. Spacing is generous, typography is legible, and components use a flat, border-driven aesthetic without drop shadows.
-
-### 7.1 Visual Philosophy
-- **Authenticity over Polish:** A flat, border-driven visual style that avoids corporate gloss.
-- **Merchant focus:** Highlight product images, clean pricing, clear checkout actions, and categories.
-- **Warm & friendly:** Use terracotta, sand, and forest green for organic food, drink, and retail accents.
-
-### 7.2 Colors
-- **Primary:** `#C2410C` (Terracotta) - Primary CTAs, active states, key interactive highlights.
-- **Secondary:** `#D4A373` (Sand/Oat) - Featured accents, badges, decorative borders.
-- **Tertiary:** `#365314` (Forest Green) - Eco-friendly badges, category tags, product labels.
-- **Background:** `#FFFBF5` (Warm Cream) - Main app background.
-- **Surface:** `#FFFFFF` (White) - Cards, lists, modals, menus, inputs.
-- **Success:** `#22C55E`
-- **Warning:** `#F59E0B`
-- **Error:** `#DC2626`
-- **Info:** `#3B82F6`
-
-### 7.3 Typography
-- **Headline Font:** Inter (Sans-Serif) - reinforce a premium, modern wirausaha layout.
-- **Body Font:** Inter (Sans-Serif) - default clean body text.
-- **Mono Font:** Source Code Pro - order numbers, tracking codes, technical data.
-
-- **Display:** Inter 48px bold, 1.15 line height, 0.01em tracking (Hero headers).
-- **Headline:** Inter 36px semibold, 1.25 line height, 0.005em tracking (Categories, collection titles).
-- **Subhead:** Inter 26px semibold, 1.3 line height (Sections, seller names).
-- **Body Large:** Inter 18px regular, 1.6 line height (Product details intro).
-- **Body:** Inter 16px regular, 1.6 line height (Default body).
-- **Body Small:** Inter 14px regular, 1.5 line height (Reviews, specs, ingredients).
-- **Caption:** Inter 12px medium, 1.4 line height, 0.02em tracking (Shipping info, stocks).
-- **Overline:** Inter 11px bold, 1.2 line height, 0.09em tracking (Category tags, UPPERCASE).
-- **Code:** Source Code Pro 14px regular, 1.5 line height.
-
-
-### 7.4 Spacing & Padding
-- **Base Unit:** 8px
-- **Scale:** 4, 8, 12, 16, 24, 32, 48, 64, 96, 128
-- **Component Padding:** Small = 8px, Medium = 16px, Large = 24px
-- **Section Spacing:** Mobile = 56px, Tablet = 80px, Desktop = 112px
-
-### 7.5 Border Radius & Borders
-- **None:** 0px — Full-bleed hero images, dividers.
-- **Small:** 4px — Badges, tags, chips.
-- **Medium:** 8px — Cards, product images, modals.
-- **Large:** 12px — Seller cards, banners.
-- **XL:** 20px — Hero blocks, callouts.
-- **Full:** 9999px — Avatars, badges, profile circles.
-
-### 7.6 Elevation & Borders
-- **No Drop Shadows:** POS UMKM uses warm background layering and deliberate border usage instead of shadows.
-- **Borders:**
-  - Subtle: `1px solid #E7E5E4`
-  - Medium: `1px solid #D6D3D1`
-  - Large (Elevated): `2px solid #D6D3D1`
-- **Exceptions:** Modals and Popovers can use a subtle overlay shadow: `8px offset, 24px blur, #1C1917 at 10%`.
-- **Focus Ring:** `3px solid rgba(194, 65, 12, 0.2)` (Terracotta-tinted).
-
-### 7.7 Components
-1. **Buttons:**
-   - **Primary:** Background `#C2410C`, Text `#FFFFFF`, Open Sans 15px Semibold, Border-radius 4px. Hover: `#9A3412`, Active: `#7C2D12`.
-   - **Secondary:** Background Transparent, Text `#C2410C`, Border `1.5px solid #C2410C`, Border-radius 4px. Hover: Background `#FDF6EC`.
-   - **Ghost:** Background Transparent, Text `#57534E`. Hover: Background `#FDF6EC`.
-   - **Destructive:** Background `#DC2626`, Text `#FFFFFF`, Border-radius 4px. Hover: `#B91C1C`.
-   - **Sizes:** Small: Height 34px (padding 10px 16px); Medium: Height 42px (padding 12px 24px); Large: Height 50px (padding 14px 32px).
-2. **Cards:**
-   - **Default:** Background `#FFFFFF`, Border `1px solid #E7E5E4`, Border-radius 8px. Hover: Border `#D6D3D1`.
-   - **Elevated:** Border `2px solid #D6D3D1`, Background `#FFFBF5`. Hover: Border `#A8A29E`.
-3. **Inputs:**
-   - **Text Input:** Background `#FFFFFF`, Border `1.5px solid #D6D3D1`, Text `#1C1917`, Placeholder `#A8A29E`, Border-radius 4px, Height 42px, Open Sans 16px/400. Focus: Border `#C2410C`, Ring `3px solid rgba(194, 65, 12, 0.15)`. Error: Border `#DC2626`, Ring `3px solid rgba(220, 38, 38, 0.15)`. Disabled: Background `#F5F5F4`, opacity 50%.
-   - **Labels:** Top aligned, Open Sans 13px Semibold (600), `#1C1917`.
-   - **Helper Text:** 12px, `#57534E`.
-4. **Chips:**
-   - **Filter Chip:** Height 32px, padding 0 14px, Border-radius 4px, Border `1px solid #D6D3D1`. Selected: Background `#C2410C`, Text `#FFFFFF`, Border `#C2410C`. Hover: Background `#FDF6EC`.
-   - **Status Chip:**
-     - Success: Background `#DCFCE7`, Text `#166534`.
-     - Warning: Background `#FEF3C7`, Text `#92400E`.
-     - Error: Background `#FEE2E2`, Text `#991B1B`.
-5. **Lists:**
-   - **Default List Item:** Height 48px, padding 0 16px, Open Sans 16px/400, Divider `1px solid #E7E5E4`, Hover: Background `#FFFBF5`. Selected: Background `#FDF6EC`, Text `#C2410C`. Icon Variant: 20px icon, 12px gap.
-6. **Checkboxes & Radios:**
-   - **Checkbox:** 18px size, Border `1.5px solid #D6D3D1`, Border-radius 3px. Checked: Background `#C2410C`, Border `#C2410C`, white checkmark.
-   - **Radio Button:** 18px size, Border `1.5px solid #D6D3D1`. Selected: Border `#C2410C` with 6px inner dot `#C2410C`.
-   - **Label:** Open Sans 14px/400 with 10px gap. Disabled: 40% opacity.
-7. **Tooltips:**
-   - Background `#1C1917`, Text `#FFFFFF`, Open Sans 12px/400, Padding 8px 12px, Border-radius 4px, Max-width 220px, Arrow 6px. Delay 300ms.
-
-### 7.8 Do's and Don'ts
-- **Do** use warm, natural photography/graphics; avoid stark white backgrounds.
-- **Do** highlight product categories and states (e.g. food ingredients or size tags) using tertiary forest green (`#365314`) tags.
-- **Do** use clean sans-serif/serif headers to reinforce a modern wirausaha layout.
-- **Do** show real customer photos in reviews to build community trust.
-- **Don't** use aggressive urgency tactics (e.g. countdown timers, pressure-selling text like "only 1 left!").
-- **Don't** apply drop shadows to product cards; use borders instead.
-- **Don't** use the terracotta primary for decorative borders; reserve it for interactive elements.
-- **Don't** crop product images to strict squares if they are naturally tall or wide; respect original aspect ratios.
-- **Don't** use nested Card components (e.g., Card inside another Card); use clean div wrappers with borders for layout panels instead.
-
+- Database: PostgreSQL via Prisma (`packages/backend/prisma/schema.prisma`). Jalanin `prisma:migrate` setiap schema berubah.
+- Frontend API base: `VITE_API_URL` env var (default `http://localhost:3000/api`).
+- Token auth dikirim otomatis via Axios interceptor (`api.lib.ts`).
+- Service di `categories.service.ts` **masih melanggar** aturan 8.1 (masih pakai `new Error()` + `statusCode`). Jika disentuh, perbaiki ke shared errors.
+- Frontend service pakai **static methods**, backend service pakai **instance methods**.

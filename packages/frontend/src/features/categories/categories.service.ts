@@ -1,9 +1,5 @@
 import { api } from '../../libs/api.lib';
-
-export interface CategoryPayload {
-  name: string;
-  description?: string;
-}
+import { CategoryPayload } from './categories.types';
 
 export class CategoriesService {
   static async getAll() {

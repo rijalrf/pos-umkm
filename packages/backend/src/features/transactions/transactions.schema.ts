@@ -4,6 +4,8 @@ export const createTransactionSchema = z.object({
   body: z.object({
     customerId: z.string().uuid().optional(),
     customerName: z.string().optional(),
+    tableId: z.string().uuid().optional(),
+    tableNumber: z.string().optional(),
     items: z
       .array(
         z.object({
@@ -14,7 +16,17 @@ export const createTransactionSchema = z.object({
       .min(1, 'At least one item is required'),
     cashReceived: z.number().nonnegative('Cash received must be 0 or greater'),
     paymentMethod: z.string().optional(),
-    status: z.string().optional(),
+    paymentStatus: z.string().optional(),
+    orderStatus: z.string().optional(),
+  }),
+});
+
+export const updateOrderStatusSchema = z.object({
+  params: z.object({
+    id: z.string().uuid('Invalid Transaction ID'),
+  }),
+  body: z.object({
+    orderStatus: z.enum(['PENDING', 'PROCESSING', 'COMPLETED']),
   }),
 });
 
@@ -31,6 +43,9 @@ export const getTransactionsSchema = z.object({
     search: z.string().optional(),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
+    tableCode: z.string().optional(),
+    orderStatus: z.string().optional(),
+    paymentStatus: z.string().optional(),
   }),
 });
 
@@ -47,3 +62,4 @@ export const payTransactionSchema = z.object({
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>['body'];
 export type GetTransactionsQuery = z.infer<typeof getTransactionsSchema>['query'];
 export type PayTransactionInput = z.infer<typeof payTransactionSchema>['body'];
+export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>['body'];

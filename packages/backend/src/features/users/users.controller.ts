@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { UsersService } from './users.service';
 import { AuthenticatedRequest } from '../../shared/types/common.types';
+import { UnauthorizedError } from '../../shared/utils/errors.util';
 
 export class UsersController {
   private service = new UsersService();
@@ -57,7 +58,7 @@ export class UsersController {
     try {
       const currentUserId = req.user?.id;
       if (!currentUserId) {
-        throw new Error('User context not found');
+        throw new UnauthorizedError('User context not found');
       }
       await this.service.changePassword(currentUserId, req.body);
       res.status(200).json({
@@ -73,7 +74,7 @@ export class UsersController {
     try {
       const currentUserId = req.user?.id;
       if (!currentUserId) {
-        throw new Error('User context not found');
+        throw new UnauthorizedError('User context not found');
       }
       await this.service.deleteUser(req.params.id, currentUserId);
       res.status(200).json({
@@ -89,7 +90,7 @@ export class UsersController {
     try {
       const currentUserId = req.user?.id;
       if (!currentUserId) {
-        throw new Error('User context not found');
+        throw new UnauthorizedError('User context not found');
       }
       const data = await this.service.updateUser(currentUserId, {
         fullName: req.body.fullName
