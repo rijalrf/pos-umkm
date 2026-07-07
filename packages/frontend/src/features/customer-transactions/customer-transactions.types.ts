@@ -15,4 +15,6 @@ export interface TransactionRecord {
   cashReturn: string | number;
   customerName?: string;
   paymentMethod?: string;
+  paymentStatus?: string;
+  orderStatus?: string;
 }

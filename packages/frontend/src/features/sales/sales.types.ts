@@ -7,7 +7,8 @@ export interface CreateTransactionPayload {
   }[];
   cashReceived: number;
   paymentMethod?: string;
-  status?: string;
+  paymentStatus?: string;
+  orderStatus?: string;
 }
 
 export interface TransactionQuery {
@@ -26,7 +27,8 @@ export interface TransactionItem {
   cashReceived: number;
   cashReturn: number;
   paymentMethod: string;
-  status: string;
+  paymentStatus: string;
+  orderStatus: string;
   customerName: string | null;
   tableNumber: string | null;
   cashier: { id: string; fullName: string } | null;

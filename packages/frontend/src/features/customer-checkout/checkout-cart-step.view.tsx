@@ -69,8 +69,9 @@ export const CheckoutCartStep: React.FC<CheckoutCartStepProps> = ({
         <Alert message={errorMessage} type="error" showIcon closable style={{ marginBottom: '20px', borderRadius: '4px' }} />
       )}
 
-      <Card>
-        <Text strong className="section-title">Daftar Keranjang</Text>
+      {/* Card 1: Daftar Keranjang */}
+      <Card style={{ marginBottom: '16px' }}>
+        <Text strong className="section-title" style={{ display: 'block', marginBottom: '12px' }}>Daftar Keranjang</Text>
         <List
           dataSource={cart.items}
           renderItem={(item) => (
@@ -114,10 +115,18 @@ export const CheckoutCartStep: React.FC<CheckoutCartStepProps> = ({
             </List.Item>
           )}
         />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingTop: '12px', borderTop: '1px dashed #E7E5E4' }}>
+          <Text strong style={{ color: '#57534E', fontSize: '14px' }}>Total Pembayaran</Text>
+          <Text strong style={{ color: 'var(--color-primary)', fontSize: '16px' }}>
+            {formatCurrency(cart.getTotalAmount())}
+          </Text>
+        </div>
+      </Card>
 
-        {/* Customer Data Section */}
-        <div className="checkout-customer-section">
-          <Text strong className="section-title">Data Pelanggan</Text>
+      {/* Card 2: Data Pelanggan */}
+      <Card style={{ marginBottom: '16px' }}>
+        <div className="checkout-customer-section" style={{ marginTop: 0 }}>
+          <Text strong className="section-title" style={{ display: 'block', marginBottom: '16px' }}>Data Pelanggan</Text>
 
           <Form.Item label="Nomor Meja" style={{ marginBottom: '16px' }}>
             <Text style={{ fontSize: '15px', color: cart.tableCode ? 'var(--color-primary)' : '#8C8A87' }}>
@@ -143,10 +152,11 @@ export const CheckoutCartStep: React.FC<CheckoutCartStepProps> = ({
             </Text>
           </div>
         </div>
+      </Card>
 
-        {/* Payment Method */}
-        <div className="section-divider" style={{ marginTop: '24px' }}>
-          <Text strong className="section-title">Metode Pembayaran</Text>
+      <Card style={{ marginBottom: '16px' }}>
+        <div>
+          <Text strong className="section-title" style={{ display: 'block', marginBottom: '16px' }}>Metode Pembayaran</Text>
           <div className="flex-column" style={{ gap: '10px' }}>
             <div
               onClick={() => setPaymentMethod('CASH')}
@@ -156,18 +166,18 @@ export const CheckoutCartStep: React.FC<CheckoutCartStepProps> = ({
                 {paymentMethod === 'CASH' && <div className="payment-radio-inner" />}
               </div>
               <Text strong className="payment-option-label" style={{ color: paymentMethod === 'CASH' ? '#1C1917' : '#57534E' }}>
-                Tunai
+                Bayar di Kasir
               </Text>
             </div>
             <div
-              onClick={() => setPaymentMethod('QRIS')}
-              className={`payment-option${paymentMethod === 'QRIS' ? ' payment-option-selected' : ' payment-option-unselected'}`}
+              className="payment-option payment-option-unselected"
+              style={{ opacity: 0.5, cursor: 'not-allowed' }}
             >
-              <div className={`payment-radio-outer${paymentMethod === 'QRIS' ? ' payment-radio-selected' : ' payment-radio-unselected'}`}>
-                {paymentMethod === 'QRIS' && <div className="payment-radio-inner" />}
+              <div className="payment-radio-outer payment-radio-unselected">
+                {/* Disabled */}
               </div>
-              <Text strong className="payment-option-label" style={{ color: paymentMethod === 'QRIS' ? '#1C1917' : '#57534E' }}>
-                QRIS
+              <Text strong className="payment-option-label" style={{ color: '#A8A29E' }}>
+                Online Payments <span style={{ fontWeight: 400, fontSize: '11px', color: '#A8A29E', marginLeft: '4px' }}>(Segera Hadir)</span>
               </Text>
             </div>
           </div>
@@ -188,7 +198,7 @@ export const CheckoutCartStep: React.FC<CheckoutCartStepProps> = ({
             disabled={hasInvalidStock}
             className="floating-submit-btn"
           >
-            Lanjut
+            Pesan Sekarang
           </Button>
         </div>
       )}

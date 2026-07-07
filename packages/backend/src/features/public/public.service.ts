@@ -6,7 +6,7 @@ import { PublicCheckoutInput } from './public.schema';
 import { CustomersService } from '../customers/customers.service';
 import { TransactionsService } from '../transactions/transactions.service';
 import { prisma } from '../../config/database.config';
-import { BadRequestError } from '../../shared/utils/errors.util';
+import { BadRequestError, NotFoundError } from '../../shared/utils/errors.util';
 import { hashPassword } from '../../shared/utils/bcrypt.util';
 
 export class PublicService {
@@ -152,8 +152,40 @@ export class PublicService {
       items: input.items,
       cashReceived: totalAmount,
       paymentMethod: input.paymentMethod || 'CASH',
-      status: 'PENDING',
+      paymentStatus: 'UNPAID',
+      orderStatus: 'PENDING',
     });
+
+    return tx;
+  }
+
+  async getTransactionById(id: string) {
+    const tx = await prisma.transaction.findUnique({
+      where: { id },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                sku: true,
+                price: true,
+              },
+            },
+          },
+        },
+        table: {
+          select: {
+            code: true,
+            number: true,
+          },
+        },
+      },
+    });
+
+    if (!tx) {
+      throw new NotFoundError('Transaksi tidak ditemukan');
+    }
 
     return tx;
   }

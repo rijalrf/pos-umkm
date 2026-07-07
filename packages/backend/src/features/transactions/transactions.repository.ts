@@ -168,9 +168,9 @@ export class TransactionsRepository {
 
       let cashReceivedVal = data.cashReceived;
       let cashReturnVal = 0;
-      const status = data.status || 'PAID';
+      const paymentStatus = data.paymentStatus || 'UNPAID';
 
-      if (status === 'PENDING') {
+      if (paymentStatus === 'UNPAID') {
         cashReceivedVal = 0;
         cashReturnVal = 0;
       } else {
@@ -192,7 +192,8 @@ export class TransactionsRepository {
           tableId: data.tableId || null,
           tableNumber: data.tableNumber || null,
           paymentMethod: data.paymentMethod || 'CASH',
-          status,
+          paymentStatus,
+          orderStatus: data.orderStatus || 'PENDING',
           totalAmount: new Prisma.Decimal(totalAmount),
           cashReceived: new Prisma.Decimal(cashReceivedVal),
           cashReturn: new Prisma.Decimal(cashReturnVal),
@@ -246,12 +247,54 @@ export class TransactionsRepository {
     const updated = await prisma.transaction.update({
       where: { id },
       data: {
-        status: 'PAID',
+        paymentStatus: 'PAID',
         cashierId,
         paymentMethod,
         cashReceived: new Prisma.Decimal(cashReceived),
         cashReturn: new Prisma.Decimal(cashReturn),
       },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                name: true,
+                sku: true,
+              },
+            },
+          },
+        },
+        cashier: {
+          select: {
+            username: true,
+            fullName: true,
+          },
+        },
+        customer: {
+          select: {
+            email: true,
+            name: true,
+          },
+        },
+        table: {
+          select: {
+            code: true,
+            number: true,
+          },
+        },
+      },
+    });
+
+    return updated as TransactionWithDetails;
+  }
+
+  async updateOrderStatus(
+    id: string,
+    orderStatus: string
+  ): Promise<TransactionWithDetails> {
+    const updated = await prisma.transaction.update({
+      where: { id },
+      data: { orderStatus },
       include: {
         items: {
           include: {

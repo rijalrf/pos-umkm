@@ -28,5 +28,9 @@ export interface CheckoutResult {
   }>;
   customerName?: string;
   paymentMethod?: string;
+  paymentStatus?: string;
+  orderStatus?: string;
   totalAmount: string | number;
+  transactionDate?: string;
+  createdAt?: string;
 }

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Input, DatePicker, Space, Typography, Modal, Card, message, Dropdown, Tag, Radio, InputNumber } from 'antd';
-import { SearchOutlined, PrinterOutlined, CalendarOutlined, EyeOutlined, MoreOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { SearchOutlined, PrinterOutlined, CalendarOutlined, EyeOutlined, MoreOutlined, ShoppingCartOutlined, CheckCircleOutlined, CoffeeOutlined } from '@ant-design/icons';
 import { useSalesPresenter } from './sales.presenter';
 import { SalesService } from './sales.service';
 import { SettingsService } from '../settings/settings.service';
 import { AxiosError } from 'axios';
 import { TransactionItem } from './sales.types';
 import { createServerPagination } from '../../libs/pagination.lib';
+import { formatPaymentMethod, formatOrderStatus } from '../../libs/format.lib';
 
 const { Title, Paragraph, Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -84,6 +85,38 @@ export const TransactionListView: React.FC = () => {
     loadSettings();
   }, []);
 
+  const handleUpdateOrderStatus = async (tx: TransactionItem, status: string) => {
+    try {
+      await SalesService.updateOrderStatus(tx.id, status);
+      message.success(`Status pesanan diubah ke ${formatOrderStatus(status)}`);
+      presenter.fetchTransactions();
+      if (selectedTx?.id === tx.id) {
+        setSelectedTx({ ...selectedTx, orderStatus: status });
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof AxiosError ? err.response?.data?.message : 'Gagal mengubah status pesanan';
+      message.error(msg);
+    }
+  };
+
+  const nextOrderStatus = (current: string): string | null => {
+    const flow: Record<string, string> = {
+      PENDING: 'PROCESSING',
+      PROCESSING: 'COMPLETED',
+    };
+    return flow[current] || null;
+  };
+
+  const orderStatusLabel: Record<string, string> = {
+    PENDING: 'Proses',
+    PROCESSING: 'Selesai',
+  };
+
+  const orderStatusIcon: Record<string, React.ReactNode> = {
+    PENDING: <CoffeeOutlined />,
+    PROCESSING: <CheckCircleOutlined />,
+  };
+
   const formatter = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
@@ -158,7 +191,7 @@ export const TransactionListView: React.FC = () => {
             <strong>Tgl:</strong> ${dateStr}<br/>
             <strong>Kasir:</strong> ${tx.cashier?.fullName || 'System'}<br/>
             <strong>Pelanggan:</strong> ${tx.customerName || 'Tamu'}<br/>
-            <strong>Pembayaran:</strong> ${tx.paymentMethod}<br/>
+            <strong>Pembayaran:</strong> ${formatPaymentMethod(tx.paymentMethod)}<br/>
           </div>
           <div class="divider"></div>
           <table>
@@ -235,13 +268,26 @@ export const TransactionListView: React.FC = () => {
       render: (val: number) => <strong>{formatter.format(Number(val))}</strong>,
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
+      title: 'Status Pesanan',
+      dataIndex: 'orderStatus',
+      key: 'orderStatus',
+      render: (status: string) => {
+        const colorMap: Record<string, string> = {
+          PENDING: 'orange',
+          PROCESSING: 'blue',
+          COMPLETED: 'default',
+        };
+        return <Tag color={colorMap[status] || 'default'}>{formatOrderStatus(status)}</Tag>;
+      },
+    },
+    {
+      title: 'Status Bayar',
+      dataIndex: 'paymentStatus',
+      key: 'paymentStatus',
       render: (status: string) => (
-        status === 'PENDING'
-          ? <Tag color="warning" className="tag-status">BELUM BAYAR</Tag>
-          : <Tag color="success" className="tag-status">LUNAS</Tag>
+        status === 'PAID'
+          ? <Tag color="success" className="tag-status">LUNAS</Tag>
+          : <Tag color="warning" className="tag-status">BELUM BAYAR</Tag>
       ),
     },
     {
@@ -258,7 +304,7 @@ export const TransactionListView: React.FC = () => {
               icon: <EyeOutlined />,
               onClick: () => showDetail(record)
             },
-            ...(record.status === 'PENDING' ? [
+            ...(record.paymentStatus === 'UNPAID' ? [
               {
                 key: 'pay',
                 label: 'Proses Pembayaran',
@@ -340,7 +386,7 @@ export const TransactionListView: React.FC = () => {
           setSelectedTx(null);
         }}
         footer={[
-          <Button key="close" onClick={() => { setDetailModalOpen(false); setSelectedTx(null); }}>
+          <Button key="close" className="btn-secondary-default" onClick={() => { setDetailModalOpen(false); setSelectedTx(null); }}>
             Tutup
           </Button>,
           <Button key="print" type="primary" icon={<PrinterOutlined />} onClick={() => selectedTx && printReceipt(selectedTx)} className="btn-primary-terracotta" disabled={!selectedTx}>
@@ -367,8 +413,30 @@ export const TransactionListView: React.FC = () => {
                 <div className="detail-field">
                   <span className="detail-label">Metode Pembayaran</span>
                   <span className={`payment-badge payment-badge-${selectedTx.paymentMethod === 'CASH' ? 'cash' : 'non-cash'}`}>
-                    {selectedTx.paymentMethod}
+                    {formatPaymentMethod(selectedTx.paymentMethod)}
                   </span>
+                </div>
+                <div className="detail-field">
+                  <span className="detail-label">Status Pesanan</span>
+                  <div className="detail-value" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    {(() => {
+                      const colorMap: Record<string, string> = {
+                        PENDING: 'orange',
+                        PROCESSING: 'blue',
+                        COMPLETED: 'default',
+                      };
+                      return <Tag color={colorMap[selectedTx.orderStatus] || 'default'}>{formatOrderStatus(selectedTx.orderStatus)}</Tag>;
+                    })()}
+                    {nextOrderStatus(selectedTx.orderStatus) && (
+                      <Button
+                        size="small"
+                        icon={orderStatusIcon[selectedTx.orderStatus]}
+                        onClick={() => handleUpdateOrderStatus(selectedTx, nextOrderStatus(selectedTx.orderStatus)!)}
+                      >
+                        {orderStatusLabel[selectedTx.orderStatus]}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
               <div>
@@ -456,7 +524,7 @@ export const TransactionListView: React.FC = () => {
         open={payModalOpen}
         onCancel={() => { setPayModalOpen(false); setPayingTx(null); }}
         footer={[
-          <Button key="close" onClick={() => { setPayModalOpen(false); setPayingTx(null); }}>
+          <Button key="close" className="btn-secondary-default" onClick={() => { setPayModalOpen(false); setPayingTx(null); }}>
             Batal
           </Button>,
           <Button key="submit" type="primary" loading={payLoading} onClick={handleProcessPayment} className="btn-primary-terracotta"

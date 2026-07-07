@@ -55,7 +55,7 @@ export class TransactionsService {
 
   async payPendingTransaction(id: string, cashierId: string, data: { cashReceived: number; paymentMethod: string }) {
     const tx = await this.getTransactionById(id);
-    if (tx.status !== 'PENDING') {
+    if (tx.paymentStatus !== 'UNPAID') {
       throw new BadRequestError('Transaction is already paid or not pending');
     }
 
@@ -77,5 +77,10 @@ export class TransactionsService {
     }
 
     return this.repository.updateTransactionStatus(id, cashierId, paymentMethod, cashReceivedVal, cashReturnVal);
+  }
+
+  async updateOrderStatus(id: string, orderStatus: string) {
+    await this.getTransactionById(id);
+    return this.repository.updateOrderStatus(id, orderStatus);
   }
 }

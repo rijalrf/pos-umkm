@@ -6,6 +6,7 @@ import { ProductsService } from '../products/products.service';
 import { CategoriesService } from '../categories/categories.service';
 import { SalesService } from './sales.service';
 import { ProductItem } from '../products/products.types';
+import { formatPaymentMethod } from '../../libs/format.lib';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -286,7 +287,7 @@ export const SalesView: React.FC = () => {
             <strong>Tgl:</strong> ${dateStr}<br/>
             <strong>Kasir:</strong> ${tx.cashier?.fullName || 'System'}<br/>
             <strong>Pelanggan:</strong> ${tx.customerName || 'Tamu'}<br/>
-            <strong>Pembayaran:</strong> ${tx.paymentMethod}<br/>
+            <strong>Pembayaran:</strong> ${formatPaymentMethod(tx.paymentMethod)}<br/>
           </div>
           <div class="divider"></div>
           <table>
@@ -701,7 +702,7 @@ export const SalesView: React.FC = () => {
         open={receiptModalOpen}
         onCancel={resetSalesView}
         footer={[
-          <Button key="close" onClick={resetSalesView}>
+          <Button key="close" className="btn-secondary-default" onClick={resetSalesView}>
             Tutup
           </Button>,
           <Button
@@ -709,7 +710,7 @@ export const SalesView: React.FC = () => {
             type="primary"
             icon={<PrinterOutlined />}
             onClick={() => printReceipt(checkoutResult)}
-            style={{ backgroundColor: '#C2410C', borderColor: '#C2410C' }}
+            className="btn-primary-terracotta"
             disabled={!checkoutResult}
           >
             Cetak Struk
@@ -740,7 +741,7 @@ export const SalesView: React.FC = () => {
               <strong>Tgl:</strong> {new Date(checkoutResult.transactionDate).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}<br />
               <strong>Kasir:</strong> {checkoutResult.cashier?.fullName || 'System'}<br />
               <strong>Pelanggan:</strong> {checkoutResult.customerName || 'Tamu'}<br />
-              <strong>Pembayaran:</strong> {checkoutResult.paymentMethod}<br />
+              <strong>Pembayaran:</strong> {formatPaymentMethod(checkoutResult.paymentMethod)}<br />
             </div>
             <div style={{ borderTop: '1px dashed #D6D3D1', margin: '8px 0' }} />
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>

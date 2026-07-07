@@ -67,6 +67,25 @@ export class TransactionsController {
     }
   };
 
+  updateOrderStatus = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const transaction = await this.service.updateOrderStatus(req.params.id, req.body.orderStatus);
+
+      logger.info('Order status updated', {
+        transactionId: transaction.id,
+        code: transaction.transactionCode,
+        orderStatus: req.body.orderStatus,
+      });
+
+      res.status(200).json({
+        success: true,
+        data: { transaction },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   payPending = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       const cashierId = req.user!.id;

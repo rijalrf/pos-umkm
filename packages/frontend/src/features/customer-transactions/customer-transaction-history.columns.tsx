@@ -35,10 +35,35 @@ export const transactionHistoryColumns: TableColumnsType<TransactionRecord> = [
     ),
   },
   {
+    title: 'Status Pesanan',
+    dataIndex: 'orderStatus',
+    key: 'orderStatus',
+    render: (status: string) => {
+      const colorMap: Record<string, string> = {
+        PENDING: '#D97706',
+        PROCESSING: '#2563EB',
+        COMPLETED: '#78716C',
+      };
+      const labelMap: Record<string, string> = {
+        PENDING: 'DITERIMA',
+        PROCESSING: 'DIPROSES',
+        COMPLETED: 'SELESAI',
+      };
+      return (
+        <span style={{ color: colorMap[status] || '#78716C', fontWeight: 600, fontSize: '13px' }}>
+          ● {labelMap[status] || status}
+        </span>
+      );
+    },
+  },
+  {
     title: 'Status Pembayaran',
-    key: 'status',
-    render: () => (
-      <span className="status-chip status-chip-success">Lunas (Tunai)</span>
+    dataIndex: 'paymentStatus',
+    key: 'paymentStatus',
+    render: (status: string, record: TransactionRecord) => (
+      <span style={{ color: '#1C1917', fontWeight: 600, fontSize: '13px' }}>
+        {status === 'PAID' ? 'Lunas' : 'Menunggu Pembayaran'} ({record.paymentMethod === 'QRIS' ? 'QRIS' : 'Tunai'})
+      </span>
     ),
   },
   {

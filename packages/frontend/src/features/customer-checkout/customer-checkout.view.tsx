@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Form, Typography } from 'antd';
+import { Button, Form } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
 import { useCustomerCheckoutPresenter } from './customer-checkout.presenter';
 import { CheckoutCartStep } from './checkout-cart-step.view';
-import { CheckoutReviewStep } from './checkout-review-step.view';
 import { CheckoutSuccessStep } from './checkout-success-step.view';
 import type { CheckoutPayload, CheckoutResult } from './customer-checkout.types';
-
-const { Title } = Typography;
 
 export const CheckoutView: React.FC = () => {
   const navigate = useNavigate();
@@ -17,10 +14,25 @@ export const CheckoutView: React.FC = () => {
   const presenter = useCustomerCheckoutPresenter();
   const [form] = Form.useForm();
 
-  const [checkoutStep, setCheckoutStep] = useState<'checkout' | 'review' | 'success'>('checkout');
-  const [createdTx, setCreatedTx] = useState<CheckoutResult | null>(null);
+  const [checkoutStep, setCheckoutStep] = useState<'checkout' | 'success'>(() => {
+    const savedStep = sessionStorage.getItem('customer_checkout_step');
+    if (savedStep === 'success') {
+      return 'success';
+    }
+    return 'checkout';
+  });
+  const [createdTx, setCreatedTx] = useState<CheckoutResult | null>(() => {
+    const savedTx = sessionStorage.getItem('customer_created_tx');
+    if (savedTx) {
+      try {
+        return JSON.parse(savedTx) as CheckoutResult;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [buyerName, setBuyerName] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS'>('CASH');
 
   const hasInvalidStock = cart.items.some(
@@ -32,11 +44,35 @@ export const CheckoutView: React.FC = () => {
   }, [presenter.fetchStoreInfo]);
 
   useEffect(() => {
+    if (cart.items.length > 0) {
+      setCheckoutStep('checkout');
+      setCreatedTx(null);
+      sessionStorage.removeItem('customer_checkout_step');
+      sessionStorage.removeItem('customer_created_tx');
+    }
+  }, [cart.items.length]);
+
+  useEffect(() => {
     setErrorMessage(null);
     if (checkoutStep === 'checkout') {
       presenter.refreshCartStock();
     }
   }, [checkoutStep, presenter.refreshCartStock]);
+
+  useEffect(() => {
+    if (checkoutStep === 'success' && createdTx?.id) {
+      let isMounted = true;
+      presenter.fetchTransactionStatus(createdTx.id).then((freshTx) => {
+        if (isMounted && freshTx) {
+          setCreatedTx(freshTx);
+          sessionStorage.setItem('customer_created_tx', JSON.stringify(freshTx));
+        }
+      });
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [checkoutStep, createdTx?.id, presenter.fetchTransactionStatus]);
 
   const storeQris = presenter.storeInfo?.qrisUrl || null;
 
@@ -48,7 +84,7 @@ export const CheckoutView: React.FC = () => {
     }
   };
 
-  const handleCheckout = async () => {
+  const handleFormFinish = async (values: { guestName: string; phone?: string }) => {
     setErrorMessage(null);
     const payload: CheckoutPayload = {
       customerType: 'guest',
@@ -58,13 +94,16 @@ export const CheckoutView: React.FC = () => {
       })),
       paymentMethod,
     };
-    if (buyerName) payload.guestName = buyerName;
+    if (values.guestName) payload.guestName = values.guestName;
+    if (values.phone) payload.phone = values.phone;
     if (cart.tableId) payload.tableId = cart.tableId;
 
     try {
       const tx = await presenter.checkout(payload);
       if (tx) {
         setCreatedTx(tx);
+        sessionStorage.setItem('customer_checkout_step', 'success');
+        sessionStorage.setItem('customer_created_tx', JSON.stringify(tx));
         cart.clearCart();
         setCheckoutStep('success');
       }
@@ -81,16 +120,11 @@ export const CheckoutView: React.FC = () => {
     }
   };
 
-  const handleFormFinish = (values: { guestName: string; phone?: string }) => {
-    setBuyerName(values.guestName);
-    setCheckoutStep('review');
-  };
-
   const handleBack = () => {
     if (checkoutStep === 'checkout' || checkoutStep === 'success') {
+      sessionStorage.removeItem('customer_checkout_step');
+      sessionStorage.removeItem('customer_created_tx');
       navigate('/customer/catalog');
-    } else if (checkoutStep === 'review') {
-      setCheckoutStep('checkout');
     }
   };
 
@@ -102,12 +136,6 @@ export const CheckoutView: React.FC = () => {
         onClick={handleBack}
         className="btn-back-circle"
       />
-
-      {checkoutStep === 'review' && (
-        <Title level={2} className="headline-text" style={{ color: '#1C1917', marginBottom: '24px' }}>
-          Review Pesanan
-        </Title>
-      )}
 
       {checkoutStep === 'checkout' && (
         <CheckoutCartStep
@@ -122,19 +150,8 @@ export const CheckoutView: React.FC = () => {
         />
       )}
 
-      {checkoutStep === 'review' && (
-        <CheckoutReviewStep
-          loading={presenter.loading}
-          buyerName={buyerName}
-          storeInfo={presenter.storeInfo}
-          paymentMethod={paymentMethod}
-          storeQris={storeQris}
-          onCheckout={handleCheckout}
-        />
-      )}
-
       {checkoutStep === 'success' && createdTx && (
-        <CheckoutSuccessStep createdTx={createdTx} />
+        <CheckoutSuccessStep createdTx={createdTx} storeQris={storeQris} />
       )}
     </div>
   );

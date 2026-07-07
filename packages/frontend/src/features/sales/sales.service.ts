@@ -32,4 +32,9 @@ export class SalesService {
     const response = await api.put(`/transactions/${id}/pay`, payload);
     return response.data;
   }
+
+  static async updateOrderStatus(id: string, orderStatus: string) {
+    const response = await api.put(`/transactions/${id}/order-status`, { orderStatus });
+    return response.data;
+  }
 }

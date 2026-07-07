@@ -2,16 +2,26 @@ import React from 'react';
 import { Card, Typography, List } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { useCustomerCartStore } from '../../stores/customer-cart.store';
-import { formatCurrency } from '../../libs/format.lib';
+import { formatCurrency, formatOrderStatus, formatPaymentMethod } from '../../libs/format.lib';
 import type { CheckoutResult } from './customer-checkout.types';
 
 const { Title, Text, Paragraph } = Typography;
 
 interface CheckoutSuccessStepProps {
   createdTx: CheckoutResult;
+  storeQris: string | null;
 }
 
-export const CheckoutSuccessStep: React.FC<CheckoutSuccessStepProps> = ({ createdTx }) => {
+const formatDate = (dateString?: string) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('id-ID', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date);
+};
+
+export const CheckoutSuccessStep: React.FC<CheckoutSuccessStepProps> = ({ createdTx, storeQris }) => {
   const cart = useCustomerCartStore();
 
   if (!createdTx) return null;
@@ -21,10 +31,13 @@ export const CheckoutSuccessStep: React.FC<CheckoutSuccessStepProps> = ({ create
       <Card>
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <CheckCircleOutlined className="success-icon" />
-          <Title level={2} className="headline-text" style={{ color: '#1C1917', margin: '0 0 4px 0' }}>
+          <Title level={2} className="headline-text" style={{ color: '#1C1917', margin: '0 0 8px 0' }}>
             Pesanan Berhasil
           </Title>
-          <Text type="secondary">Kode Transaksi: {createdTx.transactionCode || createdTx.code}</Text>
+          <div style={{ color: '#57534E', fontSize: '14px', lineHeight: '1.6' }}>
+            <div>No. {createdTx.transactionCode || createdTx.code}</div>
+            <div>Tanggal {formatDate(createdTx.transactionDate || createdTx.createdAt)}</div>
+          </div>
         </div>
 
         {/* Product Details */}
@@ -40,18 +53,27 @@ export const CheckoutSuccessStep: React.FC<CheckoutSuccessStepProps> = ({ create
               const price = Number(item.priceAtPurchase || item.product?.price || 0);
 
               return (
-                <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '14px' }}>
-                  <div>
-                    <Text style={{ color: '#1C1917' }}>{name}</Text>
-                    <Text type="secondary" style={{ marginLeft: '8px' }}>x{quantity}</Text>
+                <div key={item.id} style={{ padding: '8px 0', borderBottom: '1px dashed #E7E5E4', fontSize: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                    <Text style={{ color: '#1C1917', fontWeight: 500 }}>{name}</Text>
                   </div>
-                  <Text strong style={{ color: '#1C1917' }}>
-                    {formatCurrency(price * quantity)}
-                  </Text>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#78716C' }}>
+                    <span>{formatCurrency(price)} x {quantity}</span>
+                    <Text strong style={{ color: '#1C1917' }}>
+                      {formatCurrency(price * quantity)}
+                    </Text>
+                  </div>
                 </div>
               );
             }}
           />
+          {/* Grand Total */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px', paddingTop: '12px', borderTop: '2px solid #E7E5E4' }}>
+            <Text strong style={{ fontSize: '16px', color: '#1C1917' }}>Grand Total</Text>
+            <Text strong style={{ fontSize: '18px', color: '#C2410C' }}>
+              {formatCurrency(Number(createdTx.totalAmount))}
+            </Text>
+          </div>
         </div>
 
         {/* Payment Info */}
@@ -67,20 +89,41 @@ export const CheckoutSuccessStep: React.FC<CheckoutSuccessStepProps> = ({ create
             </Text>
           </div>
           <div className="review-info-row">
-            <Text style={{ color: '#57534E' }}>Metode Pembayaran:</Text>
-            <span className="status-chip status-chip-success">
-              {createdTx.paymentMethod === 'QRIS' ? 'QRIS' : 'Tunai'}
-            </span>
+            <Text style={{ color: '#57534E' }}>Status Pesanan:</Text>
+            <Text strong style={{ color: 'var(--color-primary)' }}>
+              {formatOrderStatus(createdTx.orderStatus || 'PENDING').toLowerCase()}
+            </Text>
           </div>
-          <div className="review-total-row">
-            <Text className="review-total-label">Total Pembayaran:</Text>
-            <Text className="review-total-amount">{formatCurrency(Number(createdTx.totalAmount))}</Text>
+          <div className="review-info-row">
+            <Text style={{ color: '#57534E' }}>Status Pembayaran:</Text>
+            <Text strong style={{ color: '#1C1917' }}>
+              {createdTx.paymentStatus === 'PAID' ? 'Lunas' : 'Menunggu Pembayaran'}
+            </Text>
+          </div>
+          <div className="review-info-row">
+            <Text style={{ color: '#57534E' }}>Metode Pembayaran:</Text>
+            <Text strong style={{ color: '#1C1917' }}>
+              {createdTx.paymentStatus === 'PAID'
+                ? `Bayar di Kasir (${createdTx.paymentMethod === 'CASH' ? 'Tunai' : formatPaymentMethod(createdTx.paymentMethod || 'CASH')})`
+                : 'Bayar di Kasir'
+              }
+            </Text>
           </div>
         </div>
 
         {/* QRIS Status */}
-        {createdTx.paymentMethod === 'QRIS' && (
-          <div className="qris-section" style={{ margin: '24px 0' }}>
+        {createdTx.paymentMethod === 'QRIS' && createdTx.paymentStatus !== 'PAID' && (
+          <div className="qris-section" style={{ margin: '24px 0', textAlign: 'center' }}>
+            <Text strong style={{ display: 'block', marginBottom: '12px', color: '#1C1917', fontSize: '14px' }}>
+              Silakan Pindai QRIS Toko untuk Membayar
+            </Text>
+            {storeQris ? (
+              <img src={storeQris} alt="QRIS Toko" className="qris-image" style={{ maxWidth: '240px', margin: '0 auto 12px auto', display: 'block', border: '1px solid #E7E5E4', padding: '8px', borderRadius: '4px' }} />
+            ) : (
+              <div style={{ padding: '16px', background: '#F5F5F4', color: '#78716C', borderRadius: '6px', marginBottom: '12px' }}>
+                <p style={{ margin: 0, fontSize: '13px' }}>QRIS Toko belum dikonfigurasi.</p>
+              </div>
+            )}
             <Text strong style={{ display: 'block', marginBottom: '8px', color: 'var(--color-tertiary)', fontSize: '14px' }}>
               Pembayaran QRIS Sedang Diproses
             </Text>

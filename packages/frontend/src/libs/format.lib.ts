@@ -6,3 +6,33 @@ export const formatCurrency = (amount: string | number) => {
     minimumFractionDigits: 0,
   }).format(value);
 };
+
+const paymentMethodMap: Record<string, string> = {
+  CASH: 'Tunai',
+  QRIS: 'QRIS',
+  DEBIT: 'Debit',
+  TRANSFER: 'Transfer',
+};
+
+export const formatPaymentMethod = (method: string) => {
+  return paymentMethodMap[method] || method;
+};
+
+const orderStatusMap: Record<string, string> = {
+  PENDING: 'DITERIMA',
+  PROCESSING: 'DIPROSES',
+  COMPLETED: 'SELESAI',
+};
+
+export const formatOrderStatus = (status: string) => {
+  return orderStatusMap[status] || status;
+};
+
+const paymentStatusMap: Record<string, string> = {
+  UNPAID: 'MENUNGGU PEMBAYARAN',
+  PAID: 'LUNAS',
+};
+
+export const formatPaymentStatus = (status: string) => {
+  return paymentStatusMap[status] || status;
+};

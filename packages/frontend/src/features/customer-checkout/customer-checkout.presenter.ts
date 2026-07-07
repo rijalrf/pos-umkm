@@ -58,11 +58,29 @@ export function useCustomerCheckoutPresenter() {
     }
   };
 
+  const fetchTransactionStatus = useCallback(async (id: string) => {
+    setLoading(true);
+    try {
+      const res = await CustomerCheckoutService.getTransactionStatus(id);
+      if (res?.success) {
+        return res.data;
+      }
+      return null;
+    } catch (err: unknown) {
+      const msg = err instanceof AxiosError ? err.response?.data?.message : 'Gagal memuat status transaksi';
+      message.error(msg);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     loading,
     storeInfo,
     fetchStoreInfo,
     refreshCartStock,
     checkout,
+    fetchTransactionStatus,
   };
 }

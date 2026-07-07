@@ -6,4 +6,9 @@ export class CustomerCheckoutService {
     const response = await api.post('/public/checkout', payload);
     return response.data;
   }
+
+  static async getTransactionStatus(id: string) {
+    const response = await api.get(`/public/transactions/${id}`);
+    return response.data;
+  }
 }
