@@ -88,11 +88,14 @@ export const TransactionListView: React.FC = () => {
 
   const handleUpdateOrderStatus = async (tx: TransactionItem, status: string) => {
     try {
-      await SalesService.updateOrderStatus(tx.id, status);
+      const res = await SalesService.updateOrderStatus(tx.id, status);
       message.success(`Status pesanan diubah ke ${formatOrderStatus(status)}`);
       presenter.fetchTransactions();
       if (selectedTx?.id === tx.id) {
         setSelectedTx({ ...selectedTx, orderStatus: status });
+      }
+      if (status === 'PROCESSING' && res.success && res.data?.transaction) {
+        printReceipt(res.data.transaction);
       }
     } catch (err: unknown) {
       const msg = err instanceof AxiosError ? err.response?.data?.message : 'Gagal mengubah status pesanan';
@@ -222,6 +225,12 @@ export const TransactionListView: React.FC = () => {
             Terima Kasih atas Kunjungan Anda!<br/>
             POS UMKM Premium
           </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              window.close();
+            }
+          </script>
         </body>
       </html>
     `);

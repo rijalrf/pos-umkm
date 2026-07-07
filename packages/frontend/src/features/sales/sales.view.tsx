@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { Row, Col, Card, Input, Button, Divider, InputNumber, Modal, message, Radio, Typography, Tag, Empty, Grid, Space } from 'antd';
-import { SearchOutlined, ShoppingCartOutlined, PlusOutlined, MinusOutlined, DeleteOutlined, PrinterOutlined, UserOutlined, PhoneOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Row, Col, Card, Input, Button, Divider, InputNumber, message, Radio, Typography, Tag, Empty, Grid, Space, Select } from 'antd';
+import { SearchOutlined, ShoppingCartOutlined, PlusOutlined, MinusOutlined, DeleteOutlined, UserOutlined, PhoneOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useCartStore } from '../../stores/cart.store';
 import { ProductsService } from '../products/products.service';
 import { CategoriesService } from '../categories/categories.service';
+import { TablesService } from '../tables/tables.service';
 import { SalesService } from './sales.service';
 import { ProductItem } from '../products/products.types';
-import { formatPaymentMethod } from '../../libs/format.lib';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -40,10 +40,12 @@ export const SalesView: React.FC = () => {
   const guestInputRef = useRef<any>(null);
   const phoneInputRef = useRef<any>(null);
 
-  // Receipt Modal
-  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
-  const [checkoutResult, setCheckoutResult] = useState<any | null>(null);
-  const [storeSetting, setStoreSetting] = useState<any | null>(null);
+  // Table states
+  const [tables, setTables] = useState<any[]>([]);
+  const [selectedTableId, setSelectedTableId] = useState<string | undefined>(undefined);
+  const [selectedTableNumber, setSelectedTableNumber] = useState<string | undefined>(undefined);
+
+
 
   const handleSearchMember = async () => {
     if (!phoneSearch.trim()) {
@@ -76,13 +78,14 @@ export const SalesView: React.FC = () => {
     }
   };
 
-  // Fetch products, categories, and store settings
+  // Fetch products, categories, and active tables
   const loadInitialData = async () => {
     setLoading(true);
     try {
-      const [prodRes, catRes] = await Promise.all([
+      const [prodRes, catRes, tableRes] = await Promise.all([
         ProductsService.getAll({ page: 1, limit: 100 }),
         CategoriesService.getAll(),
+        TablesService.getAll({ status: 'ACTIVE' }),
       ]);
 
       if (prodRes.success) {
@@ -91,16 +94,8 @@ export const SalesView: React.FC = () => {
       if (catRes.success) {
         setCategories(catRes.data);
       }
-
-      // Load settings
-      try {
-        const { SettingsService } = await import('../settings/settings.service');
-        const settingsRes = await SettingsService.getStoreSetting();
-        if (settingsRes.success) {
-          setStoreSetting(settingsRes.data);
-        }
-      } catch (err) {
-        console.error('Failed to load store settings', err);
+      if (tableRes.success) {
+        setTables(tableRes.data);
       }
     } catch (error) {
       message.error('Gagal memuat katalog data');
@@ -165,6 +160,8 @@ export const SalesView: React.FC = () => {
       const payload = {
         customerId: customerType === 'member' ? customerId : undefined,
         customerName: customerType === 'guest' ? customerName : undefined,
+        tableId: selectedTableId,
+        tableNumber: selectedTableNumber,
         items: cart.items.map((item) => ({
           productId: item.product.id,
           quantity: item.quantity,
@@ -175,13 +172,22 @@ export const SalesView: React.FC = () => {
 
       const response = await SalesService.createTransaction(payload);
       if (response.success && response.data) {
-        const tx = response.data.transaction;
-        setCheckoutResult(tx);
-        setReceiptModalOpen(true);
         message.success('Transaksi berhasil diproses!');
         
         // Reload products to refresh stock counts
         loadInitialData();
+
+        // Reset cart and checkout states immediately without printing
+        cart.clearCart();
+        setCashReceived(0);
+        setPaymentMethod('CASH');
+        setCustomerName('Guest');
+        setCustomerId(undefined);
+        setCustomerType('guest');
+        setPhoneSearch('');
+        setSearchedMemberResult(null);
+        setSelectedTableId(undefined);
+        setSelectedTableNumber(undefined);
       } else {
         message.error(response.message || 'Gagal memproses transaksi');
       }
@@ -202,18 +208,7 @@ export const SalesView: React.FC = () => {
   });
 
 
-  const resetSalesView = () => {
-    cart.clearCart();
-    setCashReceived(0);
-    setPaymentMethod('CASH');
-    setCustomerName('Guest');
-    setCustomerId(undefined);
-    setCustomerType('guest');
-    setPhoneSearch('');
-    setSearchedMemberResult(null);
-    setCheckoutResult(null);
-    setReceiptModalOpen(false);
-  };
+
 
   const handleCustomerTypeChange = (type: 'guest' | 'member') => {
     setCustomerType(type);
@@ -232,102 +227,7 @@ export const SalesView: React.FC = () => {
     }
   };
 
-  const printReceipt = (tx: any) => {
-    if (!tx) return;
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      message.error('Gagal membuka jendela cetak. Pastikan pop-up tidak diblokir oleh browser!');
-      return;
-    }
-    
-    const dateStr = new Date(tx.transactionDate).toLocaleString('id-ID', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
-    });
 
-    const itemsHtml = tx.items.map((item: any) => `
-      <tr>
-        <td style="padding: 4px 0; font-family: monospace; font-size: 13px;">
-          ${item.product?.name || 'Produk'}<br/>
-          <span style="font-size: 11px; color: #555;">${item.quantity} x ${formatter.format(Number(item.priceAtPurchase || item.price))}</span>
-        </td>
-        <td style="text-align: right; padding: 4px 0; font-family: monospace; font-size: 13px; vertical-align: bottom;">
-          ${formatter.format(Number(item.quantity) * Number(item.priceAtPurchase || item.price))}
-        </td>
-      </tr>
-    `).join('');
-
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Struk POS - ${tx.transactionCode}</title>
-          <style>
-            @page { size: 80mm auto; margin: 0; }
-            body {
-              font-family: 'Courier New', Courier, monospace;
-              width: 72mm;
-              margin: 0 auto;
-              padding: 10px;
-              color: #000;
-            }
-            .text-center { text-align: center; }
-            .divider { border-top: 1px dashed #000; margin: 8px 0; }
-            table { width: 100%; border-collapse: collapse; }
-          </style>
-        </head>
-        <body>
-          <div class="text-center">
-            <h3 style="margin: 0; font-size: 16px;">${storeSetting?.storeName || 'Kantin Nusantara'}</h3>
-            <p style="margin: 4px 0; font-size: 11px;">${storeSetting?.address || ''}</p>
-            <p style="margin: 4px 0; font-size: 11px;">Telp: ${storeSetting?.phone || ''}</p>
-          </div>
-          <div class="divider"></div>
-          <div style="font-size: 11px; line-height: 1.4;">
-            <strong>No:</strong> ${tx.transactionCode}<br/>
-            <strong>Tgl:</strong> ${dateStr}<br/>
-            <strong>Kasir:</strong> ${tx.cashier?.fullName || 'System'}<br/>
-            <strong>Pelanggan:</strong> ${tx.customerName || 'Tamu'}<br/>
-            <strong>Pembayaran:</strong> ${formatPaymentMethod(tx.paymentMethod)}<br/>
-          </div>
-          <div class="divider"></div>
-          <table>
-            <tbody>
-              ${itemsHtml}
-            </tbody>
-          </table>
-          <div class="divider"></div>
-          <table style="font-size: 12px; font-weight: bold; line-height: 1.4;">
-            <tr>
-              <td>Total Tagihan</td>
-              <td style="text-align: right;">${formatter.format(Number(tx.totalAmount))}</td>
-            </tr>
-            ${tx.paymentMethod === 'CASH' ? `
-            <tr>
-              <td>Uang Diterima</td>
-              <td style="text-align: right;">${formatter.format(Number(tx.cashReceived))}</td>
-            </tr>
-            <tr>
-              <td>Kembalian</td>
-              <td style="text-align: right;">${formatter.format(Number(tx.cashReturn || tx.cashReceived - tx.totalAmount))}</td>
-            </tr>
-            ` : ''}
-          </table>
-          <div class="divider"></div>
-          <div class="text-center" style="font-size: 11px; margin-top: 15px;">
-            Terima Kasih atas Kunjungan Anda!<br/>
-            POS UMKM Premium
-          </div>
-          <script>
-            window.onload = function() {
-              window.print();
-              window.close();
-            }
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  };
 
   return (
     <div style={{
@@ -375,7 +275,7 @@ export const SalesView: React.FC = () => {
             </div>
 
             {/* Category Filter Chips */}
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '12px' }}>
+            <div className="category-scroll-container" style={{ marginBottom: '12px' }}>
               <Button
                 type={selectedCategory === null ? 'primary' : 'default'}
                 onClick={() => setSelectedCategory(null)}
@@ -618,6 +518,29 @@ export const SalesView: React.FC = () => {
                   )}
                 </div>
               )}
+
+              {/* Table Selection Dropdown */}
+              <div style={{ marginTop: '12px' }}>
+                <div style={{ marginBottom: '6px' }}>
+                  <Text strong style={{ fontSize: '13px' }}>Pilih Meja (Opsional)</Text>
+                </div>
+                <Select
+                  placeholder="Pilih Meja"
+                  size="large"
+                  style={{ width: '100%' }}
+                  allowClear
+                  value={selectedTableId}
+                  onChange={(val) => {
+                    setSelectedTableId(val);
+                    const tbl = tables.find(t => t.id === val);
+                    setSelectedTableNumber(tbl ? tbl.number : undefined);
+                  }}
+                  options={tables.map((t: any) => ({
+                    value: t.id,
+                    label: `Meja ${t.number}`,
+                  }))}
+                />
+              </div>
             </div>
 
             {/* Calculations & Checkout */}
@@ -698,98 +621,6 @@ export const SalesView: React.FC = () => {
         </Col>
       </Row>
 
-      {/* Printable Receipt Modal */}
-      <Modal
-        title={<span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, color: '#C2410C' }}>Struk Penjualan</span>}
-        open={receiptModalOpen}
-        onCancel={resetSalesView}
-        footer={[
-          <Button key="close" className="btn-secondary-default" onClick={resetSalesView}>
-            Tutup
-          </Button>,
-          <Button
-            key="print"
-            type="primary"
-            icon={<PrinterOutlined />}
-            onClick={() => printReceipt(checkoutResult)}
-            className="btn-primary-terracotta"
-            disabled={!checkoutResult}
-          >
-            Cetak Struk
-          </Button>,
-        ]}
-        width={350}
-        destroyOnClose
-      >
-        {checkoutResult && (
-          <div style={{
-            fontFamily: "'Source Code Pro', monospace",
-            padding: '16px',
-            border: '1px dashed #D6D3D1',
-            borderRadius: '8px',
-            backgroundColor: '#FFFBF5',
-            color: '#1C1917',
-            fontSize: '13px',
-            lineHeight: 1.5
-          }}>
-            <div style={{ textAlign: 'center', marginBottom: '12px' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 'bold' }}>{storeSetting?.storeName || 'Kantin Nusantara'}</h3>
-              <div style={{ fontSize: '11px', color: '#57534E', marginTop: '4px' }}>{storeSetting?.address || ''}</div>
-              <div style={{ fontSize: '11px', color: '#57534E' }}>Telp: {storeSetting?.phone || ''}</div>
-            </div>
-            <div style={{ borderTop: '1px dashed #D6D3D1', margin: '8px 0' }} />
-            <div>
-              <strong>No:</strong> {checkoutResult.transactionCode}<br />
-              <strong>Tgl:</strong> {new Date(checkoutResult.transactionDate).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}<br />
-              <strong>Kasir:</strong> {checkoutResult.cashier?.fullName || 'System'}<br />
-              <strong>Pelanggan:</strong> {checkoutResult.customerName || 'Tamu'}<br />
-              <strong>Pembayaran:</strong> {formatPaymentMethod(checkoutResult.paymentMethod)}<br />
-            </div>
-            <div style={{ borderTop: '1px dashed #D6D3D1', margin: '8px 0' }} />
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <tbody>
-                {checkoutResult.items.map((item: any) => (
-                  <tr key={item.id}>
-                    <td style={{ padding: '4px 0' }}>
-                      {item.product?.name || 'Produk'}<br />
-                      <span style={{ fontSize: '11px', color: '#57534E' }}>{item.quantity} x {formatter.format(Number(item.priceAtPurchase || item.price))}</span>
-                    </td>
-                    <td style={{ textAlign: 'right', verticalAlign: 'bottom', padding: '4px 0' }}>
-                      {formatter.format(Number(item.quantity) * Number(item.priceAtPurchase || item.price))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div style={{ borderTop: '1px dashed #D6D3D1', margin: '8px 0' }} />
-            <table style={{ width: '100%', fontWeight: 'bold' }}>
-              <tbody>
-                <tr>
-                  <td>Total Tagihan</td>
-                  <td style={{ textAlign: 'right' }}>{formatter.format(Number(checkoutResult.totalAmount))}</td>
-                </tr>
-                {checkoutResult.paymentMethod === 'CASH' && (
-                  <>
-                    <tr>
-                      <td style={{ fontWeight: 'normal', color: '#57534E' }}>Uang Diterima</td>
-                      <td style={{ textAlign: 'right', fontWeight: 'normal' }}>{formatter.format(Number(checkoutResult.cashReceived))}</td>
-                    </tr>
-                    <tr>
-                      <td>Kembalian</td>
-                      <td style={{ textAlign: 'right' }}>{formatter.format(Number(checkoutResult.cashReturn || checkoutResult.cashReceived - checkoutResult.totalAmount))}</td>
-                    </tr>
-                  </>
-                )}
-              </tbody>
-            </table>
-            <div style={{ borderTop: '1px dashed #D6D3D1', margin: '16px 0 8px 0' }} />
-            <div style={{ textAlign: 'center', fontSize: '11px', color: '#57534E' }}>
-              Terima Kasih atas Kunjungan Anda!<br />
-              POS UMKM Premium
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 };

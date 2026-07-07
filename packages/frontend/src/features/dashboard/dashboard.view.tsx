@@ -175,6 +175,12 @@ export const DashboardView: React.FC = () => {
             Terima Kasih atas Kunjungan Anda!<br/>
             POS UMKM Premium
           </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              window.close();
+            }
+          </script>
         </body>
       </html>
     `);

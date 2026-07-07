@@ -1,6 +1,8 @@
 export interface CreateTransactionPayload {
   customerId?: string;
   customerName?: string;
+  tableId?: string;
+  tableNumber?: string;
   items: {
     productId: string;
     quantity: number;
