@@ -34,8 +34,10 @@ export class TransactionsController {
       const startDate = req.query.startDate as string | undefined;
       const endDate = req.query.endDate as string | undefined;
       const tableCode = req.query.tableCode as string | undefined;
+      const orderStatus = req.query.orderStatus as string | undefined;
+      const paymentStatus = req.query.paymentStatus as string | undefined;
 
-      const data = await this.service.getAllTransactions({ page, limit, search, startDate, endDate, tableCode });
+      const data = await this.service.getAllTransactions({ page, limit, search, startDate, endDate, tableCode, orderStatus, paymentStatus });
       
       res.status(200).json({
         success: true,

@@ -44,6 +44,8 @@ export const getTransactionsSchema = z.object({
     startDate: z.string().optional(),
     endDate: z.string().optional(),
     tableCode: z.string().optional(),
+    orderStatus: z.string().optional(),
+    paymentStatus: z.string().optional(),
   }),
 });
 

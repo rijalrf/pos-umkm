@@ -48,6 +48,8 @@ export class TransactionsRepository {
     startDate?: string;
     endDate?: string;
     tableCode?: string;
+    orderStatus?: string;
+    paymentStatus?: string;
   }): Promise<{ transactions: TransactionWithDetails[]; total: number }> {
     const page = options.page || 1;
     const limit = options.limit || 10;
@@ -69,6 +71,14 @@ export class TransactionsRepository {
           mode: 'insensitive',
         },
       };
+    }
+
+    if (options.orderStatus) {
+      where.orderStatus = options.orderStatus;
+    }
+
+    if (options.paymentStatus) {
+      where.paymentStatus = options.paymentStatus;
     }
 
     if (options.startDate || options.endDate) {

@@ -41,6 +41,13 @@ export class ReportsRepository {
             email: true,
           },
         },
+        table: {
+          select: {
+            id: true,
+            code: true,
+            number: true,
+          },
+        },
       },
       orderBy: {
         transactionDate: 'desc',

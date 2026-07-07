@@ -33,9 +33,17 @@ export interface SalesByCashierData {
   totalSales: number;
 }
 
+export interface TopTableData {
+  tableId: string;
+  tableCode: string;
+  tableNumber: string;
+  useCount: number;
+}
+
 export interface ReportResponseData {
   metrics: ReportSummaryMetrics;
   salesOverTime: SalesOverTimeData[];
   topProducts: TopProductData[];
   salesByCashier: SalesByCashierData[];
+  topTables: TopTableData[];
 }

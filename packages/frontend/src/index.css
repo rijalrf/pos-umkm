@@ -467,6 +467,12 @@ h4.ant-typography.font-lora {
   gap: 10px;
 }
 
+.detail-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .form-modal .ant-modal-header {
   border-bottom: 1px solid #E7E5E4;
   padding-bottom: 14px;
@@ -606,7 +612,19 @@ h4.ant-typography.font-lora {
 }
 
 .card-stat-secondary {
-  border-left: 4px solid #D4A373;
+  border-left: 4px solid var(--color-secondary);
+}
+
+.card-stat-warning {
+  border-left: 4px solid var(--color-warning);
+}
+
+.card-stat-info {
+  border-left: 4px solid var(--color-info);
+}
+
+.card-stat-success {
+  border-left: 4px solid var(--color-success);
 }
 
 .card-full-height {
