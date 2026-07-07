@@ -897,7 +897,17 @@ h4.ant-typography.font-lora {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  height: 100%;
   gap: 24px;
+}
+
+.avatar-uploader .ant-upload.ant-upload-select {
+  width: 180px !important;
+  height: 180px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .settings-upload-item {

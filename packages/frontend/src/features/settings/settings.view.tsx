@@ -14,8 +14,6 @@ export const SettingsView: React.FC = () => {
   const [savingStore, setSavingStore] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [qrisUrl, setQrisUrl] = useState<string | null>(null);
-  const [uploadingQris, setUploadingQris] = useState(false);
 
   const [formStore] = Form.useForm();
 
@@ -38,7 +36,6 @@ export const SettingsView: React.FC = () => {
         dateFormat: data.dateFormat,
       });
       setLogoUrl(data.logoUrl);
-      setQrisUrl(data.qrisUrl);
     } catch (error: unknown) {
       handleError(error, 'Failed to load store settings');
     } finally {
@@ -91,20 +88,6 @@ export const SettingsView: React.FC = () => {
     }
   };
 
-  const handleQrisUpload = async (file: File) => {
-    setUploadingQris(true);
-    const key = 'qris-upload';
-    message.loading({ content: 'Mengunggah gambar QRIS...', key });
-    try {
-      const data = await presenter.uploadStoreQris(file);
-      setQrisUrl(data.qrisUrl);
-      message.success({ content: 'QRIS berhasil diunggah!', key });
-    } catch (error: unknown) {
-      handleError(error, 'Gagal mengunggah QRIS');
-    } finally {
-      setUploadingQris(false);
-    }
-  };
 
   return (
     <div>
@@ -154,37 +137,6 @@ export const SettingsView: React.FC = () => {
                 </Text>
               </div>
 
-              <div className="settings-upload-item settings-upload-divider">
-                <Text strong className="settings-upload-label">QRIS Toko</Text>
-                <Upload
-                  name="qris"
-                  listType="picture-card"
-                  className="avatar-uploader"
-                  showUploadList={false}
-                  beforeUpload={handleBeforeLogoUpload}
-                  customRequest={({ file }) => handleQrisUpload(file as File)}
-                  disabled={uploadingQris}
-                >
-                  {qrisUrl ? (
-                    <div className="upload-preview">
-                      <img src={qrisUrl} alt="Store QRIS" className="upload-preview-img" />
-                      {uploadingQris && (
-                        <div className="upload-overlay">
-                          <LoadingOutlined />
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="upload-placeholder">
-                      {uploadingQris ? <LoadingOutlined /> : <PlusOutlined />}
-                      <div className="upload-placeholder-text">Unggah QRIS</div>
-                    </div>
-                  )}
-                </Upload>
-                <Text type="secondary" className="upload-hint">
-                  Mendukung JPG/PNG. Maksimal 2MB.
-                </Text>
-              </div>
             </div>
 
             <div className="settings-form">
