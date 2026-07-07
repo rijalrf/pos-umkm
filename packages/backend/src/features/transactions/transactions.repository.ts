@@ -47,6 +47,7 @@ export class TransactionsRepository {
     search?: string;
     startDate?: string;
     endDate?: string;
+    tableCode?: string;
   }): Promise<{ transactions: TransactionWithDetails[]; total: number }> {
     const page = options.page || 1;
     const limit = options.limit || 10;
@@ -59,6 +60,15 @@ export class TransactionsRepository {
         { transactionCode: { contains: options.search, mode: 'insensitive' } },
         { customerName: { contains: options.search, mode: 'insensitive' } },
       ];
+    }
+
+    if (options.tableCode) {
+      where.table = {
+        code: {
+          contains: options.tableCode,
+          mode: 'insensitive',
+        },
+      };
     }
 
     if (options.startDate || options.endDate) {

@@ -13,6 +13,7 @@ export function useSalesPresenter() {
     search: '',
     startDate: undefined as string | undefined,
     endDate: undefined as string | undefined,
+    tableCode: undefined as string | undefined,
   });
 
   const fetchTransactions = useCallback(async (currentQuery = query) => {
@@ -24,6 +25,7 @@ export function useSalesPresenter() {
         search: currentQuery.search || undefined,
         startDate: currentQuery.startDate,
         endDate: currentQuery.endDate,
+        tableCode: currentQuery.tableCode || undefined,
       });
       if (res.success && res.data) {
         setTransactions(res.data.transactions);
@@ -49,6 +51,12 @@ export function useSalesPresenter() {
     fetchTransactions(nextQuery);
   };
 
+  const handleTableFilter = (tableCode?: string) => {
+    const nextQuery = { ...query, tableCode, page: 1 };
+    setQuery(nextQuery);
+    fetchTransactions(nextQuery);
+  };
+
   const handlePageChange = (page: number, limit: number) => {
     const nextQuery = { ...query, page, limit };
     setQuery(nextQuery);
@@ -63,6 +71,7 @@ export function useSalesPresenter() {
     fetchTransactions,
     handleSearch,
     handleDateFilter,
+    handleTableFilter,
     handlePageChange,
   };
 }

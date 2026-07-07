@@ -33,8 +33,9 @@ export class TransactionsController {
       const search = req.query.search as string | undefined;
       const startDate = req.query.startDate as string | undefined;
       const endDate = req.query.endDate as string | undefined;
+      const tableCode = req.query.tableCode as string | undefined;
 
-      const data = await this.service.getAllTransactions({ page, limit, search, startDate, endDate });
+      const data = await this.service.getAllTransactions({ page, limit, search, startDate, endDate, tableCode });
       
       res.status(200).json({
         success: true,

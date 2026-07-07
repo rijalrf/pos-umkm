@@ -8,8 +8,10 @@ import {
   Typography,
   Card,
   Modal,
+  Popover,
+  Badge,
 } from "antd";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, FilterOutlined } from "@ant-design/icons";
 import { useProductsPresenter } from "./products.presenter";
 import { useProductColumns } from "./products-list.columns";
 import type { ProductItem } from "./products.types";
@@ -79,6 +81,49 @@ export const ProductListView: React.FC = () => {
     onDelete: handleDeleteClick,
   });
 
+  const activeFiltersCount = presenter.query.categoryId ? 1 : 0;
+
+  const filterContent = (
+    <div style={{ padding: "8px 4px", width: 240 }}>
+      <div style={{ marginBottom: 16 }}>
+        <Typography.Text strong style={{ display: "block", marginBottom: 6 }}>
+          Kategori
+        </Typography.Text>
+        <Select
+          placeholder="Pilih Kategori"
+          allowClear
+          style={{ width: "100%" }}
+          onChange={presenter.handleCategoryFilter}
+          value={presenter.query.categoryId}
+        >
+          {presenter.categories.map((cat) => (
+            <Select.Option key={cat.id} value={cat.id}>
+              {cat.name}
+            </Select.Option>
+          ))}
+        </Select>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          borderTop: "1px solid #E7E5E4",
+          paddingTop: 8,
+        }}
+      >
+        <Button
+          type="text"
+          size="small"
+          onClick={() => presenter.handleCategoryFilter(undefined)}
+          disabled={activeFiltersCount === 0}
+          style={{ color: activeFiltersCount > 0 ? "#C2410C" : undefined }}
+        >
+          Reset Filter
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <div className="page-header">
@@ -112,21 +157,21 @@ export const ProductListView: React.FC = () => {
               enterButton={<SearchOutlined />}
               onSearch={presenter.handleSearch}
               className="input-search"
+              style={{ width: 320 }}
             />
 
-            <Select
-              placeholder="Filter Kategori"
-              allowClear
-              style={{ width: 200 }}
-              onChange={presenter.handleCategoryFilter}
-              value={presenter.query.categoryId}
+            <Popover
+              content={filterContent}
+              title={<strong style={{ fontSize: 16 }}>Filter Produk</strong>}
+              trigger="click"
+              placement="bottomRight"
             >
-              {presenter.categories.map((cat) => (
-                <Select.Option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </Select.Option>
-              ))}
-            </Select>
+              <Badge count={activeFiltersCount} size="small" offset={[0, 0]} color="#C2410C">
+                <Button icon={<FilterOutlined />} className="btn-secondary-default" style={{ height: "40px" }}>
+                  Filter
+                </Button>
+              </Badge>
+            </Popover>
           </Space>
         </div>
 

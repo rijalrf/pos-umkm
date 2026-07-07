@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, Col, Row, Statistic, Table, DatePicker, Button, Space, Tabs, Spin, Typography, Select, Input, Empty, message } from 'antd';
-import { DownloadOutlined, PrinterOutlined, CalendarOutlined, LineChartOutlined, GiftOutlined, UserOutlined, ShopOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Statistic, Table, DatePicker, Button, Space, Tabs, Spin, Typography, Select, Input, Empty, message, Popover, Badge } from 'antd';
+import { DownloadOutlined, PrinterOutlined, LineChartOutlined, GiftOutlined, UserOutlined, ShopOutlined, InfoCircleOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
 import { useReportsPresenter } from './reports.presenter';
 import { UsersPresenter } from '../users/users.presenter';
 import { SalesByCashierData, TopProductData } from './reports.types';
 import { createClientPagination } from '../../libs/pagination.lib';
+import dayjs from 'dayjs';
 
 
 const { RangePicker } = DatePicker;
@@ -39,6 +40,8 @@ export const ReportsView: React.FC = () => {
     minimumFractionDigits: 0,
   });
 
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
   const handleRangeChange = (val: unknown, dateStrings: [string, string]) => {
     if (val) {
       setDates(dateStrings);
@@ -56,6 +59,7 @@ export const ReportsView: React.FC = () => {
     presenter.setEndDate(dates[1]);
     presenter.fetchReport({ startDate: dates[0], endDate: dates[1] });
     setHasSearched(true);
+    setPopoverOpen(false);
   };
 
   const handleReset = () => {
@@ -63,6 +67,7 @@ export const ReportsView: React.FC = () => {
     setSelectedCashier(undefined);
     setKeyword('');
     setHasSearched(false);
+    setPopoverOpen(false);
   };
 
   const displayedMetrics = useMemo(() => {
@@ -202,6 +207,61 @@ export const ReportsView: React.FC = () => {
     },
   ];
 
+  const activeFiltersCount = (dates ? 1 : 0) + (selectedCashier ? 1 : 0);
+
+  const filterContent = (
+    <div style={{ padding: '8px 4px', width: 280 }}>
+      <div style={{ marginBottom: 12 }}>
+        <Text strong style={{ display: 'block', marginBottom: 6 }}>Rentang Waktu</Text>
+        <RangePicker
+          onChange={handleRangeChange}
+          placeholder={['Mulai', 'Selesai']}
+          style={{ width: '100%' }}
+          value={
+            dates && dates[0] && dates[1]
+              ? [dayjs(dates[0]), dayjs(dates[1])]
+              : null
+          }
+        />
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <Text strong style={{ display: 'block', marginBottom: 6 }}>Kasir</Text>
+        <Select
+          placeholder="Pilih Staf Kasir"
+          allowClear
+          style={{ width: '100%' }}
+          onChange={(val) => setSelectedCashier(val)}
+          value={selectedCashier}
+        >
+          {cashiers.map((user) => (
+            <Select.Option key={user.id} value={user.id}>
+              {user.fullName} (@{user.username})
+            </Select.Option>
+          ))}
+        </Select>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E7E5E4', paddingTop: 8 }}>
+        <Button 
+          type="text" 
+          size="small" 
+          onClick={handleReset}
+          disabled={activeFiltersCount === 0}
+          style={{ color: activeFiltersCount > 0 ? '#C2410C' : undefined }}
+        >
+          Reset Filter
+        </Button>
+        <Button 
+          type="primary" 
+          size="small" 
+          onClick={handleSearch}
+          className="btn-primary-terracotta"
+        >
+          Cari
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <div className="page-header">
@@ -215,50 +275,31 @@ export const ReportsView: React.FC = () => {
 
       <Card className="card-filter">
         <div className="filter-toolbar">
-          <Row gutter={[16, 16]} align="bottom">
-            <Col xs={24} sm={12} md={7}>
-              <div className="filter-label"><SearchOutlined /> Cari:</div>
-              <Input
-                placeholder="Cari nama produk, SKU, atau nama kasir..."
-                onChange={(e) => setKeyword(e.target.value)}
-                value={keyword}
-              />
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <div className="filter-label"><CalendarOutlined /> Rentang Waktu:</div>
-              <RangePicker
-                onChange={handleRangeChange}
-                placeholder={['Mulai Tanggal', 'Selesai Tanggal']}
-                className="w-full"
-              />
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <div className="filter-label"><UserOutlined /> Kasir:</div>
-              <Select
-                placeholder="Pilih Staf Kasir"
-                allowClear
-                className="w-full"
-                onChange={(val) => setSelectedCashier(val)}
-                value={selectedCashier}
-              >
-                {cashiers.map((user) => (
-                  <Select.Option key={user.id} value={user.id}>
-                    {user.fullName} (@{user.username})
-                  </Select.Option>
-                ))}
-              </Select>
-            </Col>
-            <Col xs={24} md={5}>
-              <Space className="w-full">
-                <Button type="primary" onClick={handleSearch} className="btn-primary-terracotta w-full">
-                  Cari
+          <Space wrap className="w-full" style={{ justifyContent: 'space-between' }}>
+            <Input
+              placeholder="Cari nama produk, SKU, atau nama kasir..."
+              onChange={(e) => setKeyword(e.target.value)}
+              value={keyword}
+              style={{ width: 320, height: 40 }}
+              prefix={<SearchOutlined />}
+              allowClear
+            />
+
+            <Popover
+              content={filterContent}
+              title={<strong style={{ fontSize: 16 }}>Filter Laporan</strong>}
+              trigger="click"
+              placement="bottomRight"
+              open={popoverOpen}
+              onOpenChange={setPopoverOpen}
+            >
+              <Badge count={activeFiltersCount} size="small" offset={[0, 0]} color="#C2410C">
+                <Button icon={<FilterOutlined />} className="btn-secondary-default" style={{ height: '40px' }}>
+                  Filter
                 </Button>
-                <Button type="default" onClick={handleReset}>
-                  Reset
-                </Button>
-              </Space>
-            </Col>
-          </Row>
+              </Badge>
+            </Popover>
+          </Space>
         </div>
 
         <div className="divider-horizontal" />

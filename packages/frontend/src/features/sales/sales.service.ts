@@ -13,6 +13,7 @@ export class SalesService {
     search?: string;
     startDate?: string;
     endDate?: string;
+    tableCode?: string;
   }) {
     const response = await api.get('/transactions', { params });
     return response.data;

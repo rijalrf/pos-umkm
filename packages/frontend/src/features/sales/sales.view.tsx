@@ -29,7 +29,7 @@ export const SalesView: React.FC = () => {
   const [customerId, setCustomerId] = useState<string | undefined>(undefined);
   const [cashReceived, setCashReceived] = useState<number>(0);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS'>('CASH');
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'QRIS' | 'DEBIT' | 'TRANSFER'>('CASH');
 
   // Member phone search states
   const [phoneSearch, setPhoneSearch] = useState('');
@@ -169,7 +169,7 @@ export const SalesView: React.FC = () => {
           productId: item.product.id,
           quantity: item.quantity,
         })),
-        cashReceived: paymentMethod === 'QRIS' ? total : cashReceived,
+        cashReceived: paymentMethod === 'CASH' ? cashReceived : total,
         paymentMethod,
       };
 
@@ -635,10 +635,10 @@ export const SalesView: React.FC = () => {
                   onChange={(e) => {
                     const method = e.target.value;
                     setPaymentMethod(method);
-                    if (method === 'QRIS') {
-                      setCashReceived(totalAmount);
-                    } else {
+                    if (method === 'CASH') {
                       setCashReceived(0);
+                    } else {
+                      setCashReceived(totalAmount);
                     }
                   }}
                   optionType="button"
@@ -646,6 +646,8 @@ export const SalesView: React.FC = () => {
                 >
                   <Radio.Button value="CASH">TUNAI</Radio.Button>
                   <Radio.Button value="QRIS">QRIS</Radio.Button>
+                  <Radio.Button value="DEBIT">DEBIT</Radio.Button>
+                  <Radio.Button value="TRANSFER">TRANSFER</Radio.Button>
                 </Radio.Group>
               </div>
 

@@ -16,6 +16,7 @@ export class TransactionsService {
     search?: string;
     startDate?: string;
     endDate?: string;
+    tableCode?: string;
   }) {
     return this.repository.findAll(query);
   }

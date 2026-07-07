@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Input, DatePicker, Space, Typography, Modal, Card, message, Dropdown, Tag, Radio, InputNumber } from 'antd';
-import { SearchOutlined, PrinterOutlined, CalendarOutlined, EyeOutlined, MoreOutlined, ShoppingCartOutlined, CheckCircleOutlined, CoffeeOutlined } from '@ant-design/icons';
+import { Table, Button, Input, DatePicker, Space, Typography, Modal, Card, message, Dropdown, Tag, Radio, InputNumber, Popover, Badge } from 'antd';
+import { SearchOutlined, PrinterOutlined, EyeOutlined, MoreOutlined, ShoppingCartOutlined, CheckCircleOutlined, CoffeeOutlined, FilterOutlined } from '@ant-design/icons';
 import { useSalesPresenter } from './sales.presenter';
 import { SalesService } from './sales.service';
 import { SettingsService } from '../settings/settings.service';
 import { AxiosError } from 'axios';
+import dayjs from 'dayjs';
 import { TransactionItem } from './sales.types';
 import { createServerPagination } from '../../libs/pagination.lib';
 import { formatPaymentMethod, formatOrderStatus } from '../../libs/format.lib';
@@ -108,8 +109,8 @@ export const TransactionListView: React.FC = () => {
   };
 
   const orderStatusLabel: Record<string, string> = {
-    PENDING: 'Proses',
-    PROCESSING: 'Selesai',
+    PENDING: 'Proses Pesanan',
+    PROCESSING: 'Selesaikan Pesanan',
   };
 
   const orderStatusIcon: Record<string, React.ReactNode> = {
@@ -330,6 +331,50 @@ export const TransactionListView: React.FC = () => {
     },
   ];
 
+  const activeFiltersCount = (presenter.query.tableCode ? 1 : 0) + (presenter.query.startDate || presenter.query.endDate ? 1 : 0);
+
+  const filterContent = (
+    <div style={{ padding: '8px 4px', width: 280 }}>
+      <div style={{ marginBottom: 12 }}>
+        <Text strong style={{ display: 'block', marginBottom: 6 }}>Kode Meja</Text>
+        <Input
+          placeholder="Cari Kode Meja..."
+          allowClear
+          value={presenter.query.tableCode}
+          onChange={(e) => presenter.handleTableFilter(e.target.value || undefined)}
+          style={{ width: '100%' }}
+        />
+      </div>
+      <div style={{ marginBottom: 16 }}>
+        <Text strong style={{ display: 'block', marginBottom: 6 }}>Filter Tanggal</Text>
+        <RangePicker
+          onChange={handleRangeChange}
+          placeholder={['Mulai', 'Selesai']}
+          style={{ width: '100%' }}
+          value={
+            presenter.query.startDate && presenter.query.endDate
+              ? [dayjs(presenter.query.startDate), dayjs(presenter.query.endDate)]
+              : null
+          }
+        />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #E7E5E4', paddingTop: 8 }}>
+        <Button 
+          type="text" 
+          size="small" 
+          onClick={() => {
+            presenter.handleTableFilter(undefined);
+            presenter.handleDateFilter(undefined, undefined);
+          }}
+          disabled={activeFiltersCount === 0}
+          style={{ color: activeFiltersCount > 0 ? '#C2410C' : undefined }}
+        >
+          Reset Filter
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <div className="page-header">
@@ -352,15 +397,18 @@ export const TransactionListView: React.FC = () => {
               style={{ width: 320 }}
             />
 
-            <Space wrap>
-              <span className="filter-label-inline">
-                <CalendarOutlined /> Filter Tanggal:
-              </span>
-              <RangePicker
-                onChange={handleRangeChange}
-                placeholder={['Tanggal Mulai', 'Tanggal Selesai']}
-              />
-            </Space>
+            <Popover
+              content={filterContent}
+              title={<strong style={{ fontSize: 16 }}>Filter Transaksi</strong>}
+              trigger="click"
+              placement="bottomRight"
+            >
+              <Badge count={activeFiltersCount} size="small" offset={[0, 0]} color="#C2410C">
+                <Button icon={<FilterOutlined />} className="btn-secondary-default" style={{ height: '40px' }}>
+                  Filter
+                </Button>
+              </Badge>
+            </Popover>
           </Space>
         </div>
 
@@ -385,14 +433,58 @@ export const TransactionListView: React.FC = () => {
           setDetailModalOpen(false);
           setSelectedTx(null);
         }}
-        footer={[
-          <Button key="close" className="btn-secondary-default" onClick={() => { setDetailModalOpen(false); setSelectedTx(null); }}>
-            Tutup
-          </Button>,
-          <Button key="print" type="primary" icon={<PrinterOutlined />} onClick={() => selectedTx && printReceipt(selectedTx)} className="btn-primary-terracotta" disabled={!selectedTx}>
-            Cetak Struk
-          </Button>,
-        ]}
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Button
+              key="close"
+              className="btn-secondary-default"
+              onClick={() => {
+                setDetailModalOpen(false);
+                setSelectedTx(null);
+              }}
+            >
+              Tutup
+            </Button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {selectedTx && nextOrderStatus(selectedTx.orderStatus) && (
+                <Button
+                  key="status-update"
+                  type="primary"
+                  icon={orderStatusIcon[selectedTx.orderStatus]}
+                  onClick={() => handleUpdateOrderStatus(selectedTx, nextOrderStatus(selectedTx.orderStatus)!)}
+                  className="btn-primary-terracotta"
+                >
+                  {orderStatusLabel[selectedTx.orderStatus]}
+                </Button>
+              )}
+              {selectedTx && selectedTx.orderStatus === 'COMPLETED' && selectedTx.paymentStatus === 'UNPAID' && (
+                <Button
+                  key="payment"
+                  type="primary"
+                  icon={<ShoppingCartOutlined />}
+                  onClick={() => {
+                    openPaymentModal(selectedTx);
+                    setDetailModalOpen(false);
+                  }}
+                  className="btn-primary-terracotta"
+                >
+                  Proses Pembayaran
+                </Button>
+              )}
+              {selectedTx && selectedTx.orderStatus === 'COMPLETED' && selectedTx.paymentStatus === 'PAID' && (
+                <Button
+                  key="print"
+                  type="primary"
+                  icon={<PrinterOutlined />}
+                  onClick={() => printReceipt(selectedTx)}
+                  className="btn-primary-terracotta"
+                >
+                  Cetak Struk
+                </Button>
+              )}
+            </div>
+          </div>
+        }
         width={750}
         destroyOnClose
       >
@@ -402,7 +494,7 @@ export const TransactionListView: React.FC = () => {
               <div>
                 <div className="detail-field">
                   <span className="detail-label">Kode Transaksi</span>
-                  <strong className="detail-value-mono">{selectedTx.transactionCode}</strong>
+                  <span className="detail-value">{selectedTx.transactionCode}</span>
                 </div>
                 <div className="detail-field">
                   <span className="detail-label">Waktu Transaksi</span>
@@ -412,31 +504,15 @@ export const TransactionListView: React.FC = () => {
                 </div>
                 <div className="detail-field">
                   <span className="detail-label">Metode Pembayaran</span>
-                  <span className={`payment-badge payment-badge-${selectedTx.paymentMethod === 'CASH' ? 'cash' : 'non-cash'}`}>
+                  <span className="detail-value">
                     {formatPaymentMethod(selectedTx.paymentMethod)}
                   </span>
                 </div>
                 <div className="detail-field">
                   <span className="detail-label">Status Pesanan</span>
-                  <div className="detail-value" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    {(() => {
-                      const colorMap: Record<string, string> = {
-                        PENDING: 'orange',
-                        PROCESSING: 'blue',
-                        COMPLETED: 'default',
-                      };
-                      return <Tag color={colorMap[selectedTx.orderStatus] || 'default'}>{formatOrderStatus(selectedTx.orderStatus)}</Tag>;
-                    })()}
-                    {nextOrderStatus(selectedTx.orderStatus) && (
-                      <Button
-                        size="small"
-                        icon={orderStatusIcon[selectedTx.orderStatus]}
-                        onClick={() => handleUpdateOrderStatus(selectedTx, nextOrderStatus(selectedTx.orderStatus)!)}
-                      >
-                        {orderStatusLabel[selectedTx.orderStatus]}
-                      </Button>
-                    )}
-                  </div>
+                  <span className="detail-value">
+                    {formatOrderStatus(selectedTx.orderStatus)}
+                  </span>
                 </div>
               </div>
               <div>
@@ -451,8 +527,10 @@ export const TransactionListView: React.FC = () => {
                 {selectedTx.tableNumber && (
                   <div className="detail-field">
                     <span className="detail-label">Nomor Meja</span>
-                    <span className="detail-value text-primary-color text-semibold">
-                      {selectedTx.tableNumber}
+                    <span className="detail-value">
+                      {selectedTx.table
+                        ? `${selectedTx.table.number} - ${selectedTx.table.code}`
+                        : selectedTx.tableNumber}
                     </span>
                   </div>
                 )}
@@ -559,10 +637,10 @@ export const TransactionListView: React.FC = () => {
                 onChange={(e) => {
                   const method = e.target.value;
                   setPayMethod(method);
-                  if (method === 'QRIS') {
-                    setPayCashReceived(Number(payingTx.totalAmount));
-                  } else {
+                  if (method === 'CASH') {
                     setPayCashReceived(0);
+                  } else {
+                    setPayCashReceived(Number(payingTx.totalAmount));
                   }
                 }}
                 optionType="button"
@@ -571,6 +649,8 @@ export const TransactionListView: React.FC = () => {
               >
                 <Radio.Button value="CASH" className="payment-radio-btn">TUNAI</Radio.Button>
                 <Radio.Button value="QRIS" className="payment-radio-btn">QRIS</Radio.Button>
+                <Radio.Button value="DEBIT" className="payment-radio-btn">DEBIT</Radio.Button>
+                <Radio.Button value="TRANSFER" className="payment-radio-btn">TRANSFER</Radio.Button>
               </Radio.Group>
             </div>
 

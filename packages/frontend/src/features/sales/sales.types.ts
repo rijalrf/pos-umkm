@@ -17,6 +17,7 @@ export interface TransactionQuery {
   search?: string;
   startDate?: string;
   endDate?: string;
+  tableCode?: string;
 }
 
 export interface TransactionItem {
@@ -31,6 +32,7 @@ export interface TransactionItem {
   orderStatus: string;
   customerName: string | null;
   tableNumber: string | null;
+  table?: { code: string; number: string } | null;
   cashier: { id: string; fullName: string } | null;
   items: TransactionItemDetail[];
 }

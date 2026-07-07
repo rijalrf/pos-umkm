@@ -43,6 +43,7 @@ export const getTransactionsSchema = z.object({
     search: z.string().optional(),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
+    tableCode: z.string().optional(),
   }),
 });
 
