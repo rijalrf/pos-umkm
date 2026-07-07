@@ -27,8 +27,7 @@ export const CustomerListView: React.FC = () => {
     return presenter.customers.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
-        (c.phone && c.phone.toLowerCase().includes(q)) ||
-        (c.address && c.address.toLowerCase().includes(q))
+        (c.phone && c.phone.toLowerCase().includes(q))
     );
   }, [presenter.customers, presenter.search]);
 
@@ -44,22 +43,6 @@ export const CustomerListView: React.FC = () => {
       dataIndex: 'phone',
       key: 'phone',
       render: (text: string | undefined) => maskPhone(text),
-    },
-    {
-      title: 'Status Verifikasi',
-      dataIndex: 'isEmailVerified',
-      key: 'isEmailVerified',
-      render: (isVerified: boolean) => (
-        <span className={`status-chip ${isVerified ? 'status-chip-success' : 'status-chip-error'}`}>
-          {isVerified ? 'Terverifikasi' : 'Belum Verifikasi'}
-        </span>
-      ),
-    },
-    {
-      title: 'Alamat',
-      dataIndex: 'address',
-      key: 'address',
-      render: (text: string | null | undefined) => text || '-',
     },
   ];
 
@@ -77,7 +60,7 @@ export const CustomerListView: React.FC = () => {
       <Card className="card-filter">
         <div className="search-bar">
           <Input
-            placeholder="Cari berdasarkan nama, nomor HP, atau alamat..."
+            placeholder="Cari berdasarkan nama atau nomor HP..."
             prefix={<SearchOutlined />}
             value={presenter.search}
             onChange={(e) => presenter.setSearch(e.target.value)}

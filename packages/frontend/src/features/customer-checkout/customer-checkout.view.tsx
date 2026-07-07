@@ -95,7 +95,7 @@ export const CheckoutView: React.FC = () => {
       paymentMethod,
     };
     if (values.guestName) payload.guestName = values.guestName;
-    if (values.phone) payload.phone = values.phone;
+    if (values.phone && values.phone.trim() !== '') payload.phone = values.phone.trim();
     if (cart.tableId) payload.tableId = cart.tableId;
 
     try {

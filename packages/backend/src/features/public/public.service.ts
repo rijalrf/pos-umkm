@@ -78,17 +78,18 @@ export class PublicService {
       }
       customerName = input.guestName;
 
-      if (input.phone) {
+      const cleanPhone = input.phone ? input.phone.trim() : '';
+      if (cleanPhone) {
         // Cek apakah pelanggan dengan nomor telepon ini sudah terdaftar
         let customer = await prisma.customer.findFirst({
-          where: { phone: input.phone },
+          where: { phone: cleanPhone },
         });
 
         if (!customer) {
           // Jika belum ada, daftarkan sebagai pelanggan baru.
           // Karena email unik dan password hash wajib di skema database, buat email & password dummy.
-          const dummyEmail = `${input.phone}@pos-umkm.local`;
-          const dummyPassword = `pass-${input.phone}`;
+          const dummyEmail = `${cleanPhone}@pos-umkm.local`;
+          const dummyPassword = `pass-${cleanPhone}`;
           const passwordHash = await hashPassword(dummyPassword);
 
           customer = await prisma.customer.create({
@@ -96,7 +97,7 @@ export class PublicService {
               email: dummyEmail,
               passwordHash,
               name: input.guestName,
-              phone: input.phone,
+              phone: cleanPhone,
               isEmailVerified: true, // Otomatis terverifikasi
             },
           });
